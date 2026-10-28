@@ -55,7 +55,7 @@
 </head>
 <body>
 <header>
-  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.04</span> <span class="ver-sub">纸质冷备份</span></h1>
+  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.05</span> <span class="ver-sub">纸质冷备份</span></h1>
   <p>把任意文件先压缩、再用口令做 AES-256-GCM 加密，最后编码成带分块校验的纸面文本打印出来。恢复时只需粘贴纸面文本并输入同一口令，缺块、坏块、错口令都会被明确指出。</p>
   <p class="small" style="color:#9ca3af">单文件、离线、无网络请求。口令只存在于本页内存中，绝不上传、不存入浏览器存储。版本 <span id="appVersion"></span> · 格式 PV1</p>
 </header>
@@ -72,6 +72,10 @@
     <input type="password" id="pw2" autocomplete="new-password">
     <label for="hintInput">口令提示（可选，会印在封面；不要写出口令本身）</label>
     <input type="text" id="hintInput" placeholder="例如：2026 年常用主口令（不要写出口令）">
+    <label for="archiveNameInput">档案名称（必填，会印在封面，用于区分多份备份；例如：2026 年密码库、房屋合同扫描件）</label>
+    <input type="text" id="archiveNameInput" placeholder="请写清楚这份备份是什么文件，不要写出口令或敏感细节">
+    <label for="archiveIdInput">档案编号（可留空，留空自动生成；同一档案的所有页、所有二维码/文本块都带同一编号）</label>
+    <input type="text" id="archiveIdInput" placeholder="例如：PA-20261028-001，留空则自动生成">
     <label>打印模式（默认二维码，省纸最多）</label>
     <p style="margin:6px 0"><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="printMode" value="qr" checked style="width:auto"> 二维码高密度（推荐）</label><label style="display:inline;font-weight:400"><input type="radio" name="printMode" value="text" style="width:auto"> 纯文本（兼容性最好）</label></p>
     <p class="small">二维码模式：每个码含约 900 个 Base32 字符（约 560 字节原数据），A4 每页约 9 个码；纯文本模式每页约 3 块。二维码可用手机扫码 App 或本页“识别照片”逐个扫回，文本模式可手工抄录。</p>
@@ -158,7 +162,7 @@
 <script>
 'use strict';
 /* PepperArchive 格式 PV1 —— 单文件离线实现，无外部依赖 */
-var APP_VERSION = '2026.10.28.04';
+var APP_VERSION = '2026.10.28.05';
 var PBKDF2_ITER = 600000;
 var CHUNK_CHARS = 480;
 var LINE_CHARS = 40;
@@ -185,7 +189,7 @@ async function compareBytesAsync(a, b, onProgress){
     var end = Math.min(off + CH, n);
     for (var i = off; i < end; i++) if (a[i] !== b[i]){ diff = i; break; }
     if (diff !== -1) break;
-    if (onProgress) onProgress(Math.min(end, Math.max(a.length, b.length)) / Math.max(a.length, b.length) * 100);
+    if (onProgress) onProgress(end / n * 100);
     if (off > 0 && (off / CH) % 5 === 0) await tick();
   }
   var same = (a.length === b.length) && (diff === -1);
@@ -317,11 +321,14 @@ async function encryptPackage(origBytes, fileName, password, onProgress){
   if (password === ''){
     /* 不加密模式 PV00：外层就是内层明文（仍压缩 + SHA-256 校验），纸面任何人拿到都能恢复 */
     var shaBuf0 = await crypto.subtle.digest('SHA-256', origBytes);
+    if (onProgress) onProgress(10);
     var comp0 = await compressBytes(origBytes);
+    if (onProgress) onProgress(15);
     var inner0 = buildInner(new TextEncoder().encode(fileName), origBytes, new Uint8Array(shaBuf0), comp0.data, comp0.flag);
     var out0 = new Uint8Array(4 + inner0.length);
     out0.set([0x50, 0x56, 0x30, 0x30], 0); /* PV00 */
     out0.set(inner0, 4);
+    if (onProgress) onProgress(25);
     return { outer: out0, compressed: comp0.flag === 1, compLen: comp0.data.length, unencrypted: true };
   }
   var shaBuf = await crypto.subtle.digest('SHA-256', origBytes);
@@ -408,6 +415,8 @@ function formatChunkLines(text){
 function buildPrintText(chunks, meta){
   var parts = [];
   parts.push('PepperArchive 纸面冷备份 · 格式 PV1 · 版本 ' + APP_VERSION);
+  if (meta.archiveId) parts.push(archiveLine(meta.archiveId));
+  if (meta.archiveName) parts.push('档案名称：' + meta.archiveName);
   parts.push(meta.unencrypted ? '模式：未加密（纸面内容未加密，任何人拿到都能恢复，仅用于不敏感文件）' : '模式：AES-256-GCM 加密');
   parts.push('生成日期：' + meta.date);
   parts.push('总块数：' + chunks.length + ' · 总字符：' + chunks.reduce(function(a, c){ return a + c.text.length; }, 0));
@@ -417,6 +426,7 @@ function buildPrintText(chunks, meta){
   parts.push('');
   chunks.forEach(function(c){
     parts.push(chunkHeader(c));
+    if (meta.archiveId) parts.push(archiveLine(meta.archiveId));
     parts.push(formatChunkLines(c.text));
     parts.push('');
   });
@@ -427,12 +437,14 @@ async function renderPrint(chunks, meta, onProgress){
   var htmlParts = [];
   for (var i = 0; i < chunks.length; i++){
     var c = chunks[i];
-    htmlParts.push('<div class="chunk-block"><div class="chead">' + esc(chunkHeader(c)) + '</div><pre>' + esc(formatChunkLines(c.text)) + '</pre></div>');
+    htmlParts.push('<div class="chunk-block"><div class="chead">' + (meta.archiveId ? esc(archiveLine(meta.archiveId)) + ' · ' : '') + esc(chunkHeader(c)) + '</div><pre>' + esc(formatChunkLines(c.text)) + '</pre></div>');
     if (onProgress) onProgress(30 + (i + 1) / chunks.length * 70, '正在生成打印稿 ' + (i + 1) + '/' + chunks.length);
     if ((i + 1) % batch === 0) await tick();
   }
   var cover = 'PepperArchive 纸面冷备份 · 格式 PV1 · 版本 ' + APP_VERSION + '<br>'
     + '生成日期：' + esc(meta.date) + '<br>'
+    + (meta.archiveId ? '档案编号：' + esc(meta.archiveId) + '<br>' : '')
+    + (meta.archiveName ? '档案名称：' + esc(meta.archiveName) + '<br>' : '')
     + '总块数：' + chunks.length + ' · 原文件大小：' + meta.origSize + ' 字节 · 压缩后：' + meta.compSize + ' 字节 · ' + (meta.unencrypted ? '外层（未加密）：' : '加密后：') + meta.encSize + ' 字节<br>'
     + (meta.unencrypted ? '模式：未加密（纸面内容未加密，任何人拿到都能恢复，仅用于不敏感文件）<br>' : '')
     + (meta.hint ? '口令提示：' + esc(meta.hint) + '<br>' : '')
@@ -444,17 +456,18 @@ async function renderPrint(chunks, meta, onProgress){
 
 /* ---------- 二维码模式 ---------- */
 var QR_CHUNK_CHARS = 900;
-function makeQRChunks(b32){
+function makeQRChunks(b32, chunkChars){
+  var size = chunkChars || QR_CHUNK_CHARS;
   var chunks = [];
-  for (var i = 0; i < b32.length; i += QR_CHUNK_CHARS){
-    var part = b32.slice(i, i + QR_CHUNK_CHARS);
+  for (var i = 0; i < b32.length; i += size){
+    var part = b32.slice(i, i + size);
     chunks.push({ index: chunks.length + 1, total: 0, text: part, crc: crc32Hex(part) });
   }
   if (chunks.length === 0) chunks.push({ index: 1, total: 0, text: '', crc: crc32Hex('') });
   chunks.forEach(function(c){ c.total = chunks.length; });
   return chunks;
 }
-function qrPayload(c){ return chunkHeader(c) + ' ' + c.text; }
+function qrPayload(c, archiveId){ return (archiveId ? qrArchiveLine(archiveId) + ' ' : '') + chunkHeader(c) + ' ' + c.text; } /* 空格分隔：换行不在 QR 字母数字字符集内，会导致编码抛错；解析时按 token 剥离 ARCHIVE 段 */
 function qrToDataURL(payload){
   var q = QR.encodeAlphanumeric(payload);
   var scale = 8, quiet = 4, px = (q.size + quiet*2) * scale;
@@ -473,13 +486,15 @@ async function renderPrintQR(chunks, meta, onProgress){
   var batch = chunks.length > 200 ? 10 : 1;
   for (var i = 0; i < chunks.length; i++){
     var c = chunks[i];
-    renders.push({ c: c, r: qrToDataURL(qrPayload(c)) });
+    renders.push({ c: c, r: qrToDataURL(qrPayload(c, meta.archiveId)) });
     if (onProgress) onProgress(30 + (i + 1) / chunks.length * 70, '正在生成二维码 ' + (i + 1) + '/' + chunks.length);
     if ((i + 1) % batch === 0) await tick();
   }
   var maxVer = 0; renders.forEach(function(x){ if (x.r.version > maxVer) maxVer = x.r.version; });
   var cover = 'PepperArchive 纸面冷备份 · 二维码高密度模式 · 格式 PV1 · 版本 ' + APP_VERSION + '<br>'
     + '生成日期：' + esc(meta.date) + '<br>'
+    + (meta.archiveId ? '档案编号：' + esc(meta.archiveId) + '<br>' : '')
+    + (meta.archiveName ? '档案名称：' + esc(meta.archiveName) + '<br>' : '')
     + '二维码总数：' + chunks.length + ' · 原文件大小：' + meta.origSize + ' 字节 · 压缩后：' + meta.compSize + ' 字节 · ' + (meta.unencrypted ? '外层（未加密）：' : '加密后：') + meta.encSize + ' 字节<br>'
     + (meta.unencrypted ? '模式：未加密（纸面内容未加密，任何人拿到都能恢复，仅用于不敏感文件）<br>' : '')
     + (meta.hint ? '口令提示：' + esc(meta.hint) + '<br>' : '')
@@ -487,12 +502,24 @@ async function renderPrintQR(chunks, meta, onProgress){
     + '恢复：用手机扫码 App 或本页“识别照片”逐个扫回全部二维码，粘贴到恢复区并输入同一口令。拍照时请靠近单个码拍清晰，整页远拍可能识别不出小模块。不要把口令写在这张纸上。';
   $('printCover').innerHTML = cover;
   $('printChunks').innerHTML = '<div class="qr-grid">' + renders.map(function(x){
-    return '<div class="qr-block"><img src="' + x.r.url + '" alt="二维码 ' + x.c.index + '/' + x.c.total + '"><div class="qhead">' + esc(chunkHeader(x.c)) + '</div><div class="qsub">第 ' + x.c.index + '/' + x.c.total + ' 码 · QR 版本 V' + x.r.version + ' · EC-M</div></div>';
+    return '<div class="qr-block"><img src="' + x.r.url + '" alt="二维码 ' + x.c.index + '/' + x.c.total + '"><div class="qhead">' + (meta.archiveId ? esc(archiveLine(meta.archiveId)) + ' · ' : '') + esc(chunkHeader(x.c)) + '</div><div class="qsub">第 ' + x.c.index + '/' + x.c.total + ' 码 · QR 版本 V' + x.r.version + ' · EC-M</div></div>';
   }).join('') + '</div>';
 }
 
 /* 解析粘贴文本：返回 { chunks: [{index,text}], total, bad:[], missing:[], totalDeclared } */
 function parseBackupText(text){
+  var archIds = [], archSeen = {};
+  function collectArch(re){
+    var am;
+    while ((am = re.exec(text)) !== null){
+      var aid = am[1].trim();
+      if (aid && !archSeen[aid]){ archSeen[aid] = true; archIds.push(aid); }
+    }
+  }
+  collectArch(/^档案编号：\s*(.+?)\s*$/gm);
+  collectArch(/^ARCHIVE:([A-Z0-9\-]+)/gm);
+  if (archIds.length > 1) throw new Error('检测到多个档案编号混在一起：' + archIds.join('、') + '。请按档案编号分开粘贴，不要把不同档案的块混在一起。');
+  text = text.replace(/^档案编号：[^\n]*$/gm, '').replace(/ARCHIVE:[A-Z0-9\-]+\s*/g, '');
   /* 容忍 OCR/手抄差异：pv1 大小写不限、斜杠两侧空格、全角冒号；块号/总数不限 4 位 */
   var re = /PV1\s*(\d+)\s*\/\s*(\d+)\s*CRC32\s*[:：]\s*([0-9A-Fa-f]{8})/gi;
   var matches = [], m;
@@ -522,19 +549,20 @@ function parseBackupText(text){
   for (var j = 1; j <= total; j++) if (byIndex[j] === undefined && !badIdx[j]) missing.push(j);
   var joined = '';
   for (var k2 = 1; k2 <= total; k2++) if (byIndex[k2] !== undefined) joined += byIndex[k2];
-  return { total: total, joined: joined, goodCount: Object.keys(byIndex).length, bad: bad, missing: missing, complete: missing.length === 0 && bad.length === 0 };
+  return { total: total, joined: joined, goodCount: Object.keys(byIndex).length, bad: bad, missing: missing, complete: missing.length === 0 && bad.length === 0, archiveId: archIds.length ? archIds[0] : null };
 }
 function shortList(arr){
   if (arr.length <= 20) return arr.join('、');
   return arr.slice(0, 20).join('、') + '……（共 ' + arr.length + ' 个）';
 }
 function checkOnlyReport(parsed){
-  if (parsed.complete) return '检查通过：' + parsed.total + ' 块全部齐全且 CRC 正确，可以尝试解密恢复。';
+  var archPrefix = parsed.archiveId ? '档案编号：' + parsed.archiveId + '\n' : '';
+  if (parsed.complete) return archPrefix + '检查通过：' + parsed.total + ' 块全部齐全且 CRC 正确，可以尝试解密恢复。';
   var parts = [];
   if (parsed.bad.length) parts.push('CRC 失败的块（需重抄/重扫这些块）：' + shortList(parsed.bad));
   if (parsed.missing.length) parts.push('缺失的块：' + shortList(parsed.missing));
   parts.push('已通过 CRC 的块：' + parsed.goodCount + '/' + parsed.total);
-  return '检查未通过：\n' + parts.join('\n');
+  return (parsed.archiveId ? '档案编号：' + parsed.archiveId + '\n' : '') + '检查未通过：\n' + parts.join('\n');
 }
 
 /* ---------- 下载 / 复制 ---------- */
@@ -826,6 +854,20 @@ var QR = (function(){
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = QR;
 
+function generateArchiveId(){
+  var d = new Date();
+  var ds = d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+  var alph = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  var rnd = '';
+  try {
+    var bytes = new Uint8Array(4); crypto.getRandomValues(bytes);
+    for (var i = 0; i < 4; i++) rnd += alph.charAt(bytes[i] % alph.length);
+  } catch (e) { rnd = String(Math.floor(Math.random() * 9000) + 1000); }
+  return 'PA-' + ds + '-' + rnd;
+}
+function archiveLine(id){ return '档案编号：' + id; }
+function qrArchiveLine(id){ return 'ARCHIVE:' + id; }
+
 /* 口令提示护栏（纯函数，便于自检）：块头干扰 + 提示含口令本身都拒绝 */
 function checkHint(hint, pw){
   if (/PV1\s*\d+\s*\/\s*\d+\s*CRC32/i.test(hint)) return '口令提示中不能包含形如“PV1 001/002 CRC32:……”的块头文本，否则会干扰恢复解析。';
@@ -849,6 +891,17 @@ $('btnGenerate').addEventListener('click', async function(){
     if (pw1 !== pw2) throw new Error('两次口令不一致，请重新输入。'); /* 口令可留空：留空即不加密模式 PV00，见 encryptPackage */
     var hintErr = checkHint($('hintInput').value, pw1);
     if (hintErr) throw new Error(hintErr);
+    var archiveName = $('archiveNameInput').value.trim();
+    if (!archiveName) throw new Error('请填写档案名称，说明这份备份是什么文件（例如：2026 年密码库、房屋合同扫描件），否则多份打印稿容易混淆。档案名称会印在封面明文处，请不要写出口令或敏感细节。');
+    if (archiveName.length > 100) throw new Error('档案名称过长，请控制在 100 字以内。');
+    if (/PV1\s*\d+\s*\/\s*\d+\s*CRC32/i.test(archiveName)) throw new Error('档案名称中不能包含形如“PV1 001/002 CRC32:……”的块头文本，否则会干扰恢复解析。');
+    var modeEl0 = document.querySelector('input[name="printMode"]:checked');
+    var archiveId = $('archiveIdInput').value.trim();
+    if (!archiveId) archiveId = generateArchiveId(); /* 空值先自动生成：此前验证在生成之前，空编号在二维码模式下会被误判为非法，导致留空永远生成失败 */
+    if (modeEl0 && modeEl0.value === 'qr') archiveId = archiveId.toUpperCase(); /* 二维码字母数字模式只有大写，小写与下划线都会导致编码抛错，故统一转大写并收紧校验 */
+    if (archiveId.length > 50) throw new Error('档案编号过长，请控制在 50 字以内。');
+    if (modeEl0 && modeEl0.value === 'qr' && !/^[A-Z0-9\-]+$/.test(archiveId)) throw new Error('二维码模式下档案编号只能用大写英文字母、数字、-（下划线与小写都会导致二维码编码失败），请改用例如 PA-20261028-001 的编号，或切换纯文本模式。');
+    /* 不再把自动生成的编号回填到输入框：回填会导致下一份不同文件复用同一编号，失去区分意义；编号已在成功提示与封面中显示 */
     if (!window.crypto || !crypto.subtle) throw new Error('此浏览器不支持 WebCrypto，无法加密。请用新版 Chrome / Edge / Firefox / Safari。');
     setGenProgress(0, '正在读取文件……');
     var orig = new Uint8Array(await file.arrayBuffer());
@@ -858,12 +911,20 @@ $('btnGenerate').addEventListener('click', async function(){
     var b32 = base32Encode(res.outer);
     var modeEl = document.querySelector('input[name="printMode"]:checked');
     var mode = modeEl ? modeEl.value : 'qr';
-    var chunks = (mode === 'qr') ? makeQRChunks(b32) : makeChunks(b32);
+    var qrChunkChars = QR_CHUNK_CHARS;
+    if (mode === 'qr'){
+      /* 二维码载荷 = ARCHIVE 行 + 块头 + 空格 + 块文本，必须 ≤970（V20-M 上限）；
+         档案编号越长，块文本必须越短，否则长编号 + 900 字符会在渲染时抛“QR 文本过长” */
+      qrChunkChars = Math.min(QR_CHUNK_CHARS, 970 - (archiveId.length + 9) - 35 - 1);
+      if (qrChunkChars < 100) throw new Error('档案编号过长，二维码载荷已无足够空间，请缩短编号。');
+    }
+    var chunks = (mode === 'qr') ? makeQRChunks(b32, qrChunkChars) : makeChunks(b32);
     var meta = {
       date: new Date().toLocaleString(),
       hint: $('hintInput').value.trim(),
       origSize: orig.length, compSize: res.compLen, encSize: res.outer.length,
-      unencrypted: !!res.unencrypted
+      unencrypted: !!res.unencrypted,
+      archiveId: archiveId, archiveName: archiveName
     };
     /* 大稿护栏（在重型二维码渲染之前拦截，避免浏览器长时间卡死或内存暴涨）：
        100 页以上直接拒绝并建议拆分；二维码 200 码以上先请用户确认 */
@@ -880,7 +941,7 @@ $('btnGenerate').addEventListener('click', async function(){
     else await renderPrint(chunks, meta, function(pct, label){ setGenProgress(pct, label); });
     setGenProgress(100, '生成完成');
     var pages = (mode === 'qr') ? Math.max(1, Math.ceil(chunks.length / 9)) : Math.max(1, Math.ceil(chunks.length / 3));
-    setStatus($('encStatus'), '生成成功。\n原文件：' + file.name + '（' + orig.length + ' 字节）\n'
+    setStatus($('encStatus'), '生成成功。\n档案名称：' + archiveName + '\n档案编号：' + archiveId + '\n原文件：' + file.name + '（' + orig.length + ' 字节）\n'
       + (res.compressed ? '压缩：已用 gzip（' + res.compLen + ' 字节）\n' : '压缩：未压缩（gzip 后未变小，已原样存储，' + res.compLen + ' 字节）\n')
       + (res.unencrypted ? '模式：未加密（纸面内容未加密，任何人拿到都能恢复，仅用于不敏感文件）\n' : '加密后：')
       + (res.unencrypted ? '' : res.outer.length + ' 字节 · ') + 'Base32：' + b32.length + ' 字符 · ' + (mode === 'qr' ? '二维码：' : '文本块：') + chunks.length + ' 个\n'
@@ -944,7 +1005,7 @@ $('btnRecover').addEventListener('click', async function(){
     downloadBlob(res.data, safeName);
     $('pwRec').value = ''; /* 恢复成功后立即清出口令输入框 */
     var recSha = await sha256Hex(res.data);
-    setStatus($('recStatus'), '恢复成功！已下载：' + safeName + '（' + res.data.length + ' 字节）\n原始文件名：' + res.fileName + (safeName !== res.fileName ? '（下载时已做路径安全替换）' : '') + (res.unencrypted ? '\n模式：未加密（此备份未加密，口令被忽略）' : '') + '\n恢复文件 SHA-256：' + recSha + '\n（恢复时已验过加密包内的原始 SHA-256；如需再和原文件逐字节对比，请用下方第三步校验。）', 'ok');
+    setStatus($('recStatus'), '恢复成功！' + (parsed.archiveId ? '\n档案编号：' + parsed.archiveId : '') + '\n已下载：' + safeName + '（' + res.data.length + ' 字节）\n原始文件名：' + res.fileName + (safeName !== res.fileName ? '（下载时已做路径安全替换）' : '') + (res.unencrypted ? '\n模式：未加密（此备份未加密，口令被忽略）' : '') + '\n恢复文件 SHA-256：' + recSha + '\n（恢复时已验过加密包内的原始 SHA-256；如需再和原文件逐字节对比，请用下方第三步校验。）', 'ok');
   } catch (e) {
     setStatus($('recStatus'), '恢复失败：' + (e && e.message ? e.message : e), 'err');
   } finally { btn.disabled = false; }
@@ -1090,6 +1151,22 @@ $('btnSelfTest').addEventListener('click', async function(){
     var trailingRejected = false;
     try { base32Decode('AB'); } catch (e) { trailingRejected = true; }
     ok('Base32 尾部非零填充被拒绝', trailingRejected);
+    /* 档案编号：打印文本带编号可解析并返回编号；混档被拒绝；旧无编号文本仍可解析 */
+    var archChunks = makeChunks(base32Encode(encPkg.outer));
+    var archText = buildPrintText(archChunks, { date: '2026-10-28', hint: '', origSize: 2000, compSize: 2000, encSize: encPkg.outer.length, archiveId: 'PA-20261028-TEST', archiveName: '测试档案' });
+    var parsedArch = parseBackupText(archText);
+    ok('档案编号打印文本可解析并返回编号', parsedArch.complete && parsedArch.archiveId === 'PA-20261028-TEST');
+    var mixedText = archText + '\n' + buildPrintText(archChunks, { date: '2026-10-28', hint: '', origSize: 2000, compSize: 2000, encSize: encPkg.outer.length, archiveId: 'PA-20261028-OTHER', archiveName: '另一档案' });
+    var mixedRejected = false;
+    try { parseBackupText(mixedText); } catch (e) { mixedRejected = /多个档案编号/.test(e.message); }
+    ok('混档（两个档案编号）被拒绝', mixedRejected);
+    var qrArchEncodeOk = true;
+    try { var qArch = QR.encodeAlphanumeric(qrPayload(qrSampleChunks[0], 'PA-20261028-QR')); if (qArch.version > 20) qrArchEncodeOk = false; } catch (e) { qrArchEncodeOk = false; }
+    ok('二维码载荷带档案编号可编码（V20 内）', qrArchEncodeOk);
+    var qrArchText = qrSampleChunks.map(function(c){ return qrPayload(c, 'PA-20261028-QR'); }).join('\n');
+    var parsedQrArch = parseBackupText(qrArchText);
+    ok('二维码载荷带档案编号可解析', parsedQrArch.complete && parsedQrArch.archiveId === 'PA-20261028-QR');
+    ok('档案编号自动生成格式', /^PA-\d{8}-[A-Z0-9]{4}$/.test(generateArchiveId()));
     var noEncPkg = await encryptPackage(sample, 'noenc.bin', '');
     var noEncRec = await decryptPackage(noEncPkg.outer, '');
     ok('不加密模式往返（PV00，口令留空）', noEncPkg.outer[0] === 0x50 && noEncPkg.outer[3] === 0x30 && noEncRec.fileName === 'noenc.bin' && equalBytes(noEncRec.data, sample));
