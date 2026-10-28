@@ -142,9 +142,9 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
 </head>
 <body>
 <header>
-  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.17</span> <span class="ver-sub">加密 · 纸质备份 · 目录</span></h1>
+  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.18</span> <span class="ver-sub">加密 · 纸质备份 · 目录</span></h1>
   <p>一个文件、离线运行：加密文本或文件，生成纸面打印稿、三包或加密文件；恢复时自动识别格式；目录只保存索引，不保存口令与密文。</p>
-  <p><button class="secondary" id="themeBtn" type="button" aria-label="切换主题">主题</button> <button class="secondary" id="selfTestBtn" type="button" style="display:none">安全自检</button> <button class="secondary" id="helpBtn" type="button" style="display:none">使用帮助</button> <button class="secondary" id="aboutBtn" type="button" style="display:none">关于</button></p>
+  <p><button class="secondary" id="themeBtn" type="button" aria-label="切换主题" style="display:none">主题</button> <button class="secondary" id="selfTestBtn" type="button" style="display:none">安全自检</button> <button class="secondary" id="helpBtn" type="button" style="display:none">使用帮助</button> <button class="secondary" id="aboutBtn" type="button" style="display:none">关于</button></p>
   <p class="small" style="color:#9ca3af">单文件、离线、无网络请求。口令只存在于本页内存中，绝不上传、不存入浏览器存储。版本 <span id="appVersion"></span> · 格式 PV1/PV2/PV04 · 默认 Argon2id</p>
   <div id="fatal" class="fatal" role="alert" style="display:none"></div>
 </header>
@@ -300,7 +300,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   </section>
 
   <section id="sec-help">
-    <h2>帮助 · 格式与安全说明（与当前版本 2026.10.28.17 同步）</h2>
+    <h2>帮助 · 格式与安全说明（与当前版本 2026.10.28.18 同步）</h2>
     <p><button id="helpDownloadBtn" type="button">保存本版帮助文件</button> <span class="small">把当前版本的独立帮助文件下载归档，内容与本页帮助同步。</span></p>
     <ul>
       <li><strong>加密：</strong>在“加密”标签页里，文本和文件共用一个表单，口令可留空（留空则不加密，只做压缩+校验）。新加密默认用 Argon2id：平衡 64 MiB / t=3 / p=4，强 128 MiB / t=3 / p=4（默认），高强 256 MiB / t=3 / p=4，也可自定义；PBKDF2 只用于恢复旧备份。加密时显示进度条、百分比、预计剩余时间和已流逝时间，完成后在结果区和状态里都显示实际生成时间；取消按钮可随时终止 Argon2id 计算。</li>
@@ -326,7 +326,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   <p class="small no-print">提示：打印前请确认每一块都完整印出、没有缺页；建议同时打印两份，分开存放。</p>
 </div>
 
-<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive <span id="pcAppVersion">2026.10.28.17</span> · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
+<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive <span id="pcAppVersion">2026.10.28.18</span> · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
 
 
 <!-- ===== 功能区（原两程序的功能，同一界面下） ===== -->
@@ -547,7 +547,7 @@ if(n+2>=i)return e;if(t=255&e[++n],128!=(192&t))return e;if(o=255&e[++n],128!=(1
 <script>
 'use strict';
 /* PepperArchive 格式 PV1/PV2 —— 单文件离线实现，无外部依赖。PV2 为新生成格式（u64 长度），PV1 仅恢复兼容 */
-var APP_VERSION = '2026.10.28.17';
+var APP_VERSION = '2026.10.28.18';
 /* Worker 需要从本页脚本里截取 QR 编码器源码：必须在脚本同步执行时捕获，事件回调里 document.currentScript 已是 null */
 var PAGE_SCRIPT_TEXT = (typeof document !== 'undefined' && document.currentScript) ? document.currentScript.textContent : null;
 var PBKDF2_ITER = 600000;
@@ -1940,7 +1940,7 @@ $('btnSelfTest').addEventListener('click', async function(){
 (function(){
 // ========================= CONFIG =========================
 const CFG=Object.freeze({
-  APP_VERSION:'2026.10.28.17',FORMAT_MAJOR:1,FORMAT_MINOR:2,
+  APP_VERSION:'2026.10.28.18',FORMAT_MAJOR:1,FORMAT_MINOR:2,
   MAGIC_TEXT:'AEGISCF1',TEXT_PREFIX:'AEGIS1.',FINAL_MAGIC:'FIN1',HEADER_LEN_V1:104,HEADER_LEN:112,
   CIPHER_ID:1,KDF_ID:1,TAG_BITS:128,TAG_BYTES:16,SALT_BYTES:32,NONCE_PREFIX_BYTES:8,FILE_ID_BYTES:16,
   DEFAULT_CHUNK:4*1024*1024,MIN_CHUNK:64*1024,MAX_CHUNK:64*1024*1024,
@@ -3879,7 +3879,7 @@ function splitPostBootstrap(){
 }
 
 // ========================= VERSIONED HELP =========================
-const PEPPERCIPHER_VERSION='2026.10.28.17'; /* 合并版版本，与 PepperArchive APP_VERSION 一致 */
+const PEPPERCIPHER_VERSION='2026.10.28.18'; /* 合并版版本，与 PepperArchive APP_VERSION 一致 */
 function pepperDateCode(d=new Date()){return String(d.getFullYear()).slice(-2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
 function buildHelpHtml(){const v=PEPPERCIPHER_VERSION,date=pepperDateCode();return `<div class="help-doc"><h2>PepperArchive 使用帮助 · 版本 ${v}</h2><p class="sub">本帮助与当前网页程序版本同步生成。PepperArchive 是<strong>离线、本机运行</strong>的文本/文件加密工具；正常加密、解密、自检和纸质恢复均不需要网络。</p>
 <h3>零、当前版本使用方法（本版帮助已随版本更新，与当前界面一致）</h3>
@@ -3942,7 +3942,7 @@ splitPostBootstrap();
 </script>
 <script>
 /* ===== 界面脚本（.10）：一套标签页 + 加密/恢复/自检 ===== */
-(function(){
+(function(){ try{localStorage.removeItem('papercipher-theme');localStorage.removeItem('aegis-theme');document.documentElement.removeAttribute('data-theme');}catch(_){}
   function $(id){ return document.getElementById(id); }
   function setStatus(el, txt, ok){ if(!el) return; el.textContent = txt; el.className = 'status' + (ok===true ? ' ok' : ok===false ? ' err' : ''); }
   // Unified tabs: show/hide sections by group
