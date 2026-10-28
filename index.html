@@ -55,7 +55,7 @@
 </head>
 <body>
 <header>
-  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.05</span> <span class="ver-sub">纸质冷备份</span></h1>
+  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.06</span> <span class="ver-sub">纸质冷备份</span></h1>
   <p>把任意文件先压缩、再用口令做 AES-256-GCM 加密，最后编码成带分块校验的纸面文本打印出来。恢复时只需粘贴纸面文本并输入同一口令，缺块、坏块、错口令都会被明确指出。</p>
   <p class="small" style="color:#9ca3af">单文件、离线、无网络请求。口令只存在于本页内存中，绝不上传、不存入浏览器存储。版本 <span id="appVersion"></span> · 格式 PV1</p>
 </header>
@@ -162,7 +162,7 @@
 <script>
 'use strict';
 /* PepperArchive 格式 PV1 —— 单文件离线实现，无外部依赖 */
-var APP_VERSION = '2026.10.28.05';
+var APP_VERSION = '2026.10.28.06';
 var PBKDF2_ITER = 600000;
 var CHUNK_CHARS = 480;
 var LINE_CHARS = 40;
@@ -926,13 +926,8 @@ $('btnGenerate').addEventListener('click', async function(){
       unencrypted: !!res.unencrypted,
       archiveId: archiveId, archiveName: archiveName
     };
-    /* 大稿护栏（在重型二维码渲染之前拦截，避免浏览器长时间卡死或内存暴涨）：
-       100 页以上直接拒绝并建议拆分；二维码 200 码以上先请用户确认 */
-    var maxChunks = (mode === 'qr') ? 900 : 300;
-    if (chunks.length > maxChunks) throw new Error('打印稿过大：共 ' + chunks.length + ' 块，约 ' + Math.ceil(chunks.length / (mode === 'qr' ? 9 : 3)) + ' 页 A4，纸面备份不适合这么大的文件。请把文件拆成更小的几份分别备份，或改用数字介质备份。');
-    if (mode === 'qr' && chunks.length > 200 && typeof window.confirm === 'function'){
-      if (!window.confirm('打印稿较大：共 ' + chunks.length + ' 个二维码，约 ' + Math.ceil(chunks.length / 9) + ' 页 A4，生成与打印需要较长时间。确定继续吗？')) throw new Error('用户取消生成。');
-    }
+    /* 无页数/块数限制：只要机器内存够，生成就继续跑，进度条会连续显示；
+       此前 100 页硬限制与 200 码确认已按用户要求全部去掉（极限测试用） */
     currentChunks = chunks;
     currentPrintText = buildPrintText(chunks, meta);
     setGenProgress(30, '正在生成打印稿（共 ' + chunks.length + ' 块）……');
