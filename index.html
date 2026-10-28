@@ -55,7 +55,7 @@
 </head>
 <body>
 <header>
-  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.06</span> <span class="ver-sub">纸质冷备份</span></h1>
+  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.07</span> <span class="ver-sub">纸质冷备份</span></h1>
   <p>把任意文件先压缩、再用口令做 AES-256-GCM 加密，最后编码成带分块校验的纸面文本打印出来。恢复时只需粘贴纸面文本并输入同一口令，缺块、坏块、错口令都会被明确指出。</p>
   <p class="small" style="color:#9ca3af">单文件、离线、无网络请求。口令只存在于本页内存中，绝不上传、不存入浏览器存储。版本 <span id="appVersion"></span> · 格式 PV1</p>
 </header>
@@ -162,7 +162,9 @@
 <script>
 'use strict';
 /* PepperArchive 格式 PV1 —— 单文件离线实现，无外部依赖 */
-var APP_VERSION = '2026.10.28.06';
+var APP_VERSION = '2026.10.28.07';
+/* Worker 需要从本页脚本里截取 QR 编码器源码：必须在脚本同步执行时捕获，事件回调里 document.currentScript 已是 null */
+var PAGE_SCRIPT_TEXT = (typeof document !== 'undefined' && document.currentScript) ? document.currentScript.textContent : null;
 var PBKDF2_ITER = 600000;
 var CHUNK_CHARS = 480;
 var LINE_CHARS = 40;
@@ -174,7 +176,16 @@ function setStatus(el, msg, kind){
   el.className = 'status' + (kind === 'ok' ? ' ok' : kind === 'err' ? ' err' : '');
 }
 function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
-function tick(){ return new Promise(function(r){ setTimeout(r, 0); }); }
+function tick(){ /* MessageChannel 让出主线程：比 setTimeout(0) 更快（不受 4ms 嵌套钳制），且事件循环能处理浏览器 IPC/绘制，主线程不再被判定为卡死 */
+  return new Promise(function(r){
+    if (typeof MessageChannel !== 'undefined'){
+      var ch = new MessageChannel();
+      ch.port1.onmessage = function(){ ch.port1.close(); ch.port2.close(); r(); };
+      ch.port2.postMessage(0);
+    } else setTimeout(r, 0);
+  });
+}
+function paintTick(){ return new Promise(function(r){ setTimeout(r, 0); }); } /* 每批 DOM 插入后用定时器让出一次，保证浏览器有机会绘制进度条 */
 function setGenProgress(pct, label){
   var p = Math.max(0, Math.min(100, pct));
   var w = $('genProgressWrap'); if (w) w.style.display = 'block';
@@ -433,13 +444,15 @@ function buildPrintText(chunks, meta){
   return parts.join('\n');
 }
 async function renderPrint(chunks, meta, onProgress){
-  var batch = 20;
-  var htmlParts = [];
-  for (var i = 0; i < chunks.length; i++){
-    var c = chunks[i];
-    htmlParts.push('<div class="chunk-block"><div class="chead">' + (meta.archiveId ? esc(archiveLine(meta.archiveId)) + ' · ' : '') + esc(chunkHeader(c)) + '</div><pre>' + esc(formatChunkLines(c.text)) + '</pre></div>');
-    if (onProgress) onProgress(30 + (i + 1) / chunks.length * 70, '正在生成打印稿 ' + (i + 1) + '/' + chunks.length);
-    if ((i + 1) % batch === 0) await tick();
+  $('printChunks').innerHTML = '';
+  for (var i = 0; i < chunks.length; i += 20){
+    var slice = chunks.slice(i, i + 20);
+    var html = slice.map(function(c){
+      return '<div class="chunk-block"><div class="chead">' + (meta.archiveId ? esc(archiveLine(meta.archiveId)) + ' · ' : '') + esc(chunkHeader(c)) + '</div><pre>' + esc(formatChunkLines(c.text)) + '</pre></div>';
+    }).join('');
+    $('printChunks').insertAdjacentHTML('beforeend', html);
+    if (onProgress) onProgress(30 + Math.min(i + 20, chunks.length) / chunks.length * 70, '正在生成打印稿 ' + Math.min(i + 20, chunks.length) + '/' + chunks.length);
+    await paintTick();
   }
   var cover = 'PepperArchive 纸面冷备份 · 格式 PV1 · 版本 ' + APP_VERSION + '<br>'
     + '生成日期：' + esc(meta.date) + '<br>'
@@ -450,7 +463,6 @@ async function renderPrint(chunks, meta, onProgress){
     + (meta.hint ? '口令提示：' + esc(meta.hint) + '<br>' : '')
     + '恢复：把下面全部块粘贴到 PepperArchive 恢复区并输入同一口令。块可乱序；缺块、坏块会按块号报出。不要把口令写在这张纸上。';
   $('printCover').innerHTML = cover;
-  $('printChunks').innerHTML = htmlParts.join('');
 }
 
 
@@ -470,27 +482,131 @@ function makeQRChunks(b32, chunkChars){
 function qrPayload(c, archiveId){ return (archiveId ? qrArchiveLine(archiveId) + ' ' : '') + chunkHeader(c) + ' ' + c.text; } /* 空格分隔：换行不在 QR 字母数字字符集内，会导致编码抛错；解析时按 token 剥离 ARCHIVE 段 */
 function qrToDataURL(payload){
   var q = QR.encodeAlphanumeric(payload);
-  var scale = 8, quiet = 4, px = (q.size + quiet*2) * scale;
+  /* scale 由 8 降为 6：打印时图片宽 52mm，300dpi 下约 614px，V20 码 (97+8)*6=630px 仍高于此，打印清晰度不降，
+     但画布面积与 PNG 体积降为约 56%；再用 ImageData 一次写入代替每模块一次 fillRect */
+  var scale = 6, quiet = 4, px = (q.size + quiet*2) * scale;
   var canvas = document.createElement('canvas');
   canvas.width = px; canvas.height = px;
   var ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, px, px);
-  ctx.fillStyle = '#000';
+  var img = ctx.createImageData(px, px);
+  img.data.fill(255); /* 全白不透明底 */
   for (var y = 0; y < q.size; y++) for (var x = 0; x < q.size; x++){
-    if (q.modules[y][x]) ctx.fillRect((x+quiet)*scale, (y+quiet)*scale, scale, scale);
+    if (q.modules[y][x]){
+      for (var dy = 0; dy < scale; dy++) for (var dx = 0; dx < scale; dx++){
+        var pi = (((y + quiet) * scale + dy) * px + ((x + quiet) * scale + dx)) * 4;
+        img.data[pi] = 0; img.data[pi + 1] = 0; img.data[pi + 2] = 0;
+      }
+    }
   }
+  ctx.putImageData(img, 0, 0);
   return { url: canvas.toDataURL('image/png'), version: q.version, size: q.size };
 }
-async function renderPrintQR(chunks, meta, onProgress){
-  var renders = [];
-  var batch = chunks.length > 200 ? 10 : 1;
+var currentQRUrls = []; /* Worker 路径的 Blob URL：下次生成前统一 revoke，避免 2000+ 张图常驻内存 */
+function revokeQRUrls(){ currentQRUrls.forEach(function(u){ try { URL.revokeObjectURL(u); } catch (e) {} }); currentQRUrls = []; }
+function qrWorkerSource(){
+  /* 截取点必须用真实定义独有的长锚点：只搜 'var QR = (function(){' 会先命中本函数自己的字面量，导致截出 63 字节废片、Worker 永远起不来（已用 Node 截取实测抓到此 bug） */
+  if (!PAGE_SCRIPT_TEXT) return null;
+  var start = PAGE_SCRIPT_TEXT.indexOf('var QR = (function(){\n  var ECC_M');
+  var end = PAGE_SCRIPT_TEXT.indexOf("\nif (typeof module !== 'undefined' && module.exports) module.exports = QR;", start);
+  if (start < 0 || end < 0 || end <= start) return null;
+  return PAGE_SCRIPT_TEXT.slice(start, end);
+}
+function buildQRWorker(){
+  /* 从本页脚本截取 QR 编码器源码拼成 Worker：不复制第二份编码器，避免两份实现漂移。
+     Worker 内用 OffscreenCanvas 画图并转 PNG Blob，主线程只做每 20 码一次的 DOM 插入，永不长时间占主线程。 */
+  if (typeof Worker === 'undefined' || !PAGE_SCRIPT_TEXT) return null;
+  var qrSrc = qrWorkerSource();
+  if (!qrSrc) return null;
+  var workerSrc = "'use strict';\n" + qrSrc + "\n"
+    + "self.onmessage = async function(e){\n"
+    + "  if (typeof OffscreenCanvas === 'undefined') throw new Error('OffscreenCanvas 不可用');\n"
+    + "  var out = [];\n"
+    + "  for (var i = 0; i < e.data.jobs.length; i++){\n"
+    + "    var job = e.data.jobs[i]; var q = QR.encodeAlphanumeric(job.payload);\n"
+    + "    var scale = 6, quiet = 4, px = (q.size + quiet * 2) * scale;\n"
+    + "    var canvas = new OffscreenCanvas(px, px); var ctx = canvas.getContext('2d');\n"
+    + "    var img = ctx.createImageData(px, px); img.data.fill(255);\n"
+    + "    for (var y = 0; y < q.size; y++) for (var x = 0; x < q.size; x++) if (q.modules[y][x]){\n"
+    + "      for (var dy = 0; dy < scale; dy++) for (var dx = 0; dx < scale; dx++){\n"
+    + "        var pi = (((y + quiet) * scale + dy) * px + ((x + quiet) * scale + dx)) * 4;\n"
+    + "        img.data[pi] = 0; img.data[pi + 1] = 0; img.data[pi + 2] = 0;\n"
+    + "      }\n"
+    + "    }\n"
+    + "    ctx.putImageData(img, 0, 0);\n"
+    + "    out.push({ index: job.index, version: q.version, blob: await canvas.convertToBlob({ type: 'image/png' }) });\n"
+    + "  }\n"
+    + "  self.postMessage({ out: out });\n"
+    + "};\n";
+  try {
+    var url = URL.createObjectURL(new Blob([workerSrc], { type: 'text/javascript' }));
+    var w = new Worker(url);
+    URL.revokeObjectURL(url);
+    return w;
+  } catch (e) { return null; }
+}
+function appendQRBatch(grid, items, chunks, meta){
+  var frag = document.createDocumentFragment();
+  items.forEach(function(it){
+    var div = document.createElement('div'); div.className = 'qr-block';
+    var img = document.createElement('img'); img.src = it.url; img.alt = '二维码 ' + it.index + '/' + chunks.length;
+    var h = document.createElement('div'); h.className = 'qhead';
+    h.textContent = (meta.archiveId ? archiveLine(meta.archiveId) + ' · ' : '') + chunkHeader(it.c);
+    var s = document.createElement('div'); s.className = 'qsub';
+    s.textContent = '第 ' + it.index + '/' + chunks.length + ' 码 · QR 版本 V' + it.version + ' · EC-M';
+    div.appendChild(img); div.appendChild(h); div.appendChild(s); frag.appendChild(div);
+  });
+  grid.appendChild(frag);
+}
+async function renderPrintQRMain(chunks, meta, onProgress, grid){
+  /* 兜底路径（Worker/OffscreenCanvas 不可用时）：主线程逐码生成、每码让出、每 20 码插一次 DOM，不再一次拼 2000 张图的巨型 innerHTML */
+  var maxVer = 0, pending = [];
   for (var i = 0; i < chunks.length; i++){
     var c = chunks[i];
-    renders.push({ c: c, r: qrToDataURL(qrPayload(c, meta.archiveId)) });
+    var r = qrToDataURL(qrPayload(c, meta.archiveId));
+    if (r.version > maxVer) maxVer = r.version;
+    pending.push({ c: c, index: c.index, version: r.version, url: r.url });
     if (onProgress) onProgress(30 + (i + 1) / chunks.length * 70, '正在生成二维码 ' + (i + 1) + '/' + chunks.length);
-    if ((i + 1) % batch === 0) await tick();
+    if (pending.length >= 20 || i === chunks.length - 1){ appendQRBatch(grid, pending, chunks, meta); pending = []; await paintTick(); }
+    await tick();
   }
-  var maxVer = 0; renders.forEach(function(x){ if (x.r.version > maxVer) maxVer = x.r.version; });
+  return maxVer;
+}
+async function renderPrintQR(chunks, meta, onProgress){
+  revokeQRUrls();
+  var grid = document.createElement('div'); grid.className = 'qr-grid';
+  $('printChunks').innerHTML = ''; $('printChunks').appendChild(grid);
+  var maxVer = 0, worker = null;
+  try { worker = buildQRWorker(); } catch (e) { worker = null; }
+  if (worker){
+    try {
+      var BATCH = 20;
+      for (var start = 0; start < chunks.length; start += BATCH){
+        var batchChunks = chunks.slice(start, start + BATCH);
+        var out = await new Promise(function(resolve, reject){
+          var done = false;
+          worker.onmessage = function(e){ if (!done){ done = true; resolve(e.data.out); } };
+          worker.onerror = function(){ if (!done){ done = true; reject(new Error('二维码 Worker 失败')); } };
+          worker.postMessage({ jobs: batchChunks.map(function(c){ return { index: c.index, payload: qrPayload(c, meta.archiveId) }; }) });
+        });
+        var items = out.map(function(o){
+          var c = chunks[o.index - 1];
+          if (o.version > maxVer) maxVer = o.version;
+          var url = URL.createObjectURL(o.blob); currentQRUrls.push(url);
+          return { c: c, index: o.index, version: o.version, url: url };
+        });
+        items.sort(function(a, b){ return a.index - b.index; });
+        appendQRBatch(grid, items, chunks, meta);
+        if (onProgress) onProgress(30 + (start + batchChunks.length) / chunks.length * 70, '正在生成二维码 ' + (start + batchChunks.length) + '/' + chunks.length);
+        await paintTick();
+      }
+    } catch (e) {
+      /* Worker 中途失败：清空已插的半成品，退回主线程逐码路径重做，保证结果完整而不是半页残稿 */
+      grid.innerHTML = ''; revokeQRUrls();
+      maxVer = await renderPrintQRMain(chunks, meta, onProgress, grid);
+    } finally { try { worker.terminate(); } catch (e2) {} }
+  } else {
+    maxVer = await renderPrintQRMain(chunks, meta, onProgress, grid);
+  }
   var cover = 'PepperArchive 纸面冷备份 · 二维码高密度模式 · 格式 PV1 · 版本 ' + APP_VERSION + '<br>'
     + '生成日期：' + esc(meta.date) + '<br>'
     + (meta.archiveId ? '档案编号：' + esc(meta.archiveId) + '<br>' : '')
@@ -501,9 +617,6 @@ async function renderPrintQR(chunks, meta, onProgress){
     + (maxVer >= 17 ? '注意：本稿含 V' + maxVer + ' 大码，模块较小，请用高分辨率打印、不要缩放，并逐码近拍验证。<br>' : '')
     + '恢复：用手机扫码 App 或本页“识别照片”逐个扫回全部二维码，粘贴到恢复区并输入同一口令。拍照时请靠近单个码拍清晰，整页远拍可能识别不出小模块。不要把口令写在这张纸上。';
   $('printCover').innerHTML = cover;
-  $('printChunks').innerHTML = '<div class="qr-grid">' + renders.map(function(x){
-    return '<div class="qr-block"><img src="' + x.r.url + '" alt="二维码 ' + x.c.index + '/' + x.c.total + '"><div class="qhead">' + (meta.archiveId ? esc(archiveLine(meta.archiveId)) + ' · ' : '') + esc(chunkHeader(x.c)) + '</div><div class="qsub">第 ' + x.c.index + '/' + x.c.total + ' 码 · QR 版本 V' + x.r.version + ' · EC-M</div></div>';
-  }).join('') + '</div>';
 }
 
 /* 解析粘贴文本：返回 { chunks: [{index,text}], total, bad:[], missing:[], totalDeclared } */
@@ -1124,6 +1237,8 @@ $('btnSelfTest').addEventListener('click', async function(){
       /* 二维码载荷文本与纯文本块格式相同，已在乱序粘贴测试中验证了解析；此处只验编码器本身 */
     }
     ok('二维码编码（版本/尺寸/寻像图形，V1-V20 字母数字模式）', qrOk && qrSampleChunks.length >= 1);
+    var ws = (typeof qrWorkerSource === 'function') ? qrWorkerSource() : null;
+    ok('二维码 Worker 源码截取正确（不含自身字面量）', !!ws && ws.indexOf('ECC_M') !== -1 && ws.indexOf('encodeAlphanumeric') !== -1 && ws.indexOf('buildQRWorker') === -1);
     /* 二维码载荷与纯文本块格式相同：全部 QR 载荷粘贴后应能完整解析 */
     var qrTextAll = qrSampleChunks.map(function(c){ return qrPayload(c); }).join('\n');
     var parsedQR = parseBackupText(qrTextAll);
