@@ -80,7 +80,7 @@
 #uniTabs{display:flex;gap:8px;flex-wrap:wrap;max-width:960px;margin:0 auto 16px;padding:0 20px}
 .uni-tab{cursor:pointer;border:1px solid #d1d5db;border-radius:999px;padding:8px 18px;font-size:15px;background:#fff;color:#111827}
 .uni-tab.active{background:#111827;color:#fff;border-color:#111827}
-.panel{display:block !important}
+.panel{display:block}
 .app{max-width:960px;margin:0 auto;padding:0 20px 20px}
 .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:18px}
 #uniFooter{text-align:center;padding:20px;color:#6b7280;font-size:13px}
@@ -117,7 +117,14 @@ button:disabled{ opacity:.55 !important; cursor:not-allowed !important; }
 .status{ padding:14px !important; border-radius:10px !important; font-size:14px !important; line-height:1.65 !important; white-space:pre-wrap !important; }
 .status.ok{ background:#ecfdf5 !important; border-color:#a7f3d0 !important; color:#065f46 !important; }
 .status.err{ background:#fef2f2 !important; border-color:#fecaca !important; color:#991b1b !important; }
-.small, .sub{ font-size:13.5px !important; color:var(--geek-muted) !important; line-height:1.6 !important; }
+p.small, span.small, div.small, .sub{ font-size:13.5px !important; color:var(--geek-muted) !important; line-height:1.6 !important; }
+button.small{ color:#fff !important; background:var(--geek-teal) !important; border:0 !important; font-size:13px !important; font-weight:600 !important; padding:6px 12px !important; min-height:32px !important; white-space:nowrap !important; }
+button.small.danger{ background:#b42318 !important; color:#fff !important; }
+.catalog-badge{ font-size:12px !important; line-height:1.2 !important; white-space:nowrap !important; padding:4px 10px !important; display:inline-flex !important; align-items:center !important; }
+.catalog-badge.active{ color:#065f46 !important; background:#ecfdf5 !important; border-color:#a7f3d0 !important; }
+.catalog-badge.archived{ color:#475569 !important; background:#f1f5f9 !important; border-color:#e2e8f0 !important; }
+.catalog-table th:nth-child(4), .catalog-table td:nth-child(4){ white-space:nowrap !important; }
+.catalog-actions button{ white-space:nowrap !important; }
 code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !important; border-radius:6px !important; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace !important; }
 .generation-time{ font-size:14px !important; color:#334155 !important; }
 .generation-time strong{ color:var(--geek-text) !important; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace !important; }
@@ -125,10 +132,17 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
 .catalog-table th{ background:#f8fafc !important; color:var(--geek-muted) !important; font-weight:600 !important; }
 @media(max-width:640px){ main, .app{ padding:16px !important; } section, .card{ padding:16px !important; } header{ padding:24px 16px 20px !important; } header h1{ font-size:24px !important; } #uniTabs{ padding:0 16px !important; } }
 </style>
+<style>
+/* 口令眼睛按钮（标准动作）：输入框内右侧，透明底、灰字，不抢主按钮风头；input 右侧留出 90px 不被按钮遮住 */
+.inputwrap{ position:relative !important; }
+.inputwrap input{ padding-right:90px !important; }
+button.eye{ background:transparent !important; color:#475569 !important; border:0 !important; padding:5px 9px !important; min-height:34px !important; font-size:13px !important; font-weight:600 !important; margin:0 !important; white-space:nowrap !important; }
+button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
+</style>
 </head>
 <body>
 <header>
-  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.13</span> <span class="ver-sub">加密 · 纸质备份 · 目录</span></h1>
+  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.14</span> <span class="ver-sub">加密 · 纸质备份 · 目录</span></h1>
   <p>一个文件、离线运行：加密文本或文件，生成纸面打印稿、三包或加密文件；恢复时自动识别格式；目录只保存索引，不保存口令与密文。</p>
   <p><button class="secondary" id="themeBtn" type="button" aria-label="切换主题">主题</button> <button class="secondary" id="selfTestBtn" type="button">安全自检</button> <button class="secondary" id="helpBtn" type="button">使用帮助</button> <button class="secondary" id="aboutBtn" type="button">关于</button></p>
   <p class="small" style="color:#9ca3af">单文件、离线、无网络请求。口令只存在于本页内存中，绝不上传、不存入浏览器存储。版本 <span id="appVersion"></span> · 格式 PV1/PV2/PV04 · 默认 Argon2id</p>
@@ -151,8 +165,8 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
   <p><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="uniInputType" value="text" checked style="width:auto"> 文本</label><label style="display:inline;font-weight:400"><input type="radio" name="uniInputType" value="file" style="width:auto"> 文件</label></p>
   <label for="uniText">文本内容（选“文本”时用）</label><textarea id="uniText" placeholder="在此输入要加密的文本"></textarea>
   <label for="uniFile">文件（选“文件”时用）</label><input type="file" id="uniFile">
-  <label for="uniPw1">口令（可留空；留空则不加密，只做压缩+校验）</label><input type="password" id="uniPw1" autocomplete="new-password">
-  <label for="uniPw2">再次输入口令</label><input type="password" id="uniPw2" autocomplete="new-password">
+  <label for="uniPw1">口令（可留空；留空则不加密，只做压缩+校验）</label><div class="inputwrap"><input type="password" id="uniPw1" autocomplete="new-password"><button class="eye" type="button" data-pw-toggle="uniPw1" aria-label="显示口令">👁 显示</button></div>
+  <label for="uniPw2">再次输入口令</label><div class="inputwrap"><input type="password" id="uniPw2" autocomplete="new-password"><button class="eye" type="button" data-pw-toggle="uniPw2" aria-label="显示口令">👁 显示</button></div>
   <label for="uniName">档案名称（可选）</label><input type="text" id="uniName" placeholder="例如：2026 年密码库">
   <label for="uniId">档案编号（可留空，留空自动生成 PA-日期-随机）</label><input type="text" id="uniId" placeholder="例如：PA-20261028-AB12，留空自动生成">
   <label for="uniArgonPreset">Argon2id 预设</label><select id="uniArgonPreset"><option value="balanced">平衡 64 MiB / t=3 / p=4</option><option value="strong" selected>强 128 MiB / t=3 / p=4（默认）</option><option value="high">高强 256 MiB / t=3 / p=4</option><option value="custom">自定义</option></select>
@@ -174,9 +188,9 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
     <label for="fileInput">选择文件（任意类型）</label>
     <input type="file" id="fileInput">
     <label for="pw1">加密口令（可留空；留空则不加密，建议 16 位以上长口令）</label>
-    <input type="password" id="pw1" autocomplete="new-password" placeholder="请牢记，丢失口令 = 备份无法恢复">
+    <div class="inputwrap"><input type="password" id="pw1" autocomplete="new-password" placeholder="请牢记，丢失口令 = 备份无法恢复"><button class="eye" type="button" data-pw-toggle="pw1" aria-label="显示口令">👁 显示</button></div>
     <label for="pw2">再次输入口令（防止手误锁死备份；留空则与上方一致，同样不加密）</label>
-    <input type="password" id="pw2" autocomplete="new-password">
+    <div class="inputwrap"><input type="password" id="pw2" autocomplete="new-password"><button class="eye" type="button" data-pw-toggle="pw2" aria-label="显示口令">👁 显示</button></div>
     <label for="hintInput">口令提示（可选，会印在封面；不要写出口令本身）</label>
     <input type="text" id="hintInput" placeholder="例如：2026 年常用主口令（不要写出口令）">
     <label for="archiveNameInput">档案名称（可选，留空则用原文件名；会印在封面，用于区分多份备份；例如：2026 年密码库、房屋合同扫描件）</label>
@@ -216,7 +230,7 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
 <section id="sec-uni-recover">
   <h2>恢复</h2>
   <p class="small">文本恢复和文件恢复都在这里，程序会自动识别纸面分块、三包、纸质帧、旧文件容器，不用你先选格式。混拼（PV1 与 PV2、三包与分块、两个档案编号）会明确拒绝。旧文件容器直接在这里解密。</p>
-  <label for="uniRecPw">解密口令（文本和文件恢复共用，未加密备份请留空）</label><input type="password" id="uniRecPw" autocomplete="current-password">
+  <label for="uniRecPw">解密口令（文本和文件恢复共用，未加密备份请留空）</label><div class="inputwrap"><input type="password" id="uniRecPw" autocomplete="current-password"><button class="eye" type="button" data-pw-toggle="uniRecPw" aria-label="显示口令">👁 显示</button></div>
   <h3>文本恢复</h3>
   <p class="small">粘贴纸面分块、三包文本，或上传纸质帧照片。</p>
   <label for="uniRecText">纸面分块或三包文本（粘贴）</label><textarea id="uniRecText" placeholder="粘贴 PV2 001/042 CRC32:…… 分块，或密文包/参数包/密钥包"></textarea>
@@ -245,7 +259,7 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
     <label for="backupText">纸面备份文本</label>
     <textarea id="backupText" placeholder="在此粘贴全部 PV1/PV2 块……"></textarea>
     <label for="pwRec">解密口令（未加密的备份请留空）</label>
-    <input type="password" id="pwRec" autocomplete="current-password">
+    <div class="inputwrap"><input type="password" id="pwRec" autocomplete="current-password"><button class="eye" type="button" data-pw-toggle="pwRec" aria-label="显示口令">👁 显示</button></div>
     <p>
       <button id="btnRecover">恢复并下载原文件</button>
       <button id="btnCheckOnly" class="secondary">仅检查块完整性（不解密）</button>
@@ -286,7 +300,7 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
   </section>
 
   <section id="sec-help">
-    <h2>帮助 · 格式与安全说明（与当前版本 2026.10.28.13 同步）</h2>
+    <h2>帮助 · 格式与安全说明（与当前版本 2026.10.28.14 同步）</h2>
     <p><button id="helpDownloadBtn" type="button">保存本版帮助文件</button> <span class="small">把当前版本的独立帮助文件下载归档，内容与本页帮助同步。</span></p>
     <ul>
       <li><strong>加密：</strong>在“加密”标签页里，文本和文件共用一个表单，口令可留空（留空则不加密，只做压缩+校验）。新加密默认用 Argon2id：平衡 64 MiB / t=3 / p=4，强 128 MiB / t=3 / p=4（默认），高强 256 MiB / t=3 / p=4，也可自定义；PBKDF2 只用于恢复旧备份。加密时显示进度条、百分比、预计剩余时间和已流逝时间，完成后在结果区和状态里都显示实际生成时间；取消按钮可随时终止 Argon2id 计算。</li>
@@ -299,7 +313,9 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
       <li><strong>目录与自检：</strong>目录只保存名称、分类、备注、档案编号、状态和时间等索引信息，不保存密码、密钥秘密或密文；目录 JSON 本身未加密，请像地址簿一样妥善保存。自检一次覆盖纸质往返、三包往返、压缩档位、旧格式恢复、混拼拒绝、Argon2id 向量；第一次用新版本或升级后，先跑自检，自检失败不要用该版本处理新的重要数据。</li>
       <li><strong>上限：</strong>无软件层上限。新单包为 PV04，纸质分块为 PV2（长度字段 8 字节 u64，格式上限 16 EiB），旧 PV1 备份仍可恢复；实际能做多大只看运行机器的内存与硬件，不在代码里设限。恢复时文件名中的路径分隔符会被替换为下划线，防止写出到意外路径。</li>
       <li><strong>安全：</strong>单文件、离线、无网络请求；口令只存在于本页内存中，绝不上传、不存入浏览器存储。丢失口令无法恢复；不要把口令印在同一张纸上；打印前先用恢复区把打印稿粘贴回来做一次恢复测试。</li>
-          <li><strong>威胁模型：</strong>本工具主要解决静态密文被取得后的机密性与完整性问题。它不能防御已感染恶意软件的设备、键盘记录器、恶意浏览器扩展、被篡改的 HTML、屏幕录制、浏览器漏洞或用户主动泄露的密码/密钥。</li>
+          <li><strong>口令显示：</strong>所有口令输入框右侧都有一个眼睛按钮（👁 显示 / 👁 隐藏），点一下就能看清自己输的口令，再点一下恢复隐藏；这是标准做法，所有口令框都有，不只是新表单。</li>
+      <li><strong>目录：</strong>状态“使用中 / 已归档”徽标为 12px 且不换行；操作按钮为白字（删除按钮白字红底），看得清。</li>
+      <li><strong>威胁模型：</strong>本工具主要解决静态密文被取得后的机密性与完整性问题。它不能防御已感染恶意软件的设备、键盘记录器、恶意浏览器扩展、被篡改的 HTML、屏幕录制、浏览器漏洞或用户主动泄露的密码/密钥。</li>
     </ul></section>
 </main>
 
@@ -310,7 +326,7 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
   <p class="small no-print">提示：打印前请确认每一块都完整印出、没有缺页；建议同时打印两份，分开存放。</p>
 </div>
 
-<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive <span id="pcAppVersion">2026.10.28.13</span> · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
+<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive <span id="pcAppVersion">2026.10.28.14</span> · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
 
 
 <!-- ===== 功能区（原两程序的功能，同一界面下） ===== -->
@@ -378,8 +394,8 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
       <div class="notice" style="margin-bottom:14px">目录自动维护：新建时自动生成唯一 档案编号；更新现有档案时沿用原 档案编号。档案编号 会写入 Ciphertext / Parliaments / Key 用于三包关联，但名称、分类和备注不会写入纸质备份。</div>
       <div class="field"><label for="tePlain">明文 <span class="hint">不会上传</span></label><textarea id="tePlain" spellcheck="false" placeholder="输入要加密的文本…"></textarea></div>
       <div class="grid2">
-        <div class="field"><label for="tePass">主密码 <span class="hint" id="teCaps"></span></label><div class="inputwrap"><input id="tePass" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="tePass">显示</button></div><div class="strength"><span id="teStrengthBar"></span></div><div class="statusline" id="teStrengthText">允许从 1 个 Unicode 字符开始；为提高安全性，建议使用较长的密码短语。</div></div>
-        <div class="field"><label for="tePass2">确认密码</label><div class="inputwrap"><input id="tePass2" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="tePass2">显示</button></div><div class="statusline" id="teMatch"></div></div>
+        <div class="field"><label for="tePass">主密码 <span class="hint" id="teCaps"></span></label><div class="inputwrap"><input id="tePass" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="tePass">👁 显示</button></div><div class="strength"><span id="teStrengthBar"></span></div><div class="statusline" id="teStrengthText">允许从 1 个 Unicode 字符开始；为提高安全性，建议使用较长的密码短语。</div></div>
+        <div class="field"><label for="tePass2">确认密码</label><div class="inputwrap"><input id="tePass2" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="tePass2">👁 显示</button></div><div class="statusline" id="teMatch"></div></div>
       </div>
       <label class="check" style="margin-top:8px"><input id="teNoPassword" type="checkbox">仅密钥模式：不使用主密码，Key 密钥包即为唯一解密秘密</label>
       <div class="argon-panel" data-argon-prefix="te">
@@ -419,7 +435,7 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
       <div class="field"><label for="tdCipher">① 密文（Ciphertext）</label><textarea id="tdCipher" spellcheck="false" placeholder="Ciphertext.…"></textarea></div>
       <div class="field"><label for="tdParams">② 参数包（Parliaments）</label><textarea id="tdParams" spellcheck="false" placeholder="Parliaments.…"></textarea></div>
       <div class="field"><label for="tdKey">③ 密钥包（Key）</label><textarea id="tdKey" class="paper-secret" spellcheck="false" placeholder="Key.…"></textarea></div>
-      <div class="field"><label for="tdPass">主密码 <span class="hint" id="tdCaps"></span></label><div class="inputwrap"><input id="tdPass" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="tdPass">显示</button></div></div>
+      <div class="field"><label for="tdPass">主密码 <span class="hint" id="tdCaps"></span></label><div class="inputwrap"><input id="tdPass" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="tdPass">👁 显示</button></div></div>
       <div class="actions"><button class="primary" id="tdDecrypt" type="button">解密文本</button><button id="tdInspect" type="button">检查参数包</button><button id="tdClear" type="button">清空</button></div>
       <div class="progressbox" id="tdProgress" aria-live="polite"><div class="progresshead"><span id="tdStage">正在验证并解密</span><strong id="tdPct">0.00%</strong></div><div class="bar" id="tdProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="tdProgressBar"></span></div><div class="progressdetail"><span id="tdProgressEta">预计剩余：等待实际进度</span><span aria-hidden="true"> · </span><span id="tdProgressElapsed">已流逝 0 秒</span><button id="tdArgonCancel" class="small danger" type="button" disabled title="终止当前 Argon2id 计算">终止 Argon2id</button></div><div class="progressdetail">错误密码或被修改的密文不会输出伪明文；Argon2id 计算期间可随时请求终止。</div></div>
       <div class="result" id="tdResult"><div class="resultbox"><div class="field"><label for="tdPlain">解密结果</label><textarea id="tdPlain" readonly spellcheck="false"></textarea></div><div class="actions"><button id="tdCopy" type="button">复制明文</button><button id="tdSave" type="button">保存 TXT</button></div><details><summary>密文参数</summary><dl class="detailgrid" id="tdDetails"></dl></details></div></div>
@@ -430,8 +446,8 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
     <div class="card"><h2>文件加密</h2><p class="sub">图片与其他文件均作为原始二进制字节处理，不重编码、不压缩、不修改 EXIF。</p>
       <div class="drop" id="feDrop"><input id="feFile" type="file" accept="image/*" hidden><button id="feChoose" type="button">选择文件</button><p>或将单个文件拖到这里</p><label class="check" style="justify-content:center"><input id="feAllTypes" type="checkbox">允许选择所有文件类型</label><div id="feMeta"></div></div>
       <div class="grid2" style="margin-top:16px">
-        <div class="field"><label for="fePass">主密码 <span class="hint" id="feCaps"></span></label><div class="inputwrap"><input id="fePass" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="fePass">显示</button></div><div class="strength"><span id="feStrengthBar"></span></div><div class="statusline" id="feStrengthText">允许从 1 个 Unicode 字符开始；为提高安全性，建议使用较长的密码短语。</div></div>
-        <div class="field"><label for="fePass2">确认密码</label><div class="inputwrap"><input id="fePass2" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="fePass2">显示</button></div><div class="statusline" id="feMatch"></div></div>
+        <div class="field"><label for="fePass">主密码 <span class="hint" id="feCaps"></span></label><div class="inputwrap"><input id="fePass" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="fePass">👁 显示</button></div><div class="strength"><span id="feStrengthBar"></span></div><div class="statusline" id="feStrengthText">允许从 1 个 Unicode 字符开始；为提高安全性，建议使用较长的密码短语。</div></div>
+        <div class="field"><label for="fePass2">确认密码</label><div class="inputwrap"><input id="fePass2" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="fePass2">👁 显示</button></div><div class="statusline" id="feMatch"></div></div>
       </div>
       <label class="check" style="margin-top:8px"><input id="feNoPassword" type="checkbox">无密码模式：随机 AES-256 密钥随 .paper 容器保存（不提供密码机密性）</label>
       <div class="argon-panel" data-argon-prefix="fe">
@@ -460,7 +476,7 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
   <section class="panel" id="panel-fd" role="tabpanel" aria-labelledby="tab-fd">
     <div class="card"><h2>文件解密</h2><p class="sub">接受通过 Magic、版本、长度和算法白名单验证的 PepperArchive v1 / v2 容器；v1 保持向后兼容，v2 支持完整 32-bit Argon2id m/t/p。</p>
       <div class="drop" id="fdDrop"><input id="fdFile" type="file" accept=".paper,application/octet-stream" hidden><button id="fdChoose" type="button">选择 .paper 文件（兼容 v1 / v2 容器）</button><p>或将单个加密文件拖到这里</p><div id="fdMeta"></div></div>
-      <div class="field" style="margin-top:16px"><label for="fdPass">主密码 <span class="hint" id="fdCaps"></span></label><div class="inputwrap"><input id="fdPass" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="fdPass">显示</button></div></div>
+      <div class="field" style="margin-top:16px"><label for="fdPass">主密码 <span class="hint" id="fdCaps"></span></label><div class="inputwrap"><input id="fdPass" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="fdPass">👁 显示</button></div></div>
       <div class="field"><label>输出策略</label><label class="check"><input id="fdForceStream" type="checkbox">支持时优先直接流式写入磁盘（大文件推荐）</label></div>
       <div class="actions"><button class="primary" id="fdDecrypt" type="button">解密文件</button><button id="fdInspect" type="button">读取并复制参数</button><button id="opCancel2" type="button" disabled>取消</button><button id="fdClear" type="button">清空</button></div>
       <div class="progressbox" id="fdProgress" aria-live="polite"><div class="progresshead"><span id="fdStage">准备</span><span id="fdPct">0%</span></div><div class="bar"><span id="fdBar"></span></div><div class="progressdetail" id="fdProgDetail"></div></div>
@@ -501,7 +517,7 @@ code{ background:#f1f5f9 !important; color:#334155 !important; padding:1px 6px !
 <div class="field"><label for="prRecoveredCipher">已重组并校验的 Ciphertext 密文包</label><textarea id="prRecoveredCipher" class="paper-secret" readonly spellcheck="false"></textarea></div>
 <div class="field"><label for="prRecoveredParams">已重组并校验的 Parliaments 参数包</label><textarea id="prRecoveredParams" readonly spellcheck="false"></textarea></div>
 <div class="field"><label for="prRecoveredKey">已重组并校验的 Key 密钥包</label><textarea id="prRecoveredKey" class="paper-secret" readonly spellcheck="false"></textarea></div>
-<div class="field"><label for="prPass">主密码 <span class="hint" id="prCaps"></span></label><div class="inputwrap"><input id="prPass" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="prPass">显示</button></div></div>
+<div class="field"><label for="prPass">主密码 <span class="hint" id="prCaps"></span></label><div class="inputwrap"><input id="prPass" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="eye" type="button" data-toggle-pass="prPass">👁 显示</button></div></div>
 <div class="actions"><button class="primary" id="prDecrypt" type="button">解密恢复文本</button><button id="prSendToTD" type="button">送到文本解密页</button><button id="prCopyCipher" type="button">复制恢复密文</button></div></div></div>
       <div class="result" id="prPlainResult"><div class="resultbox"><div class="field"><label for="prPlain">解密后的明文</label><textarea id="prPlain" readonly spellcheck="false"></textarea></div><div class="actions"><button id="prCopyPlain" type="button">复制明文</button><button id="prSavePlain" type="button">保存 TXT</button></div><div class="notice" style="margin-top:12px">只有所有分片校验通过、完整密文重组成功并通过 AES-GCM 认证后，才会显示明文。</div></div></div>
     </div>
@@ -531,7 +547,7 @@ if(n+2>=i)return e;if(t=255&e[++n],128!=(192&t))return e;if(o=255&e[++n],128!=(1
 <script>
 'use strict';
 /* PepperArchive 格式 PV1/PV2 —— 单文件离线实现，无外部依赖。PV2 为新生成格式（u64 长度），PV1 仅恢复兼容 */
-var APP_VERSION = '2026.10.28.13';
+var APP_VERSION = '2026.10.28.14';
 /* Worker 需要从本页脚本里截取 QR 编码器源码：必须在脚本同步执行时捕获，事件回调里 document.currentScript 已是 null */
 var PAGE_SCRIPT_TEXT = (typeof document !== 'undefined' && document.currentScript) ? document.currentScript.textContent : null;
 var PBKDF2_ITER = 600000;
@@ -1924,7 +1940,7 @@ $('btnSelfTest').addEventListener('click', async function(){
 (function(){
 // ========================= CONFIG =========================
 const CFG=Object.freeze({
-  APP_VERSION:'2026.10.28.13',FORMAT_MAJOR:1,FORMAT_MINOR:2,
+  APP_VERSION:'2026.10.28.14',FORMAT_MAJOR:1,FORMAT_MINOR:2,
   MAGIC_TEXT:'AEGISCF1',TEXT_PREFIX:'AEGIS1.',FINAL_MAGIC:'FIN1',HEADER_LEN_V1:104,HEADER_LEN:112,
   CIPHER_ID:1,KDF_ID:1,TAG_BITS:128,TAG_BYTES:16,SALT_BYTES:32,NONCE_PREFIX_BYTES:8,FILE_ID_BYTES:16,
   DEFAULT_CHUNK:4*1024*1024,MIN_CHUNK:64*1024,MAX_CHUNK:64*1024*1024,
@@ -3863,7 +3879,7 @@ function splitPostBootstrap(){
 }
 
 // ========================= VERSIONED HELP =========================
-const PEPPERCIPHER_VERSION='2026.10.28.13'; /* 合并版版本，与 PepperArchive APP_VERSION 一致 */
+const PEPPERCIPHER_VERSION='2026.10.28.14'; /* 合并版版本，与 PepperArchive APP_VERSION 一致 */
 function pepperDateCode(d=new Date()){return String(d.getFullYear()).slice(-2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
 function buildHelpHtml(){const v=PEPPERCIPHER_VERSION,date=pepperDateCode();return `<div class="help-doc"><h2>PepperArchive 使用帮助 · 版本 ${v}</h2><p class="sub">本帮助与当前网页程序版本同步生成。PepperArchive 是<strong>离线、本机运行</strong>的文本/文件加密工具；正常加密、解密、自检和纸质恢复均不需要网络。</p>
 <h3>零、当前版本使用方法（本版帮助已随版本更新，与当前界面一致）</h3>
@@ -3904,7 +3920,7 @@ function showHelp(){const body=$('helpBody');if(body)body.innerHTML=buildHelpHtm
 function downloadCurrentHelp(){const html='<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>PepperArchive 使用帮助 '+PEPPERCIPHER_VERSION+'</title><style>body{font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;line-height:1.65;max-width:900px;margin:0 auto;padding:28px;color:#172033}code{background:#f2f4f7;padding:2px 5px;border-radius:4px}li{margin:.45em 0}.notice{padding:10px 12px;background:#f5f7fb;border:1px solid #dfe4ec;border-radius:10px}</style></head><body>'+buildHelpHtml()+'</body></html>';downloadBlob(new Blob([html],{type:'text/html;charset=utf-8'}),pepperDateCode()+'_PepperArchive_'+PEPPERCIPHER_VERSION+'_Help.html')}
 
 // ========================= BOOTSTRAP =========================
-function bootstrap(){const versionEl=$('pcAppVersion');if(versionEl)versionEl.textContent=PEPPERCIPHER_VERSION;const topVersionEl=$('topVersion');if(topVersionEl)topVersionEl.textContent=PEPPERCIPHER_VERSION;initTheme();try{ensureCrypto()}catch(e){$('fatal').textContent=e.message;$('fatal').classList.add('show');document.querySelectorAll('.primary').forEach(b=>b.disabled=true)}document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.panel)));document.querySelectorAll('[data-toggle-pass]').forEach(b=>b.addEventListener('click',()=>{const i=$(b.dataset.togglePass),show=i.type==='password';i.type=show?'text':'password';b.textContent=show?'隐藏':'显示';b.setAttribute('aria-label',show?'隐藏密码':'显示密码')}));document.querySelectorAll('[data-generate]').forEach(b=>b.addEventListener('click',()=>{const pre=b.dataset.generate,p=generatePassword(24);$(pre+'Pass').value=p;$(pre+'Pass2').value=p;updateStrength(pre);updateMatch(pre);toast('已生成 24 位本地随机密码。请另行安全保存。','success')}));for(const pre of ['te','fe']){$(pre+'Pass').addEventListener('input',()=>{updateStrength(pre);updateMatch(pre)});$(pre+'Pass2').addEventListener('input',()=>updateMatch(pre))}for(const [id,target] of [['tePass','teCaps'],['tePass2','teCaps'],['tdPass','tdCaps'],['fePass','feCaps'],['fePass2','feCaps'],['fdPass','fdCaps'],['prPass','prCaps']]){$(id).addEventListener('keyup',e=>{$(target).textContent=e.getModifierState&&e.getModifierState('CapsLock')?'Caps Lock 已开启':''})}
+function bootstrap(){const versionEl=$('pcAppVersion');if(versionEl)versionEl.textContent=PEPPERCIPHER_VERSION;const topVersionEl=$('topVersion');if(topVersionEl)topVersionEl.textContent=PEPPERCIPHER_VERSION;initTheme();try{ensureCrypto()}catch(e){$('fatal').textContent=e.message;$('fatal').classList.add('show');document.querySelectorAll('.primary').forEach(b=>b.disabled=true)}document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.panel)));document.querySelectorAll('[data-toggle-pass]').forEach(b=>b.addEventListener('click',()=>{const i=$(b.dataset.togglePass),show=i.type==='password';i.type=show?'text':'password';b.textContent=show?'👁 隐藏':'👁 显示';b.setAttribute('aria-label',show?'隐藏口令':'显示口令');b.setAttribute('aria-label',show?'隐藏密码':'显示密码')}));document.querySelectorAll('[data-generate]').forEach(b=>b.addEventListener('click',()=>{const pre=b.dataset.generate,p=generatePassword(24);$(pre+'Pass').value=p;$(pre+'Pass2').value=p;updateStrength(pre);updateMatch(pre);toast('已生成 24 位本地随机密码。请另行安全保存。','success')}));for(const pre of ['te','fe']){$(pre+'Pass').addEventListener('input',()=>{updateStrength(pre);updateMatch(pre)});$(pre+'Pass2').addEventListener('input',()=>updateMatch(pre))}for(const [id,target] of [['tePass','teCaps'],['tePass2','teCaps'],['tdPass','tdCaps'],['fePass','feCaps'],['fePass2','feCaps'],['fdPass','fdCaps'],['prPass','prCaps']]){$(id).addEventListener('keyup',e=>{$(target).textContent=e.getModifierState&&e.getModifierState('CapsLock')?'Caps Lock 已开启':''})}
 $('themeBtn').addEventListener('click',themeCycle);$('selfTestBtn').addEventListener('click',()=>showDialog('selfTestDialog'));$('helpBtn').addEventListener('click',showHelp);$('helpDownload').addEventListener('click',downloadCurrentHelp);$('helpClose').addEventListener('click',()=>closeDialog('helpDialog'));$('aboutBtn').addEventListener('click',()=>showDialog('aboutDialog'));document.querySelectorAll('[data-close-dialog]').forEach(b=>b.addEventListener('click',()=>closeDialog(b.dataset.closeDialog)));$('runTests').addEventListener('click',runSelfTests);
 document.querySelectorAll('.argon-preset').forEach(b=>b.addEventListener('click',()=>{if(state.busy)return;applyArgon2Preset(b.dataset.argonPrefix,b.dataset.argonPreset)}));
 for(const pre of ['te','fe']){for(const id of [`${pre}ArgonMemory`,`${pre}ArgonTime`,`${pre}ArgonParallel`]){const input=$(id);if(!input)continue;input.addEventListener('input',()=>{document.querySelectorAll(`.argon-preset[data-argon-prefix="${pre}"]`).forEach(x=>x.classList.toggle('active',x.dataset.argonPreset==='custom'));updateArgon2Ui(pre);saveArgon2Prefs()});input.addEventListener('change',()=>{updateArgon2Ui(pre);saveArgon2Prefs()})}}loadArgon2Prefs();for(const pre of ['te','fe'])updateArgon2Ui(pre);
@@ -3956,6 +3972,15 @@ splitPostBootstrap();
     var oldBtn = $(pair[0]); if(!oldBtn) return;
     var nb = oldBtn.cloneNode(true); oldBtn.parentNode.replaceChild(nb, oldBtn);
     nb.addEventListener('click', function(){ showTab(pair[1]); window.scrollTo(0,0); });
+  });
+  document.querySelectorAll('[data-pw-toggle]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var inp = $(b.dataset.pwToggle); if(!inp) return;
+      var show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      b.textContent = show ? '👁 隐藏' : '👁 显示';
+      b.setAttribute('aria-label', show ? '隐藏口令' : '显示口令');
+    });
   });
   var hdlBtn = $('helpDownloadBtn');
   if(hdlBtn){ hdlBtn.addEventListener('click', function(){ try{ var U = window.__PA_UNIFIED__; if(U && U.downloadCurrentHelp) U.downloadCurrentHelp(); }catch(e){} }); }
