@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PepperArchive 纸质冷备份 — 加密压缩打印与恢复</title>
+<meta name="description" content="单文件离线工具：把任意文件压缩、AES-GCM 加密、分块校验后打印到纸上，凭纸面文本与口令可靠恢复。无网络、无外部依赖。">
+<style>
+  *{box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;margin:0;background:#f4f5f7;color:#1a1d21;line-height:1.6}
+  header{background:#111827;color:#fff;padding:28px 20px}
+  header h1{margin:0 0 6px;font-size:26px}
+  .ver-badge{display:inline-block;background:#f59e0b;color:#111827;font-size:18px;font-weight:800;padding:2px 10px;border-radius:999px;vertical-align:middle;letter-spacing:.5px}
+  .ver-sub{font-size:20px;font-weight:600;color:#d1d5db}
+  header p{margin:4px 0;color:#d1d5db;max-width:900px}
+  main{max-width:960px;margin:0 auto;padding:20px}
+  section{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:18px}
+  h2{margin-top:0;font-size:20px}
+  h3{font-size:16px;margin:18px 0 8px}
+  label{display:block;font-weight:600;margin:12px 0 4px}
+  input[type=file],input[type=text],input[type=password],textarea{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;font-size:15px}
+  textarea{min-height:180px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.5}
+  button{cursor:pointer;border:0;border-radius:8px;padding:10px 16px;font-size:15px;background:#111827;color:#fff;margin:6px 6px 6px 0}
+  button.secondary{background:#e5e7eb;color:#111827}
+  button:disabled{opacity:.55;cursor:not-allowed}
+  .status{white-space:pre-wrap;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-top:12px;font-size:14px}
+  .status.ok{border-color:#15803d;background:#f0fdf4}
+  .status.err{border-color:#b91c1c;background:#fef2f2}
+  .warn{background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;padding:12px;font-size:14px}
+  .small{font-size:13px;color:#4b5563}
+  ol,ul{padding-left:22px}
+  code{background:#f3f4f6;padding:1px 5px;border-radius:4px}
+  /* 打印稿（屏幕上也是预览，与正文同宽，避免屏幕预览与打印宽度差异过大） */
+  #printArea{background:#fff;border:1px solid #d1d5db;border-radius:12px;padding:20px;max-width:960px;margin:0 auto 20px}
+  #printArea h2{font-size:20px}
+  .cover{border:2px solid #111827;padding:14px;margin-bottom:14px}
+  .chunk-block{border:1px solid #111;margin-bottom:12px;padding:10px;break-inside:avoid;page-break-inside:avoid}
+  .chunk-block .chead{font-weight:700;font-size:15px;margin-bottom:6px}
+  .chunk-block pre{margin:0;font-family:ui-monospace,Menlo,Consolas,"Courier New",monospace;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-all}
+  .qr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .qr-block{border:1px solid #111;padding:8px;break-inside:avoid;page-break-inside:avoid;text-align:center}
+  .qr-block img{width:52mm;max-width:100%;height:auto;display:block;margin:0 auto}
+  .qr-block .qhead{font-weight:700;font-size:13px;margin-top:6px;word-break:break-all}
+  .qr-block .qsub{font-size:12px;color:#4b5563}
+  @media (max-width:640px){.qr-grid{grid-template-columns:repeat(2,1fr)}}
+  @page{size:A4;margin:14mm}
+  @media print{
+    body{background:#fff}
+    header,main,footer{display:none !important}
+    #printArea{display:block !important;border:0;padding:0}
+    .no-print{display:none !important}
+  }
+  @media (max-width:640px){header h1{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.03</span> <span class="ver-sub">纸质冷备份</span></h1>
+  <p>把任意文件先压缩、再用口令做 AES-256-GCM 加密，最后编码成带分块校验的纸面文本打印出来。恢复时只需粘贴纸面文本并输入同一口令，缺块、坏块、错口令都会被明确指出。</p>
+  <p class="small" style="color:#9ca3af">单文件、离线、无网络请求。口令只存在于本页内存中，绝不上传、不存入浏览器存储。版本 <span id="appVersion"></span> · 格式 PV1</p>
+</header>
+
+<main>
+  <section id="sec-encrypt">
+    <h2>第一步：加密并生成打印稿</h2>
+    <div class="warn"><strong>先读三点：</strong>① 口令请另外牢记，<strong>不要</strong>把口令印在同一张纸上；② 打印前请先用第二步把打印稿粘贴回来做一次恢复测试；③ 纸面备份适合密钥、证书、密码库、小文档等小文件，大文件页数会很多，请看下方页数预估。</div>
+    <label for="fileInput">选择文件（任意类型）</label>
+    <input type="file" id="fileInput">
+    <label for="pw1">加密口令（至少 8 位，建议 16 位以上长口令）</label>
+    <input type="password" id="pw1" autocomplete="new-password" placeholder="请牢记，丢失口令 = 备份无法恢复">
+    <label for="pw2">再次输入口令（防止手误锁死备份）</label>
+    <input type="password" id="pw2" autocomplete="new-password">
+    <label for="hintInput">口令提示（可选，会印在封面；不要写出口令本身）</label>
+    <input type="text" id="hintInput" placeholder="例如：2026 年常用主口令（不要写出口令）">
+    <label>打印模式（默认二维码，省纸最多）</label>
+    <p style="margin:6px 0"><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="printMode" value="qr" checked style="width:auto"> 二维码高密度（推荐）</label><label style="display:inline;font-weight:400"><input type="radio" name="printMode" value="text" style="width:auto"> 纯文本（兼容性最好）</label></p>
+    <p class="small">二维码模式：每个码含约 900 个 Base32 字符（约 560 字节原数据），A4 每页约 12 个码；纯文本模式每页约 3 块。二维码可用手机扫码 App 或本页“识别照片”逐个扫回，文本模式可手工抄录。</p>
+    <p>
+      <button id="btnGenerate">生成打印稿</button>
+      <button id="btnPrint" class="secondary">打印打印稿</button>
+      <button id="btnCopy" class="secondary">复制打印文本</button>
+      <button id="btnDownloadTxt" class="secondary">下载打印文本 (.txt)</button>
+      <button id="btnClearEnc" class="secondary">清空口令</button>
+    </p>
+    <div id="encStatus" class="status">尚未生成。请先选文件并输入两次一致的口令。</div>
+  </section>
+
+  <section id="sec-recover">
+    <h2>第二步：从纸面文本恢复</h2>
+    <ol>
+      <li>把纸面上的全部块按任意顺序粘贴到下方（可含空格、换行，大小写不限；块头 <code>PV1 001/042 CRC32:........</code> 必须保留）。</li>
+      <li>或直接上传之前下载的 <code>.txt</code> 打印文本文件。</li>
+      <li>输入加密时的同一口令，点击恢复。程序会先逐块验 CRC，再验整体解密与原始文件 SHA-256。</li>
+    </ol>
+    <label for="txtFileInput">上传打印文本文件（可选）</label>
+    <input type="file" id="txtFileInput" accept=".txt,text/plain">
+    <label for="qrImageInput">上传二维码照片（可选，浏览器支持 BarcodeDetector 时自动识别）</label>
+    <input type="file" id="qrImageInput" accept="image/*" multiple>
+    <p><button id="btnDetectQR" class="secondary">识别照片中的二维码并填入下方</button> <span class="small">若浏览器不支持识别，请用手机扫码 App 逐个扫码后粘贴到下方。</span></p>
+    <label for="backupText">纸面备份文本</label>
+    <textarea id="backupText" placeholder="在此粘贴全部 PV1 块……"></textarea>
+    <label for="pwRec">解密口令</label>
+    <input type="password" id="pwRec" autocomplete="current-password">
+    <p>
+      <button id="btnRecover">恢复并下载原文件</button>
+      <button id="btnCheckOnly" class="secondary">仅检查块完整性（不解密）</button>
+      <button id="btnClearRec" class="secondary">清空恢复区</button>
+    </p>
+    <div id="recStatus" class="status">尚未恢复。</div>
+  </section>
+
+  <section id="sec-verify">
+    <h2>第三步（可选）：恢复文件校验 —— 把恢复出来的文件和原文件逐字节对比</h2>
+    <p class="small">说明：恢复时程序内部已经验过一次原始文件 SHA-256，通过才放行下载，所以能下载出来的文件在加密那一刻就是原文件。这里再给你一个看得见的二次校验：你分别选原文件和恢复后下载到的文件，程序会逐字节对比并算出各自的 SHA-256，任何一个字节不同都会报出第一个不同位置。</p>
+    <label for="origFileInput">原文件（加密前的那份）</label>
+    <input type="file" id="origFileInput">
+    <label for="recFileInput">恢复后的文件（从恢复区下载到的那份）</label>
+    <input type="file" id="recFileInput">
+    <p>
+      <button id="btnVerify" class="secondary">对比校验两个文件</button>
+      <button id="btnClearVerify" class="secondary">清空校验区</button>
+    </p>
+    <div id="verifyStatus" class="status">尚未校验。</div>
+  </section>
+
+  <section id="sec-selftest">
+    <h2>自检（不使用你的口令与文件）</h2>
+    <p class="small">在信任本页之前，先跑一次内置自检：它用固定测试口令做“样本数据加密 → 分块 → 乱序粘贴 → 恢复”全流程，并验证错口令、坏块、缺块都能被正确拒绝。</p>
+    <p><button id="btnSelfTest" class="secondary">运行自检</button></p>
+    <div id="selfStatus" class="status">尚未运行自检。</div>
+  </section>
+
+  <section>
+    <h2>格式与安全说明</h2>
+    <ul>
+      <li><strong>压缩：</strong>优先用浏览器 gzip 压缩；若压缩后反而更大，则原样存储（仍加密）。无 gzip 支持的旧浏览器自动回退为存储。</li>
+      <li><strong>加密：</strong>AES-256-GCM；密钥由 PBKDF2-SHA256（600,000 次、16 字节随机盐）从口令派生；12 字节随机 IV。文件名、原始大小、原始 SHA-256 都在加密层内部，纸面上看不到文件名。</li>
+      <li><strong>编码与分块：</strong>密文用 Base32（A-Z、2-7，无易混淆字符）编码，每 480 字符为一块，每块带 CRC32；块可乱序粘贴，缺块、坏块、重复冲突块都会按块号报出。</li>
+      <li><strong>完整性：</strong>三层校验 —— 块 CRC32、AES-GCM 认证标签、原始文件 SHA-256。任何一层失败都不会输出错误文件。</li>
+      <li><strong>限制：</strong>单个文件须小于 4 GiB（纸面页数是更现实的上限）；恢复时文件名中的路径分隔符会被替换为下划线，防止写出到意外路径。</li>
+    </ul>
+  </section>
+</main>
+
+<div id="printArea">
+  <h2>打印稿 <span class="no-print small">（下方内容就是将要打印的全部内容）</span></h2>
+  <div id="printCover" class="cover">尚未生成打印稿。请在上方第一步生成。</div>
+  <div id="printChunks"></div>
+  <p class="small no-print">提示：打印前请确认每一块都完整印出、没有缺页；建议同时打印两份，分开存放。</p>
+</div>
+
+<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
+
+<script>
+'use strict';
+/* PepperArchive 格式 PV1 —— 单文件离线实现，无外部依赖 */
+var APP_VERSION = '2026.10.28.03';
+var PBKDF2_ITER = 600000;
+var CHUNK_CHARS = 480;
+var LINE_CHARS = 40;
+var GROUP_CHARS = 8;
+
+function $(id){ return document.getElementById(id); }
+function setStatus(el, msg, kind){
+  el.textContent = msg;
+  el.className = 'status' + (kind === 'ok' ? ' ok' : kind === 'err' ? ' err' : '');
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function equalBytes(a, b){
+  if (a.length !== b.length) return false;
+  var d = 0; for (var i = 0; i < a.length; i++) d |= (a[i] ^ b[i]);
+  return d === 0;
+}
+
+/* ---------- CRC32 (IEEE, 校验向量 "123456789" -> CBF43926) ---------- */
+var CRC_TABLE = (function(){
+  var t = new Uint32Array(256);
+  for (var n = 0; n < 256; n++){
+    var c = n;
+    for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32Ascii(str){
+  var c = 0xFFFFFFFF;
+  for (var i = 0; i < str.length; i++) c = CRC_TABLE[(c ^ str.charCodeAt(i)) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function crc32Hex(str){ return ('00000000' + crc32Ascii(str).toString(16).toUpperCase()).slice(-8); }
+
+/* ---------- Base32 RFC4648（无填充），解码严格校验尾部零比特 ---------- */
+var B32_ALPH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+var B32_MAP = {};
+for (var i = 0; i < B32_ALPH.length; i++) B32_MAP[B32_ALPH.charAt(i)] = i;
+function base32Encode(bytes){
+  var out = '', buffer = 0, bits = 0;
+  for (var i = 0; i < bytes.length; i++){
+    buffer = (buffer << 8) | bytes[i]; bits += 8;
+    while (bits >= 5){ bits -= 5; out += B32_ALPH.charAt((buffer >>> bits) & 31); }
+    buffer &= bits ? (1 << bits) - 1 : 0; /* 只保留未输出的低 bits 比特，buffer 永不膨胀 */
+  }
+  if (bits > 0) out += B32_ALPH.charAt((buffer << (5 - bits)) & 31);
+  return out;
+}
+function base32Decode(str){
+  var out = [], buffer = 0, bits = 0;
+  for (var i = 0; i < str.length; i++){
+    var ch = str.charAt(i);
+    if (!(ch in B32_MAP)) throw new Error('Base32 中出现非法字符：' + ch);
+    buffer = (buffer << 5) | B32_MAP[ch]; bits += 5;
+    if (bits >= 8){ bits -= 8; out.push((buffer >>> bits) & 0xFF); }
+    buffer &= bits ? (1 << bits) - 1 : 0; /* 只保留未输出的低 bits 比特 */
+  }
+  if (bits >= 5) throw new Error('Base32 长度非法（尾部多余字符）');
+  if (bits > 0 && (buffer & ((1 << bits) - 1)) !== 0) throw new Error('Base32 尾部填充比特非零，数据可能抄错');
+  return new Uint8Array(out);
+}
+
+/* ---------- 压缩：gzip 优先，失败或变大则存储 ---------- */
+async function streamToBytes(stream){
+  var buf = await new Response(stream).arrayBuffer();
+  return new Uint8Array(buf);
+}
+async function compressBytes(bytes){
+  if (typeof CompressionStream === 'undefined') return { flag: 0, data: bytes };
+  try {
+    var gz = await streamToBytes(new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip')));
+    if (gz.length < bytes.length) return { flag: 1, data: gz };
+    return { flag: 0, data: bytes };
+  } catch (e) { return { flag: 0, data: bytes }; }
+}
+async function decompressBytes(bytes, flag){
+  if (flag === 0) return bytes;
+  if (typeof DecompressionStream === 'undefined') throw new Error('此浏览器不支持 gzip 解压，无法恢复 gzip 压缩的备份');
+  try {
+    return await streamToBytes(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip')));
+  } catch (e) {
+    throw new Error('gzip 解压失败，备份数据已损坏（' + (e && e.message ? e.message : e) + '）');
+  }
+}
+
+/* ---------- 二进制读写：统一用大端，便于跨实现核对 ---------- */
+function writeU32BE(view, off, v){ view.setUint32(off, v >>> 0, false); }
+function readU32BE(view, off){ return view.getUint32(off, false) >>> 0; }
+
+/* 内层明文：PVIN | u32 名字长 | 名字 | u32 原长 | 32B SHA256 | u8 压缩标志 | u32 负载长 | 负载 */
+function buildInner(nameBytes, origBytes, shaBytes, payload, flag){
+  var total = 4 + 4 + nameBytes.length + 4 + 32 + 1 + 4 + payload.length;
+  var buf = new ArrayBuffer(total), view = new DataView(buf), out = new Uint8Array(buf), p = 0;
+  out.set([0x50, 0x56, 0x49, 0x4E], p); p += 4; /* PVIN */
+  writeU32BE(view, p, nameBytes.length); p += 4;
+  out.set(nameBytes, p); p += nameBytes.length;
+  writeU32BE(view, p, origBytes.length); p += 4;
+  out.set(shaBytes, p); p += 32;
+  out[p] = flag; p += 1;
+  writeU32BE(view, p, payload.length); p += 4;
+  out.set(payload, p);
+  return out;
+}
+function parseInner(bytes){
+  if (bytes.length < 4 + 4 + 4 + 32 + 1 + 4) throw new Error('解密后的内部结构过短');
+  var view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (!(bytes[0] === 0x50 && bytes[1] === 0x56 && bytes[2] === 0x49 && bytes[3] === 0x4E)) throw new Error('解密后的内部魔数不符，数据已损坏');
+  var p = 4;
+  var nameLen = readU32BE(view, p); p += 4;
+  if (nameLen > bytes.length) throw new Error('内部文件名长度超出数据范围');
+  var nameBytes = bytes.slice(p, p + nameLen); p += nameLen;
+  if (p + 4 + 32 + 1 + 4 > bytes.length) throw new Error('内部结构截断');
+  var origLen = readU32BE(view, p); p += 4;
+  var sha = bytes.slice(p, p + 32); p += 32;
+  var flag = bytes[p]; p += 1;
+  if (flag !== 0 && flag !== 1) throw new Error('内部压缩标志非法：' + flag);
+  var payloadLen = readU32BE(view, p); p += 4;
+  if (payloadLen !== bytes.length - p) throw new Error('内部负载长度与剩余数据不符（期望 ' + payloadLen + '，实际 ' + (bytes.length - p) + '）');
+  var payload = bytes.slice(p);
+  return { nameBytes: nameBytes, origLen: origLen, sha: sha, flag: flag, payload: payload };
+}
+
+/* 外层：PV01 | 16B 盐 | 12B IV | u32 迭代次数 | AES-GCM 密文（含 16B 认证标签） */
+async function deriveKey(password, salt, iter){
+  /* 口令先 NFC 归一化：同一口令在不同设备/输入法下若以组合/分解形式输入，仍派生同一密钥 */
+  var pwNorm = (typeof password.normalize === 'function') ? password.normalize('NFC') : password;
+  var pwKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(pwNorm), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: salt, iterations: iter, hash: 'SHA-256' },
+    pwKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function encryptPackage(origBytes, fileName, password){
+  if (origBytes.length > 0xFFFFFFFF) throw new Error('文件超过 4 GiB 上限，纸面备份不支持');
+  var shaBuf = await crypto.subtle.digest('SHA-256', origBytes);
+  var comp = await compressBytes(origBytes);
+  var inner = buildInner(new TextEncoder().encode(fileName), origBytes, new Uint8Array(shaBuf), comp.data, comp.flag);
+  var salt = crypto.getRandomValues(new Uint8Array(16));
+  var iv = crypto.getRandomValues(new Uint8Array(12));
+  var key = await deriveKey(password, salt, PBKDF2_ITER);
+  var ctBuf = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, inner);
+  var ct = new Uint8Array(ctBuf);
+  var out = new Uint8Array(4 + 16 + 12 + 4 + ct.length);
+  out.set([0x50, 0x56, 0x30, 0x31], 0); /* PV01 */
+  out.set(salt, 4); out.set(iv, 20);
+  new DataView(out.buffer).setUint32(32, PBKDF2_ITER, false);
+  out.set(ct, 36);
+  return { outer: out, compressed: comp.flag === 1, compLen: comp.data.length };
+}
+async function decryptPackage(outer, password){
+  if (outer.length < 36 + 16) throw new Error('备份数据过短');
+  if (!(outer[0] === 0x50 && outer[1] === 0x56 && outer[2] === 0x30 && outer[3] === 0x31)) throw new Error('备份魔数不是 PV01：可能粘贴了错误内容或块顺序/内容有误');
+  var salt = outer.slice(4, 20), iv = outer.slice(20, 32);
+  var iter = new DataView(outer.buffer, outer.byteOffset, outer.byteLength).getUint32(32, false);
+  if (iter < 10000 || iter > 2000000) throw new Error('备份中的 PBKDF2 迭代次数超出合理范围：' + iter);
+  var key = await deriveKey(password, salt, iter);
+  var plainBuf;
+  try {
+    plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, outer.slice(36));
+  } catch (e) {
+    throw new Error('密码错误或数据损坏（AES-GCM 认证失败）。请先检查口令，再检查各块 CRC。');
+  }
+  var inner = parseInner(new Uint8Array(plainBuf));
+  var data = await decompressBytes(inner.payload, inner.flag);
+  if (data.length !== inner.origLen) throw new Error('解压后长度与原始长度不符（期望 ' + inner.origLen + '，实际 ' + data.length + '）');
+  var shaBuf = await crypto.subtle.digest('SHA-256', data);
+  if (!equalBytes(new Uint8Array(shaBuf), inner.sha)) throw new Error('原始文件 SHA-256 校验失败，数据已损坏');
+  var fileName;
+  try { fileName = new TextDecoder('utf-8', { fatal: true }).decode(inner.nameBytes); }
+  catch (e) { throw new Error('解密后的文件名不是合法 UTF-8，数据已损坏'); }
+  return { fileName: fileName, data: data };
+}
+
+/* ---------- 分块与打印文本 ---------- */
+function makeChunks(b32){
+  var chunks = [];
+  for (var i = 0; i < b32.length; i += CHUNK_CHARS){
+    var part = b32.slice(i, i + CHUNK_CHARS);
+    chunks.push({ index: chunks.length + 1, total: 0, text: part, crc: crc32Hex(part) });
+  }
+  if (chunks.length === 0) chunks.push({ index: 1, total: 0, text: '', crc: crc32Hex('') });
+  chunks.forEach(function(c){ c.total = chunks.length; });
+  return chunks;
+}
+function chunkHeader(c){
+  /* 只补零不截断：块数超过 999 时仍输出完整数字，避免 1000 被截成 000 */
+  var idx = String(c.index).padStart(3, '0'), tot = String(c.total).padStart(3, '0');
+  return 'PV1 ' + idx + '/' + tot + ' CRC32:' + c.crc;
+}
+function formatChunkLines(text){
+  var lines = [];
+  for (var i = 0; i < text.length; i += LINE_CHARS){
+    var line = text.slice(i, i + LINE_CHARS);
+    var groups = [];
+    for (var j = 0; j < line.length; j += GROUP_CHARS) groups.push(line.slice(j, j + GROUP_CHARS));
+    lines.push(groups.join(' '));
+  }
+  return lines.join('\n');
+}
+function buildPrintText(chunks, meta){
+  var parts = [];
+  parts.push('PepperArchive 纸面冷备份 · 格式 PV1 · 版本 ' + APP_VERSION);
+  parts.push('生成日期：' + meta.date);
+  parts.push('总块数：' + chunks.length + ' · 总字符：' + chunks.reduce(function(a, c){ return a + c.text.length; }, 0));
+  if (meta.hint) parts.push('口令提示：' + meta.hint);
+  parts.push('恢复方法：把下面全部块粘贴到 PepperArchive 恢复区，输入同一口令即可。块可乱序，缺块或坏块会按块号报出。');
+  parts.push('注意：不要把口令写在这张纸上。');
+  parts.push('');
+  chunks.forEach(function(c){
+    parts.push(chunkHeader(c));
+    parts.push(formatChunkLines(c.text));
+    parts.push('');
+  });
+  return parts.join('\n');
+}
+function renderPrint(chunks, meta){
+  var cover = 'PepperArchive 纸面冷备份 · 格式 PV1 · 版本 ' + APP_VERSION + '<br>'
+    + '生成日期：' + esc(meta.date) + '<br>'
+    + '总块数：' + chunks.length + ' · 原文件大小：' + meta.origSize + ' 字节 · 压缩后：' + meta.compSize + ' 字节 · 加密后：' + meta.encSize + ' 字节<br>'
+    + (meta.hint ? '口令提示：' + esc(meta.hint) + '<br>' : '')
+    + '恢复：把下面全部块粘贴到 PepperArchive 恢复区并输入同一口令。块可乱序；缺块、坏块会按块号报出。不要把口令写在这张纸上。';
+  $('printCover').innerHTML = cover;
+  $('printChunks').innerHTML = chunks.map(function(c){
+    return '<div class="chunk-block"><div class="chead">' + esc(chunkHeader(c)) + '</div><pre>' + esc(formatChunkLines(c.text)) + '</pre></div>';
+  }).join('');
+}
+
+
+/* ---------- 二维码模式 ---------- */
+var QR_CHUNK_CHARS = 900;
+function makeQRChunks(b32){
+  var chunks = [];
+  for (var i = 0; i < b32.length; i += QR_CHUNK_CHARS){
+    var part = b32.slice(i, i + QR_CHUNK_CHARS);
+    chunks.push({ index: chunks.length + 1, total: 0, text: part, crc: crc32Hex(part) });
+  }
+  if (chunks.length === 0) chunks.push({ index: 1, total: 0, text: '', crc: crc32Hex('') });
+  chunks.forEach(function(c){ c.total = chunks.length; });
+  return chunks;
+}
+function qrPayload(c){ return chunkHeader(c) + ' ' + c.text; }
+function qrToDataURL(payload){
+  var q = QR.encodeAlphanumeric(payload);
+  var scale = 8, quiet = 4, px = (q.size + quiet*2) * scale;
+  var canvas = document.createElement('canvas');
+  canvas.width = px; canvas.height = px;
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, px, px);
+  ctx.fillStyle = '#000';
+  for (var y = 0; y < q.size; y++) for (var x = 0; x < q.size; x++){
+    if (q.modules[y][x]) ctx.fillRect((x+quiet)*scale, (y+quiet)*scale, scale, scale);
+  }
+  return { url: canvas.toDataURL('image/png'), version: q.version, size: q.size };
+}
+function renderPrintQR(chunks, meta){
+  var cover = 'PepperArchive 纸面冷备份 · 二维码高密度模式 · 格式 PV1 · 版本 ' + APP_VERSION + '<br>'
+    + '生成日期：' + esc(meta.date) + '<br>'
+    + '二维码总数：' + chunks.length + ' · 原文件大小：' + meta.origSize + ' 字节 · 压缩后：' + meta.compSize + ' 字节 · 加密后：' + meta.encSize + ' 字节<br>'
+    + (meta.hint ? '口令提示：' + esc(meta.hint) + '<br>' : '')
+    + '恢复：用手机扫码 App 或本页“识别照片”逐个扫回全部二维码，粘贴到恢复区并输入同一口令。拍照时请靠近单个码拍清晰，整页远拍可能识别不出小模块。不要把口令写在这张纸上。';
+  $('printCover').innerHTML = cover;
+  $('printChunks').innerHTML = '<div class="qr-grid">' + chunks.map(function(c){
+    var r = qrToDataURL(qrPayload(c));
+    return '<div class="qr-block"><img src="' + r.url + '" alt="二维码 ' + c.index + '/' + c.total + '"><div class="qhead">' + esc(chunkHeader(c)) + '</div><div class="qsub">第 ' + c.index + '/' + c.total + ' 码 · QR 版本 V' + r.version + ' · EC-M</div></div>';
+  }).join('') + '</div>';
+}
+
+/* 解析粘贴文本：返回 { chunks: [{index,text}], total, bad:[], missing:[], totalDeclared } */
+function parseBackupText(text){
+  /* 容忍 OCR/手抄差异：pv1 大小写不限、斜杠两侧空格、全角冒号；块号/总数不限 4 位 */
+  var re = /PV1\s*(\d+)\s*\/\s*(\d+)\s*CRC32\s*[:：]\s*([0-9A-Fa-f]{8})/gi;
+  var matches = [], m;
+  while ((m = re.exec(text)) !== null) matches.push({ index: parseInt(m[1], 10), total: parseInt(m[2], 10), crc: m[3].toUpperCase(), start: m.index, end: m.index + m[0].length });
+  if (matches.length === 0) throw new Error('没有找到任何 PV1 块头（形如 PV1 001/042 CRC32:........）。请确认粘贴了完整打印文本且块头未被 OCR 改写。');
+  var totals = {};
+  matches.forEach(function(x){ totals[x.total] = true; });
+  var totalKeys = Object.keys(totals);
+  if (totalKeys.length !== 1) throw new Error('块头中的总块数不一致：' + totalKeys.join('、'));
+  var total = parseInt(totalKeys[0], 10);
+  if (total <= 0 || total > 100000) throw new Error('总块数不合理：' + total);
+  var byIndex = {}, bad = [], badIdx = {}, conflicts = [];
+  matches.forEach(function(x, k){
+    var nextStart = (k + 1 < matches.length) ? matches[k + 1].start : text.length;
+    var raw = text.slice(x.end, nextStart).toUpperCase().replace(/[^A-Z2-7]/g, '');
+    if (x.index < 1 || x.index > total) { bad.push(x.index + '（块号超出 1..' + total + '）'); return; }
+    if (crc32Hex(raw) !== x.crc) { bad.push(x.index + '（CRC 不符）'); badIdx[x.index] = true; return; }
+    if (byIndex[x.index] !== undefined){
+      if (byIndex[x.index] !== raw) conflicts.push(x.index);
+      return;
+    }
+    byIndex[x.index] = raw;
+  });
+  if (conflicts.length) throw new Error('以下块出现内容冲突的重复：' + conflicts.join('、') + '。请删除重复块后重试。');
+  /* missing 只含“从未出现好块”的块号；CRC 失败的块已在 bad 中列出，不再重复计为缺失 */
+  var missing = [];
+  for (var j = 1; j <= total; j++) if (byIndex[j] === undefined && !badIdx[j]) missing.push(j);
+  var joined = '';
+  for (var k2 = 1; k2 <= total; k2++) if (byIndex[k2] !== undefined) joined += byIndex[k2];
+  return { total: total, joined: joined, goodCount: Object.keys(byIndex).length, bad: bad, missing: missing, complete: missing.length === 0 && bad.length === 0 };
+}
+function shortList(arr){
+  if (arr.length <= 20) return arr.join('、');
+  return arr.slice(0, 20).join('、') + '……（共 ' + arr.length + ' 个）';
+}
+function checkOnlyReport(parsed){
+  if (parsed.complete) return '检查通过：' + parsed.total + ' 块全部齐全且 CRC 正确，可以尝试解密恢复。';
+  var parts = [];
+  if (parsed.bad.length) parts.push('CRC 失败的块（需重抄/重扫这些块）：' + shortList(parsed.bad));
+  if (parsed.missing.length) parts.push('缺失的块：' + shortList(parsed.missing));
+  parts.push('已通过 CRC 的块：' + parsed.goodCount + '/' + parsed.total);
+  return '检查未通过：\n' + parts.join('\n');
+}
+
+/* ---------- 下载 / 复制 ---------- */
+function downloadBlob(data, fileName){
+  var blob = new Blob([data], { type: 'application/octet-stream' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = fileName;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+}
+function sanitizeFileName(name){
+  var n = String(name || '').replace(/[\/\\?%*:|"<>]/g, '_').trim();
+  if (!n || n === '.' || n === '..') n = 'recovered.bin';
+  if (n.length > 200) n = n.slice(0, 200);
+  return n;
+}
+async function copyText(t){
+  try { await navigator.clipboard.writeText(t); return true; }
+  catch (e) {
+    var ta = document.createElement('textarea');
+    ta.value = t; document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+    ta.remove(); return ok;
+  }
+}
+
+/* QR Code encoder, alphanumeric mode, EC level M, versions 1-20.
+   Standalone implementation for PaperVault (no external dependency).
+   Tables: ECC per block / num blocks / total codewords / alignment / remainder
+   are the ISO/IEC 18004 values (see Nayuki qrcodegen tables, MIT).
+   Penalty scoring follows the same N1/N2/N3/N4 rules; a penalty bug would only
+   affect mask choice, never validity, because format info records the mask used. */
+'use strict';
+var QR = (function(){
+  var ECC_M = [null,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28,28,26,26,26];
+  var NUM_BLOCKS_M = [null,1,1,1,2,2,4,4,4,5,5,5,8,9,9,10,10,11,13,14,16];
+  var TOTAL_CW = [null,26,44,70,100,134,172,196,242,292,346,404,466,532,581,655,733,815,901,991,1085];
+  var ALIGN = [null,[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90]];
+  var REMAINDER = [null,0,7,7,7,7,7,0,0,0,0,0,0,0,3,3,3,3,3,3,3];
+  var ALPH = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+  var ALPH_MAP = {};
+  for (var i=0;i<ALPH.length;i++) ALPH_MAP[ALPH.charAt(i)] = i;
+
+  // GF(256), primitive 0x11D
+  var EXP = new Array(512), LOG = new Array(256);
+  (function(){
+    var x = 1;
+    for (var i=0;i<255;i++){ EXP[i]=x; LOG[x]=i; x <<= 1; if (x & 0x100) x ^= 0x11D; }
+    for (var j=255;j<512;j++) EXP[j]=EXP[j-255];
+  })();
+  function gfMul(a,b){ if (a===0||b===0) return 0; return EXP[LOG[a]+LOG[b]]; }
+  function rsDivisor(degree){
+    var result = new Array(degree).fill(0); result[degree-1]=1;
+    var root = 1;
+    for (var i=0;i<degree;i++){
+      for (var j=0;j<result.length;j++){
+        result[j] = gfMul(result[j], root);
+        if (j+1 < result.length) result[j] ^= result[j+1];
+      }
+      root = gfMul(root, 0x02);
+    }
+    return result;
+  }
+  function rsRemainder(data, divisor){
+    var result = new Array(divisor.length).fill(0);
+    for (var k=0;k<data.length;k++){
+      var factor = data[k] ^ result.shift();
+      result.push(0);
+      for (var i=0;i<divisor.length;i++) result[i] ^= gfMul(divisor[i], factor);
+    }
+    return result;
+  }
+
+  function getBit(x,i){ return ((x>>>i)&1)!==0; }
+  function maskBit(mask, x, y){
+    switch(mask){
+      case 0: return (x+y)%2===0;
+      case 1: return y%2===0;
+      case 2: return x%3===0;
+      case 3: return (x+y)%3===0;
+      case 4: return (Math.floor(y/2)+Math.floor(x/3))%2===0;
+      case 5: return ((x*y)%2 + (x*y)%3)===0;
+      case 6: return (((x*y)%2 + (x*y)%3)%2)===0;
+      case 7: return (((x+y)%2 + (x*y)%3)%2)===0;
+      default: throw new Error('bad mask');
+    }
+  }
+
+  function encodeAlphanumeric(text){
+    // returns {version, size, modules: 2D bool, mask}
+    for (var c=0;c<text.length;c++) if (!(text.charAt(c) in ALPH_MAP)) throw new Error('QR 字母数字模式不支持字符：' + text.charAt(c));
+    var version = -1, dataCW = 0, bitsLen = 0;
+    for (var v=1; v<=20; v++){
+      var ecc = ECC_M[v], blocks = NUM_BLOCKS_M[v];
+      var dcw = TOTAL_CW[v] - ecc*blocks;
+      var countBits = v<=9 ? 9 : 11;
+      var blen = 4 + countBits + Math.floor(text.length/2)*11 + (text.length%2)*6;
+      if (blen <= dcw*8){ version=v; dataCW=dcw; bitsLen=blen; break; }
+    }
+    if (version<0) throw new Error('QR 文本过长，版本 20-M 字母数字模式装不下（共 '+text.length+' 字符）');
+    // bit buffer
+    var bits = [];
+    function appendBits(val, len){ for (var i=len-1;i>=0;i--) bits.push((val>>>i)&1); }
+    var countBits2 = version<=9 ? 9 : 11;
+    appendBits(0x2, 4); // alphanumeric mode 0010
+    appendBits(text.length, countBits2);
+    for (var p=0;p<text.length;p+=2){
+      if (p+1<text.length) appendBits(ALPH_MAP[text.charAt(p)]*45 + ALPH_MAP[text.charAt(p+1)], 11);
+      else appendBits(ALPH_MAP[text.charAt(p)], 6);
+    }
+    var cap = dataCW*8;
+    var term = Math.min(4, cap - bits.length);
+    for (var t=0;t<term;t++) bits.push(0);
+    while (bits.length%8!==0) bits.push(0);
+    var dataBytes = [];
+    for (var b=0;b<bits.length;b+=8){
+      var byte=0; for (var k=0;k<8;k++) byte = (byte<<1)|bits[b+k]; dataBytes.push(byte);
+    }
+    for (var pad=0; dataBytes.length<dataCW; pad++) dataBytes.push(pad%2===0 ? 0xEC : 0x11);
+    // split into blocks
+    var blocksN = NUM_BLOCKS_M[version], eccPer = ECC_M[version];
+    var shortLen = Math.floor(dataCW/blocksN);
+    var numShort = blocksN - (dataCW % blocksN);
+    var blocksData = [], idx=0;
+    for (var bi=0; bi<blocksN; bi++){
+      var len = bi<numShort ? shortLen : shortLen+1;
+      blocksData.push(dataBytes.slice(idx, idx+len)); idx+=len;
+    }
+    var divisor = rsDivisor(eccPer);
+    var blocksEC = blocksData.map(function(d){ return rsRemainder(d, divisor); });
+    // interleave
+    var finalBytes = [];
+    var maxDataLen = Math.max.apply(null, blocksData.map(function(d){return d.length;}));
+    for (var ii=0; ii<maxDataLen; ii++) for (var bj=0; bj<blocksN; bj++) if (ii<blocksData[bj].length) finalBytes.push(blocksData[bj][ii]);
+    for (var ei=0; ei<eccPer; ei++) for (var bj2=0; bj2<blocksN; bj2++) finalBytes.push(blocksEC[bj2][ei]);
+    var finalBits = [];
+    finalBytes.forEach(function(byte){ for (var s=7;s>=0;s--) finalBits.push((byte>>s)&1); });
+    for (var r=0;r<REMAINDER[version];r++) finalBits.push(0);
+
+    var size = version*4+17;
+    function buildMatrix(mask){
+      var mods = [], func = [];
+      for (var y=0;y<size;y++){ mods.push(new Array(size).fill(null)); func.push(new Array(size).fill(false)); }
+      function setFunc(x,y,val){ if (x>=0&&x<size&&y>=0&&y<size){ mods[y][x]=val?1:0; func[y][x]=true; } }
+      // finder + separator
+      [[0,0],[size-7,0],[0,size-7]].forEach(function(pos){
+        var fx=pos[0], fy=pos[1];
+        for (var dy=-1; dy<=7; dy++) for (var dx=-1; dx<=7; dx++){
+          var x=fx+dx, y=fy+dy;
+          if (x<0||x>=size||y<0||y>=size) continue;
+          if (dx===-1||dy===-1||dx===7||dy===7) setFunc(x,y,0);
+          else if (dx===0||dx===6||dy===0||dy===6) setFunc(x,y,1);
+          else if (dx>=2&&dx<=4&&dy>=2&&dy<=4) setFunc(x,y,1);
+          else setFunc(x,y,0);
+        }
+      });
+      // timing
+      for (var ti=0; ti<size; ti++){
+        if (!func[6][ti]) setFunc(ti,6, ti%2===0);
+        if (!func[ti][6]) setFunc(6,ti, ti%2===0);
+      }
+      // alignment: draw every combination EXCEPT the three finder corners
+      // (first,first), (first,last), (last,first). Patterns on the timing row/col
+      // (e.g. (6,22) in V7) DO override timing modules and must be drawn;
+      // skipping them on "overlap" grounds was the V7+ decode bug.
+      var al = ALIGN[version];
+      for (var ai=0; ai<al.length; ai++) for (var aj=0; aj<al.length; aj++){
+        var ax=al[ai], ay=al[aj];
+        if ((ai===0 && aj===0) || (ai===0 && aj===al.length-1) || (ai===al.length-1 && aj===0)) continue;
+        for (var ddy=-2; ddy<=2; ddy++) for (var ddx=-2; ddx<=2; ddx++){
+          var val = (Math.max(Math.abs(ddx),Math.abs(ddy))!==1) ? 1 : 0;
+          setFunc(ax+ddx, ay+ddy, val);
+        }
+      }
+      // format info (reserve, filled later with actual bits; mark function now)
+      // version info reserve
+      if (version>=7){
+        for (var vi=0; vi<18; vi++){
+          var a = size-11 + vi%3, bb = Math.floor(vi/3);
+          setFunc(a,bb,0); setFunc(bb,a,0);
+        }
+      }
+      // dark module
+      setFunc(size-8, 8, 1);
+      // format info areas as function (values set after data placement, but reserve)
+      for (var fi=0; fi<=5; fi++){ setFunc(8,fi,0); }
+      setFunc(8,7,0); setFunc(8,8,0); setFunc(7,8,0);
+      for (var fj=9; fj<15; fj++) setFunc(14-fj,8,0);
+      for (var fk=0; fk<8; fk++) setFunc(size-1-fk,8,0);
+      for (var fl=8; fl<15; fl++) setFunc(8,size-15+fl,0);
+      // data placement
+      var bitIdx=0;
+      for (var right=size-1; right>=1; right-=2){
+        if (right===6) right=5;
+        for (var vert=0; vert<size; vert++){
+          for (var j=0;j<2;j++){
+            var x2 = right-j;
+            var upward = ((right+1)&2)===0;
+            var y2 = upward ? size-1-vert : vert;
+            if (!func[y2][x2] && bitIdx<finalBits.length){
+              var bit = finalBits[bitIdx++];
+              if (maskBit(mask, x2, y2)) bit ^= 1;
+              mods[y2][x2] = bit;
+            }
+          }
+        }
+      }
+      // format bits (EC M formatBits=0)
+      var dataF = (0<<3) | mask;
+      var rem = dataF;
+      for (var ri=0; ri<10; ri++) rem = (rem<<1) ^ ((rem>>9)*0x537);
+      var fbits = ((dataF<<10)|rem) ^ 0x5412;
+      function setF(x,y,bit){ mods[y][x]=bit?1:0; func[y][x]=true; }
+      for (var i2=0;i2<=5;i2++) setF(8,i2, getBit(fbits,i2));
+      setF(8,7, getBit(fbits,6)); setF(8,8, getBit(fbits,7)); setF(7,8, getBit(fbits,8));
+      for (var i3=9;i3<15;i3++) setF(14-i3,8, getBit(fbits,i3));
+      for (var i4=0;i4<8;i4++) setF(size-1-i4,8, getBit(fbits,i4));
+      for (var i5=8;i5<15;i5++) setF(8,size-15+i5, getBit(fbits,i5));
+      setF(size-8,8,1);
+      // version bits
+      if (version>=7){
+        var remV = version;
+        for (var rv=0; rv<12; rv++) remV = (remV<<1) ^ ((remV>>11)*0x1F25);
+        var vbits = (version<<12)|remV;
+        for (var vi2=0; vi2<18; vi2++){
+          var bitV = getBit(vbits, vi2);
+          var aa = size-11 + vi2%3, bbb = Math.floor(vi2/3);
+          mods[bbb][aa]=bitV?1:0; mods[aa][bbb]=bitV?1:0;
+        }
+      }
+      // fill any remaining null (should not happen) with 0
+      for (var yy=0; yy<size; yy++) for (var xx=0; xx<size; xx++) if (mods[yy][xx]===null) mods[yy][xx]=0;
+      return mods;
+    }
+    function penalty(mods){
+      var score=0;
+      // N1 rows/cols runs
+      function runPenalty(line){
+        var runColor=line[0], runLen=1, s=0;
+        for (var i=1;i<line.length;i++){
+          if (line[i]===runColor) runLen++;
+          else { if (runLen>=5) s += 3 + (runLen-5); runColor=line[i]; runLen=1; }
+        }
+        if (runLen>=5) s += 3 + (runLen-5);
+        return s;
+      }
+      for (var y=0;y<size;y++) score += runPenalty(mods[y]);
+      for (var x=0;x<size;x++){ var col=[]; for (var yy2=0;yy2<size;yy2++) col.push(mods[yy2][x]); score += runPenalty(col); }
+      // N2 2x2
+      for (var yy3=0; yy3<size-1; yy3++) for (var xx3=0; xx3<size-1; xx3++){
+        var c=mods[yy3][xx3];
+        if (c===mods[yy3][xx3+1] && c===mods[yy3+1][xx3] && c===mods[yy3+1][xx3+1]) score+=3;
+      }
+      // N3 finder-like
+      function finderPenaltyLine(line){
+        var s=0;
+        for (var i=0;i+10<line.length;i++){
+          var pat1 = line[i]===1&&line[i+1]===0&&line[i+2]===1&&line[i+3]===1&&line[i+4]===1&&line[i+5]===0&&line[i+6]===1&&line[i+7]===0&&line[i+8]===0&&line[i+9]===0&&line[i+10]===0;
+          var pat2 = line[i]===0&&line[i+1]===0&&line[i+2]===0&&line[i+3]===0&&line[i+4]===1&&line[i+5]===0&&line[i+6]===1&&line[i+7]===1&&line[i+8]===1&&line[i+9]===0&&line[i+10]===1;
+          if (pat1||pat2) s+=40;
+        }
+        return s;
+      }
+      for (var y4=0;y4<size;y4++) score += finderPenaltyLine(mods[y4]);
+      for (var x4=0;x4<size;x4++){ var col4=[]; for (var yy4=0;yy4<size;yy4++) col4.push(mods[yy4][x4]); score += finderPenaltyLine(col4); }
+      // N4 dark proportion
+      var dark=0; for (var y5=0;y5<size;y5++) for (var x5=0;x5<size;x5++) if (mods[y5][x5]) dark++;
+      var total=size*size;
+      var percent = dark*100/total;
+      var k = Math.floor(Math.abs(percent-50)/5);
+      score += k*10;
+      return score;
+    }
+    var best=null, bestScore=Infinity, bestMask=0;
+    for (var m=0;m<8;m++){
+      var mat = buildMatrix(m);
+      var sc = penalty(mat);
+      if (sc<bestScore){ bestScore=sc; best=mat; bestMask=m; }
+    }
+    return { version: version, size: size, modules: best, mask: bestMask, dataCodewords: dataCW };
+  }
+  return { encodeAlphanumeric: encodeAlphanumeric, ALPH: ALPH };
+})();
+if (typeof module !== 'undefined' && module.exports) module.exports = QR;
+
+/* ---------- 界面 ---------- */
+var currentPrintText = '';
+var currentChunks = null;
+
+$('appVersion').textContent = APP_VERSION;
+if ($('appVersionBadge')) $('appVersionBadge').textContent = APP_VERSION;
+
+$('btnGenerate').addEventListener('click', async function(){
+  var btn = $('btnGenerate'); btn.disabled = true;
+  try {
+    var file = $('fileInput').files[0];
+    if (!file) throw new Error('请先选择文件。');
+    var pw1 = $('pw1').value, pw2 = $('pw2').value;
+    if (pw1.length < 8) throw new Error('口令至少 8 位。');
+    if (pw1 !== pw2) throw new Error('两次口令不一致，请重新输入。');
+    /* 口令提示会印在封面并随打印文本一起被粘贴回来；若提示本身形如 PV1 块头，
+       恢复解析会把它误当成一块而报 CRC 失败，故直接拒绝此类提示 */
+    if (/PV1\s*\d+\s*\/\s*\d+\s*CRC32/i.test($('hintInput').value)) throw new Error('口令提示中不能包含形如“PV1 001/002 CRC32:……”的块头文本，否则会干扰恢复解析。');
+    if (!window.crypto || !crypto.subtle) throw new Error('此浏览器不支持 WebCrypto，无法加密。请用新版 Chrome / Edge / Firefox / Safari。');
+    setStatus($('encStatus'), '正在压缩与加密，请稍候……');
+    var orig = new Uint8Array(await file.arrayBuffer());
+    var res = await encryptPackage(orig, file.name, pw1);
+    var b32 = base32Encode(res.outer);
+    var modeEl = document.querySelector('input[name="printMode"]:checked');
+    var mode = modeEl ? modeEl.value : 'qr';
+    var chunks = (mode === 'qr') ? makeQRChunks(b32) : makeChunks(b32);
+    var meta = {
+      date: new Date().toLocaleString(),
+      hint: $('hintInput').value.trim(),
+      origSize: orig.length, compSize: res.compLen, encSize: res.outer.length
+    };
+    currentChunks = chunks;
+    currentPrintText = buildPrintText(chunks, meta);
+    if (mode === 'qr') renderPrintQR(chunks, meta); else renderPrint(chunks, meta);
+    var pages = (mode === 'qr') ? Math.max(1, Math.ceil(chunks.length / 12)) : Math.max(1, Math.ceil(chunks.length / 3));
+    setStatus($('encStatus'), '生成成功。\n原文件：' + file.name + '（' + orig.length + ' 字节）\n'
+      + (res.compressed ? '压缩：已用 gzip（' + res.compLen + ' 字节）\n' : '压缩：未压缩（gzip 后未变小，已原样存储，' + res.compLen + ' 字节）\n')
+      + '加密后：' + res.outer.length + ' 字节 · Base32：' + b32.length + ' 字符 · ' + (mode === 'qr' ? '二维码：' : '文本块：') + chunks.length + ' 个\n'
+      + '打印预估：约 ' + pages + ' 页 A4（二维码模式每页约 12 个码，文本模式每页约 3 块，仅供参考，实际以打印机为准）\n'
+      + (pw1.length < 12 ? '提醒：口令不足 12 位，纸面备份可被离线暴力尝试，建议改用更长口令重新生成。\n' : '')
+      + '下一步：先用第二步粘贴本稿做一次恢复测试，确认无误再打印存档。', 'ok');
+    document.getElementById('printArea').scrollIntoView({ behavior: 'smooth' });
+  } catch (e) {
+    setStatus($('encStatus'), '生成失败：' + (e && e.message ? e.message : e), 'err');
+  } finally { btn.disabled = false; }
+});
+
+$('btnPrint').addEventListener('click', function(){
+  if (!currentChunks) { setStatus($('encStatus'), '请先生成打印稿再打印。', 'err'); return; }
+  window.print();
+});
+$('btnCopy').addEventListener('click', async function(){
+  if (!currentPrintText) { setStatus($('encStatus'), '请先生成打印稿再复制。', 'err'); return; }
+  var ok = await copyText(currentPrintText);
+  setStatus($('encStatus'), ok ? '打印文本已复制到剪贴板。' : '复制失败，请改用“下载打印文本”后手动打开复制。', ok ? 'ok' : 'err');
+});
+$('btnDownloadTxt').addEventListener('click', function(){
+  if (!currentPrintText) { setStatus($('encStatus'), '请先生成打印稿再下载。', 'err'); return; }
+  downloadBlob(new TextEncoder().encode(currentPrintText), 'PepperArchive-backup.txt');
+});
+$('btnClearEnc').addEventListener('click', function(){ $('pw1').value = ''; $('pw2').value = ''; });
+
+$('txtFileInput').addEventListener('change', async function(){
+  var f = $('txtFileInput').files[0];
+  if (!f) return;
+  try { $('backupText').value = await f.text(); setStatus($('recStatus'), '已读入打印文本文件：' + f.name + '（' + $('backupText').value.length + ' 字符）。'); }
+  catch (e) { setStatus($('recStatus'), '读入失败：' + e.message, 'err'); }
+  finally { $('txtFileInput').value = ''; /* 允许再次选择同一文件 */ }
+});
+$('btnCheckOnly').addEventListener('click', function(){
+  try {
+    var parsed = parseBackupText($('backupText').value);
+    setStatus($('recStatus'), checkOnlyReport(parsed), parsed.complete ? 'ok' : 'err');
+  } catch (e) { setStatus($('recStatus'), '检查失败：' + e.message, 'err'); }
+});
+$('btnRecover').addEventListener('click', async function(){
+  var btn = $('btnRecover'); btn.disabled = true;
+  try {
+    var pw = $('pwRec').value;
+    if (!pw) throw new Error('请输入解密口令。');
+    if (!window.crypto || !crypto.subtle) throw new Error('此浏览器不支持 WebCrypto，无法解密。');
+    var parsed = parseBackupText($('backupText').value);
+    if (!parsed.complete) throw new Error(checkOnlyReport(parsed));
+    setStatus($('recStatus'), '块校验通过，正在解密与解压……');
+    var outer = base32Decode(parsed.joined);
+    var res = await decryptPackage(outer, pw);
+    var safeName = sanitizeFileName(res.fileName);
+    downloadBlob(res.data, safeName);
+    var recSha = await sha256Hex(res.data);
+    setStatus($('recStatus'), '恢复成功！已下载：' + safeName + '（' + res.data.length + ' 字节）\n原始文件名：' + res.fileName + (safeName !== res.fileName ? '（下载时已做路径安全替换）' : '') + '\n恢复文件 SHA-256：' + recSha + '\n（恢复时已验过加密包内的原始 SHA-256；如需再和原文件逐字节对比，请用下方第三步校验。）', 'ok');
+  } catch (e) {
+    setStatus($('recStatus'), '恢复失败：' + (e && e.message ? e.message : e), 'err');
+  } finally { btn.disabled = false; }
+});
+$('btnDetectQR').addEventListener('click', async function(){
+  var files = $('qrImageInput').files;
+  if (!files || files.length === 0) { setStatus($('recStatus'), '请先选择二维码照片（可多选）。', 'err'); return; }
+  if (typeof BarcodeDetector === 'undefined') {
+    setStatus($('recStatus'), '此浏览器不支持 BarcodeDetector，无法自动识别照片。请用手机扫码 App 逐个扫码，把每码文本粘贴到下方恢复区（二维码文本与纯文本块格式相同，可直接粘贴）。', 'err');
+    return;
+  }
+  try {
+    var detector = new BarcodeDetector({ formats: ['qr_code'] });
+    var found = [], failed = 0;
+    for (var fi = 0; fi < files.length; fi++){
+      try {
+        var bmp = await createImageBitmap(files[fi]);
+        var codes = await detector.detect(bmp);
+        codes.forEach(function(c){ if (c.rawValue) found.push(c.rawValue); });
+        if (codes.length === 0) failed++;
+      } catch (e) { failed++; }
+    }
+    if (found.length === 0) { setStatus($('recStatus'), '照片中没有识别出二维码（共 ' + files.length + ' 张，失败 ' + failed + ' 张）。请靠近单个码重拍，或改用手机扫码 App 逐个粘贴。', 'err'); return; }
+    var ta = $('backupText');
+    ta.value = (ta.value ? ta.value + '\n' : '') + found.join('\n');
+    var parsed;
+    try { parsed = parseBackupText(ta.value); } catch (e) { setStatus($('recStatus'), '已识别 ' + found.length + ' 个二维码并填入下方，但解析失败：' + e.message, 'err'); return; }
+    setStatus($('recStatus'), '已识别 ' + found.length + ' 个二维码并填入下方。\n' + checkOnlyReport(parsed), parsed.complete ? 'ok' : 'err');
+  } catch (e) {
+    setStatus($('recStatus'), '识别失败：' + e.message, 'err');
+  }
+});
+$('btnClearRec').addEventListener('click', function(){ $('backupText').value = ''; $('pwRec').value = ''; });
+
+/* ---------- 恢复文件校验 ---------- */
+function sha256Hex(bytes){
+  return crypto.subtle.digest('SHA-256', bytes).then(function(buf){
+    return Array.prototype.map.call(new Uint8Array(buf), function(x){ return ('0'+x.toString(16)).slice(-2); }).join('');
+  });
+}
+function firstDiffIndex(a, b){
+  var n = Math.min(a.length, b.length);
+  for (var i = 0; i < n; i++) if (a[i] !== b[i]) return i;
+  return (a.length === b.length) ? -1 : n;
+}
+$('btnVerify').addEventListener('click', async function(){
+  var btn = $('btnVerify'); btn.disabled = true;
+  try {
+    var f1 = $('origFileInput').files[0], f2 = $('recFileInput').files[0];
+    if (!f1 || !f2) throw new Error('请先同时选择原文件和恢复后的文件。');
+    if (!window.crypto || !crypto.subtle) throw new Error('此浏览器不支持 WebCrypto，无法算 SHA-256。');
+    setStatus($('verifyStatus'), '正在逐字节对比并算 SHA-256，请稍候……');
+    var a = new Uint8Array(await f1.arrayBuffer());
+    var b = new Uint8Array(await f2.arrayBuffer());
+    var h1 = await sha256Hex(a), h2 = await sha256Hex(b);
+    var sameBytes = equalBytes(a, b);
+    var diff = firstDiffIndex(a, b);
+    var msg = '原文件：' + f1.name + '（' + a.length + ' 字节）\nSHA-256：' + h1 + '\n'
+      + '恢复文件：' + f2.name + '（' + b.length + ' 字节）\nSHA-256：' + h2 + '\n';
+    if (sameBytes) msg += '结论：完全一致。两个文件逐字节相同，恢复无误。';
+    else if (a.length !== b.length) msg += '结论：不一致。长度不同（原 ' + a.length + '，恢复 ' + b.length + '），第一个不同位置在字节 ' + diff + '（从 0 开始计；若为较短文件的长度，说明较长文件多出了尾部数据）。';
+    else msg += '结论：不一致。长度相同但在字节 ' + diff + '（从 0 开始计）处不同，SHA-256 也不相同。';
+    setStatus($('verifyStatus'), msg, sameBytes ? 'ok' : 'err');
+  } catch (e) {
+    setStatus($('verifyStatus'), '校验失败：' + (e && e.message ? e.message : e), 'err');
+  } finally { btn.disabled = false; }
+});
+$('btnClearVerify').addEventListener('click', function(){ $('origFileInput').value = ''; $('recFileInput').value = ''; setStatus($('verifyStatus'), '尚未校验。'); });
+
+/* ---------- 自检 ---------- */
+$('btnSelfTest').addEventListener('click', async function(){
+  var btn = $('btnSelfTest'); btn.disabled = true;
+  var results = [];
+  function ok(name, cond, extra){ results.push((cond ? 'PASS' : 'FAIL') + ' ' + name + (extra ? ' — ' + extra : '')); return cond; }
+  try {
+    ok('CRC32 已知向量', crc32Hex('123456789') === 'CBF43926', crc32Hex('123456789'));
+    var allB32 = true;
+    for (var len = 0; len <= 64; len++){
+      var arr = new Uint8Array(len);
+      for (var i = 0; i < len; i++) arr[i] = (i * 37 + len) & 0xFF;
+      var enc = base32Encode(arr), dec = base32Decode(enc);
+      if (!equalBytes(arr, dec)) { allB32 = false; break; }
+    }
+    ok('Base32 往返（长度 0..64）', allB32);
+    var badB32 = false;
+    try { base32Decode('A'); } catch (e) { badB32 = true; }
+    ok('Base32 非法长度被拒绝', badB32);
+    if (!window.crypto || !crypto.subtle) throw new Error('此浏览器不支持 WebCrypto，自检无法继续');
+    /* 自检样本必须足够大且不可压缩，否则 gzip 后只有 1 块，缺块测试无法构造。
+       用确定性 LCG 伪随机 2000 字节：gzip 几乎不压缩，Base32 约 3200 字符 = 7 块。 */
+    var sample = new Uint8Array(2000);
+    var st = 123456789;
+    for (var si = 0; si < sample.length; si++){ st = (st * 1103515245 + 12345) & 0x7FFFFFFF; sample[si] = (st >> 16) & 0xFF; }
+    var encPkg = await encryptPackage(sample, '自检样本.bin', 'SelfTest-Password-123');
+    var chunks = makeChunks(base32Encode(encPkg.outer));
+    var shuffled = chunks.slice().reverse();
+    var shuffledText = shuffled.map(function(c){ return chunkHeader(c) + '\n' + c.text; }).join('\n');
+    var parsed = parseBackupText(shuffledText);
+    ok('分块乱序粘贴仍可拼回', parsed.complete && parsed.total === chunks.length);
+    var rec = await decryptPackage(base32Decode(parsed.joined), 'SelfTest-Password-123');
+    ok('加密→恢复往返（文件名与内容一致）', rec.fileName === '自检样本.bin' && equalBytes(rec.data, sample));
+    var wrongPw = false;
+    try { await decryptPackage(base32Decode(parsed.joined), 'Wrong-Password-123'); } catch (e) { wrongPw = true; }
+    ok('错口令被拒绝', wrongPw);
+    /* 明确坏块用例：只改第一块首字符，其余块原样，CRC 必须定位到第 1 块 */
+    var oneChunkBad = chunkHeader(chunks[0]) + '\n' + (chunks[0].text.charAt(0) === 'A' ? 'B' : 'A') + chunks[0].text.slice(1);
+    var parsedBad = parseBackupText(oneChunkBad + '\n' + chunks.slice(1).map(function(c){ return chunkHeader(c) + '\n' + c.text; }).join('\n'));
+    ok('坏块 CRC 被定位', !parsedBad.complete && parsedBad.bad.length > 0);
+    var missingText = chunks.slice(1).map(function(c){ return chunkHeader(c) + '\n' + c.text; }).join('\n');
+    var parsedMiss = parseBackupText(missingText);
+    ok('缺块被定位', !parsedMiss.complete && parsedMiss.missing.indexOf(1) !== -1);
+    /* 二维码编码器自检：用与真实打印相同的块文本编码，校验版本/尺寸/寻像图形 */
+    var qrSampleChunks = makeQRChunks(base32Encode(encPkg.outer));
+    var qrOk = true;
+    for (var qi = 0; qi < qrSampleChunks.length; qi++){
+      var q = QR.encodeAlphanumeric(qrPayload(qrSampleChunks[qi]));
+      if (q.size !== q.version * 4 + 17) { qrOk = false; break; }
+      /* 寻像图形左上角 7x7 外框与中心必须为黑 */
+      if (!q.modules[0][0] || !q.modules[0][6] || !q.modules[6][0] || !q.modules[3][3]) { qrOk = false; break; }
+      /* 二维码载荷文本与纯文本块格式相同，已在乱序粘贴测试中验证了解析；此处只验编码器本身 */
+    }
+    ok('二维码编码（版本/尺寸/寻像图形，V1-V20 字母数字模式）', qrOk && qrSampleChunks.length >= 1);
+    var emptyPkg = await encryptPackage(new Uint8Array(0), 'empty.bin', 'SelfTest-Password-123');
+    var emptyRec = await decryptPackage(emptyPkg.outer, 'SelfTest-Password-123');
+    ok('空文件往返', emptyRec.data.length === 0 && emptyRec.fileName === 'empty.bin');
+    var failed = results.filter(function(r){ return r.indexOf('FAIL') === 0; });
+    setStatus($('selfStatus'), results.join('\n') + '\n' + (failed.length ? '自检未全部通过，请勿用本页做正式备份。' : '自检全部通过。'), failed.length ? 'err' : 'ok');
+  } catch (e) {
+    setStatus($('selfStatus'), results.join('\n') + '\n自检异常：' + e.message, 'err');
+  } finally { btn.disabled = false; }
+});
+</script>
+</body>
+</html>
