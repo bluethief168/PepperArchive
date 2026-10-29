@@ -157,7 +157,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
 </head>
 <body>
 <header>
-  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.20</span> <span class="ver-sub">加密 · 纸质备份 · 目录</span></h1>
+  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.21</span> <span class="ver-sub">加密 · 纸质备份 · 目录</span></h1>
   <p>一个文件、离线运行：加密文本或文件，生成纸面打印稿、三包或加密文件；恢复时自动识别格式；目录只保存索引，不保存口令与密文。</p>
   <p><button class="secondary" id="themeBtn" type="button" aria-label="切换主题" style="display:none">主题</button> <button class="secondary" id="selfTestBtn" type="button" style="display:none">安全自检</button> <button class="secondary" id="helpBtn" type="button" style="display:none">使用帮助</button> <button class="secondary" id="aboutBtn" type="button" style="display:none">关于</button></p>
   <p class="small" style="color:#9ca3af">单文件、离线、无网络请求。口令只存在于本页内存中，绝不上传、不存入浏览器存储。版本 <span id="appVersion"></span> · 格式 PV1/PV2/PV04 · 默认 Argon2id</p>
@@ -255,6 +255,8 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   <p class="small">上传加密文件或打印文本文件。</p>
   <label for="uniRecFile">加密文件/打印文本文件</label><input type="file" id="uniRecFile">
   <p><button id="uniRecoverFile" type="button">恢复文件</button></p>
+  <div id="uniRecProgress" style="display:none;margin-top:12px"><div id="uniRecProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="background:#e5e7eb;border-radius:999px;height:12px;overflow:hidden"><div id="uniRecProgressBar" style="width:0%;height:100%;background:#111827"></div></div><div><span id="uniRecPct">0.00%</span> · <span id="uniRecProgressEta">预计剩余 --</span> · <span id="uniRecProgressElapsed"></span> · <span id="uniRecStage"></span></div></div>
+  <div class="generation-time" id="uniRecTime" aria-live="polite"><span>实际恢复时间</span> <strong>--</strong></div>
   <div id="uniRecStatus" class="status">尚未恢复。</div>
   <label for="uniRecOutput">恢复结果（文本直接显示，文件请用下载按钮）</label><textarea id="uniRecOutput" readonly></textarea>
   <p><button id="uniRecDownload" class="secondary" type="button">下载恢复文件</button></p>
@@ -315,33 +317,33 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   </section>
 
   <section id="sec-help">
-    <h2>帮助 · 格式与安全说明（与当前版本 2026.10.28.20 同步）</h2>
+    <h2>帮助 · 格式与安全说明（与当前版本 2026.10.28.21 同步）</h2>
     <p><button id="helpDownloadBtn" type="button">保存本版帮助文件</button> <span class="small">把当前版本的独立帮助文件下载归档，内容与本页帮助同步。</span></p>
     <ul>
       <li><strong>加密：</strong>在“加密”标签页里，文本和文件共用一个表单，口令可留空（留空则不加密，只做压缩+校验）。新加密默认用 Argon2id：平衡 64 MiB / t=3 / p=4，强 128 MiB / t=3 / p=4（默认），高强 256 MiB / t=3 / p=4，也可自定义；PBKDF2 只用于恢复旧备份。加密时显示进度条、百分比、预计剩余时间和已流逝时间，完成后在结果区和状态里都显示实际生成时间；取消按钮可随时终止 Argon2id 计算。</li>
       <li><strong>压缩：</strong>压缩方式可选：不压缩、浏览器原生 gzip（默认）、DEFLATE 级别 1/6/9、LZMA 级别 1/6/9；选哪档都会写进备份，恢复时自动按标志解压。若压缩后反而更大，则原样存储（仍加密）。LZMA 是同步压缩，大文件会阻塞页面一段时间。</li>
       <li><strong>输出：</strong>文本可选单包纸质备份（新格式 PV04，二维码/纯文本打印稿）、三包分开保管（密文包/参数包/密钥包，仅文本适用）、单个加密文件（PV04 二进制下载）；文件可选单包纸质或单个加密文件，不为文件发明新三包格式。档案编号可留空，留空自动生成 PA-日期-随机；新单包和新三包留空时都生成 PA-…，旧备份的 PC-… 编号仍可恢复。</li>
-      <li><strong>三包首行与打印稿：</strong>密文包、参数包、密钥包的首行都是“APP version: PepperArchive 版本号”，印在纸上也能一眼看出是哪个软件、哪个版本生成的；旧版首行（只有版本号、或没有首行）的包仍能正常恢复。打印稿只在“加密”表单选“单包纸质备份”时生成，出现在下方打印区；选三包分开保管或单个加密文件时没有打印稿，结果在上方输出框里，打印区会直接说明这一点，不会再留一句看不懂的旧提示。</li>       <li><strong>恢复：</strong>在“恢复”标签页里，分“文本恢复”和“文件恢复”两块，口令共用。文本恢复粘贴纸面分块、三包文本，或上传纸质帧照片（标准 QR / PhotoCode）；文件恢复上传加密文件或打印文本文件。程序自动识别 PV1/PV2/PV04 分块、三包、纸质帧、旧文件容器，不用你先选格式；混拼（PV1 与 PV2、三包与分块、两个档案编号）会明确拒绝；旧文件容器直接在这里解密，不用再去其他表单。</li>
-      <li><strong>恢复校验：</strong>在“恢复”标签页下方，文件校验选原文件和恢复后的文件，文本校验粘贴原文本和恢复后的文本；两者都逐字节对比，并算两边的 SHA-256，报出第一个不同字节的位置；文本校验还报出第一个不同字符的位置。恢复后文本为空时点文本对比，会自动填入恢复区的结果。按原样对比，不去掉首尾空格和换行。</li>
+      <li><strong>三包首行与打印稿：</strong>密文包、参数包、密钥包的首行都是“APP version: PepperArchive 版本号”，印在纸上也能一眼看出是哪个软件、哪个版本生成的；旧版首行（只有版本号、或没有首行）的包仍能正常恢复。打印稿在“加密”表单选“单包纸质备份”或“三包分开保管”时都会生成，出现在下方打印区；三包打印稿分三个部分，每部分另起一页，打印后请裁开分开保管；选单个加密文件时没有打印稿，结果在上方输出框里，可下载，打印区会直接说明这一点。</li>       <li><strong>恢复：</strong>在“恢复”标签页里，分“文本恢复”和“文件恢复”两块，口令共用。文本恢复粘贴纸面分块、三包文本，或上传纸质帧照片（标准 QR / PhotoCode）；文件恢复上传加密文件或打印文本文件。程序自动识别 PV1/PV2/PV04 分块、三包、纸质帧、旧文件容器，不用你先选格式；混拼（PV1 与 PV2、三包与分块、两个档案编号）会明确拒绝；旧文件容器直接在这里解密，不用再去其他表单。</li>
+      <li><strong>恢复进度：</strong>恢复时有进度条，百分比精确到两位小数（例如 45.67%），旁边还有预计剩余、已流逝时间和当前步骤（正在识别照片、正在计算口令、正在解密等），恢复过程中按钮会暂时禁用、防止重复点，完成后显示实际恢复时间。旧备份用浏览器原生计算时不提供中间百分比，这时已流逝时间在动就说明没有卡死，不会编一个假百分比给你看。</li>       <li><strong>恢复校验：</strong>在“恢复”标签页下方，文件校验选原文件和恢复后的文件，文本校验粘贴原文本和恢复后的文本；两者都逐字节对比，并算两边的 SHA-256，报出第一个不同字节的位置；文本校验还报出第一个不同字符的位置。恢复后文本为空时点文本对比，会自动填入恢复区的结果。按原样对比，不去掉首尾空格和换行。</li>
       <li><strong>编码与分块：</strong>纸质分块用 Base32（A-Z、2-7）编码，每块带 CRC32；块可乱序粘贴，缺块、坏块、重复冲突块都会按块号报出。二维码模式每码约 900 个 Base32 字符，A4 每页约 9 个码；纯文本模式每块 480 字符。</li>
       <li><strong>完整性：</strong>三层校验 —— 块 CRC32、AES-256-GCM 认证标签、原始文件 SHA-256。任何一层失败都不会输出错误文件。</li>
       <li><strong>目录与自检：</strong>目录只保存名称、分类、备注、档案编号、状态和时间等索引信息，不保存密码、密钥秘密或密文；目录 JSON 本身未加密，请像地址簿一样妥善保存。自检一次覆盖纸质往返、三包往返、压缩档位、旧格式恢复、混拼拒绝、Argon2id 向量；第一次用新版本或升级后，先跑自检，自检失败不要用该版本处理新的重要数据。</li>
       <li><strong>上限：</strong>无软件层上限。新单包为 PV04，纸质分块为 PV2（长度字段 8 字节 u64，格式上限 16 EiB），旧 PV1 备份仍可恢复；实际能做多大只看运行机器的内存与硬件，不在代码里设限。恢复时文件名中的路径分隔符会被替换为下划线，防止写出到意外路径。</li>
       <li><strong>安全：</strong>单文件、离线、无网络请求；口令只存在于本页内存中，绝不上传、不存入浏览器存储。丢失口令无法恢复；不要把口令印在同一张纸上；打印前先用恢复区把打印稿粘贴回来做一次恢复测试。</li>
           <li><strong>口令显示：</strong>所有口令输入框右侧都有一个眼睛按钮（👁 显示 / 👁 隐藏），点一下就能看清自己输的口令，再点一下恢复隐藏；这是标准做法，所有口令框都有，不只是新表单。</li>
-      <li><strong>目录：</strong>状态“使用中 / 已归档”徽标为 12px 且不换行；操作按钮为白字（删除按钮白字红底），看得清。</li>
+      <li><strong>目录：</strong>状态“使用中 / 已归档”徽标为 12px 且不换行；操作按钮为白字（删除按钮白字红底），看得清。目录里有“清空全部目录”按钮，点一下会先弹出确认框，写明共几项、只删电子目录索引、不删纸质备份和加密文件，点“确认清空全部”才会删，点“取消”则不删，适合调试时一次清掉大量测试目录。</li>
       <li><strong>威胁模型：</strong>本工具主要解决静态密文被取得后的机密性与完整性问题。它不能防御已感染恶意软件的设备、键盘记录器、恶意浏览器扩展、被篡改的 HTML、屏幕录制、浏览器漏洞或用户主动泄露的密码/密钥。</li>
     </ul></section>
 </main>
 
 <div id="printArea">
   <h2>打印稿 <span class="no-print small">（下方内容就是将要打印的全部内容）</span></h2>
-  <div id="printCover" class="cover">还没有打印稿。请在上方“加密”表单里选“单包纸质备份”，点“开始加密”，打印稿就会出现在这里。三包分开保管和单个加密文件不生成打印稿，它们的结果在上方输出框里。</div>
+  <div id="printCover" class="cover">还没有打印稿。请在上方“加密”表单里选“单包纸质备份”或“三包分开保管”，点“开始加密”，打印稿就会出现在这里。单个加密文件不生成打印稿，它的结果在上方输出框里，可下载。</div>
   <div id="printChunks"></div>
   <p class="small no-print">提示：打印前请确认每一块都完整印出、没有缺页；建议同时打印两份，分开存放。</p>
 </div>
 
-<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive <span id="pcAppVersion">2026.10.28.20</span> · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
+<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive <span id="pcAppVersion">2026.10.28.21</span> · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
 
 
 <!-- ===== 功能区（原两程序的功能，同一界面下） ===== -->
@@ -365,6 +367,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
       </div>
       <div class="catalog-stats" id="catStats"></div>
       <div class="actions">
+        <button id="catClearAll" type="button" style="background:#b42318;color:#fff">清空全部目录</button>
         <button id="catExportJson" type="button">导出目录 JSON</button>
         <button id="catExportCsv" type="button">导出 CSV</button>
         <button id="catImport" type="button">导入目录 JSON</button>
@@ -372,6 +375,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
         <input class="catalog-file" id="catImportFile" type="file" accept="application/json,.json">
       </div>
       <div class="notice" id="catStorageStatus" style="margin-top:12px">正在读取本机目录存储…</div>
+      <div id="catClearConfirm" style="display:none;margin-top:12px;padding:12px;border:1px solid #fecaca;background:#fef2f2;border-radius:12px"><span id="catClearConfirmText">确定要清空全部目录吗？</span><p style="margin-top:8px"><button id="catClearConfirmYes" type="button" style="background:#b42318;color:#fff">确认清空全部</button> <button id="catClearConfirmNo" class="secondary" type="button">取消</button></p><p class="small">只删除电子目录索引，不删除你的纸质备份、加密文件和口令。清空后无法恢复。</p></div>
       <div class="catalog-table-wrap" style="margin-top:14px">
         <table class="catalog-table">
           <thead><tr><th>名称 / 用途</th><th>分类</th><th>档案编号</th><th>状态</th><th>更新时间</th><th>操作</th></tr></thead>
@@ -562,7 +566,7 @@ if(n+2>=i)return e;if(t=255&e[++n],128!=(192&t))return e;if(o=255&e[++n],128!=(1
 <script>
 'use strict';
 /* PepperArchive 格式 PV1/PV2 —— 单文件离线实现，无外部依赖。PV2 为新生成格式（u64 长度），PV1 仅恢复兼容 */
-var APP_VERSION = '2026.10.28.20';
+var APP_VERSION = '2026.10.28.21';
 /* Worker 需要从本页脚本里截取 QR 编码器源码：必须在脚本同步执行时捕获，事件回调里 document.currentScript 已是 null */
 var PAGE_SCRIPT_TEXT = (typeof document !== 'undefined' && document.currentScript) ? document.currentScript.textContent : null;
 var PBKDF2_ITER = 600000;
@@ -1955,7 +1959,7 @@ $('btnSelfTest').addEventListener('click', async function(){
 (function(){
 // ========================= CONFIG =========================
 const CFG=Object.freeze({
-  APP_VERSION:'2026.10.28.20',FORMAT_MAJOR:1,FORMAT_MINOR:2,
+  APP_VERSION:'2026.10.28.21',FORMAT_MAJOR:1,FORMAT_MINOR:2,
   MAGIC_TEXT:'AEGISCF1',TEXT_PREFIX:'AEGIS1.',FINAL_MAGIC:'FIN1',HEADER_LEN_V1:104,HEADER_LEN:112,
   CIPHER_ID:1,KDF_ID:1,TAG_BITS:128,TAG_BYTES:16,SALT_BYTES:32,NONCE_PREFIX_BYTES:8,FILE_ID_BYTES:16,
   DEFAULT_CHUNK:4*1024*1024,MIN_CHUNK:64*1024,MAX_CHUNK:64*1024*1024,
@@ -3571,8 +3575,11 @@ function catalogExportPayload(){return {format:'PaperCipher-Catalog',version:CAT
 function catalogExportJson(){const payload=catalogExportPayload(),blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});downloadBlob(blob,`PepperArchive-Catalog-${new Date().toISOString().slice(0,10)}-${PEPPERCIPHER_VERSION}.json`);toast('目录 JSON 已导出。它不包含密码，但包含账户用途信息。','success')}
 function catalogExportCsv(){const rows=[['档案编号','Name','Category','Note','Status','Created At','Updated At'],...catalogState.records.map(r=>[r.recordId,r.name,r.category,r.note,r.status,r.createdAt,r.updatedAt])];const csv='\uFEFF'+rows.map(row=>row.map(catalogEscapeCsv).join(',')).join('\r\n');downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),`PepperArchive-Catalog-${new Date().toISOString().slice(0,10)}-${PEPPERCIPHER_VERSION}.csv`);toast('目录 CSV 已导出。','success')}
 async function catalogImportFile(file){const text=await file.text();let payload;try{payload=JSON.parse(text)}catch(_){throw new Error('目录 JSON 无法解析。')}if(!payload||payload.format!=='PaperCipher-Catalog'||payload.version!==CATALOG_CFG.SCHEMA||!Array.isArray(payload.records))throw new Error('不是有效的 PaperCipher 目录 JSON。');if(payload.records.length>CATALOG_CFG.MAX_RECORDS)throw new Error('目录记录数超过允许上限。');let changed=0;for(const raw of payload.records){const r=catalogNormalizeRecord(raw,{allowBlankName:false}),old=catalogFind(r.recordId);if(!old||String(r.updatedAt)>String(old.updatedAt)){await catalogPersist(r);changed++}}catalogRenderExistingOptions();toast(`目录导入完成：新增/更新 ${changed} 项。重复项以较新的更新时间为准。`,'success')}
+async function catalogIdbClear(db){return new Promise((resolve,reject)=>{try{const tx=db.transaction(CATALOG_CFG.STORE,'readwrite');tx.objectStore(CATALOG_CFG.STORE).clear();tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error||new Error('目录清空失败。'))}catch(e){reject(e)}})}
+async function catalogClearAll(){const count=catalogState.records.length;if(catalogState.db){try{await catalogIdbClear(catalogState.db)}catch(e){}}try{catalogLocalWrite([])}catch(e){}catalogState.records=[];if(catalogState.editId)catalogClearEditor();catalogRender();catalogRenderExistingOptions();return count}
+function catalogShowClearConfirm(){const n=catalogState.records.length;if(!n){toast('目录已经是空的，不用清空。','success');return}const box=$('catClearConfirm');if(box)box.style.display='';const t=$('catClearConfirmText');if(t)t.textContent='确定要清空全部目录吗？共 '+n+' 项，清空后无法恢复。只删除电子目录索引，不删除你的纸质备份、加密文件和口令。';}
 function catalogInitBindings(){
-  $('catSearch').addEventListener('input',catalogRender);$('catSort').addEventListener('change',catalogRender);$('catNew').addEventListener('click',catalogPrepareNew);$('catRefresh').addEventListener('click',async()=>{catalogState.loadPromise=null;catalogState.ready=false;await catalogLoad();toast('目录已刷新。','success')});$('catExportJson').addEventListener('click',catalogExportJson);$('catExportCsv').addEventListener('click',catalogExportCsv);$('catImport').addEventListener('click',()=>$('catImportFile').click());$('catImportFile').addEventListener('change',async()=>{const f=$('catImportFile').files?.[0];$('catImportFile').value='';if(!f)return;try{await catalogEnsureLoaded();await catalogImportFile(f)}catch(e){toast(e.message||'目录导入失败。','error')}});$('catSave').addEventListener('click',catalogSaveEditor);$('catCancel').addEventListener('click',catalogClearEditor);$('catGenerateId').addEventListener('click',catalogPrepareNew);$('teCatalogMode').addEventListener('change',catalogSyncEncryptionMode);$('teExistingRecord').addEventListener('change',catalogLoadExistingIntoForm);
+  $('catSearch').addEventListener('input',catalogRender);$('catSort').addEventListener('change',catalogRender);$('catNew').addEventListener('click',catalogPrepareNew);$('catRefresh').addEventListener('click',async()=>{catalogState.loadPromise=null;catalogState.ready=false;await catalogLoad();toast('目录已刷新。','success')});$('catClearAll').addEventListener('click',catalogShowClearConfirm);$('catClearConfirmNo').addEventListener('click',()=>{const b=$('catClearConfirm');if(b)b.style.display='none'});$('catClearConfirmYes').addEventListener('click',async()=>{const b=$('catClearConfirm');if(b)b.style.display='none';try{const n=await catalogClearAll();toast('已清空全部目录索引，共 '+n+' 项；加密档案本身未删除。','success')}catch(e){toast(e.message||'清空失败。','error')}});$('catExportJson').addEventListener('click',catalogExportJson);$('catExportCsv').addEventListener('click',catalogExportCsv);$('catImport').addEventListener('click',()=>$('catImportFile').click());$('catImportFile').addEventListener('change',async()=>{const f=$('catImportFile').files?.[0];$('catImportFile').value='';if(!f)return;try{await catalogEnsureLoaded();await catalogImportFile(f)}catch(e){toast(e.message||'目录导入失败。','error')}});$('catSave').addEventListener('click',catalogSaveEditor);$('catCancel').addEventListener('click',catalogClearEditor);$('catGenerateId').addEventListener('click',catalogPrepareNew);$('teCatalogMode').addEventListener('change',catalogSyncEncryptionMode);$('teExistingRecord').addEventListener('change',catalogLoadExistingIntoForm);
 }
 async function catalogInit(){catalogInitBindings();await catalogLoad();catalogRenderExistingOptions();catalogSyncEncryptionMode()}
 
@@ -3723,13 +3730,13 @@ async function splitArgon2id(passwordBytes,salt,{memoryKiB,timeCost,parallelism,
             const refLane=(r===0&&s===0)?l:randH%p,refPos=splitIndexAlpha(r,s,laneLen,segLen,index,randL,refLane===l);
             splitA2Block(B,256*prev,256*(refLane*laneLen+refPos),offset*256,needXor);
             done++;
-            if(done%128===0){if(typeof onProgress==='function'){checkCancelled(state.currentOp);onProgress(done,total,'js')}await new Promise(res=>setTimeout(res,0));}
+            if(done%128===0){if(typeof onProgress==='function'){checkCancelled(state.currentOp);onProgress(done,total,'js')} if(window.__PA_ARGON_CB){try{window.__PA_ARGON_CB(done/total)}catch(e){}} await new Promise(res=>setTimeout(res,0));}
           }
         }
         
       }
     }
-    if(typeof onProgress==='function'){checkCancelled(state.currentOp);onProgress(total,total,'js')}
+    if(typeof onProgress==='function'){checkCancelled(state.currentOp);onProgress(total,total,'js')} if(window.__PA_ARGON_CB){try{window.__PA_ARGON_CB(1)}catch(e){}}
     address.fill(0);address=null;
     C=new Uint32Array(256);
     for(let l=0;l<p;l++){
@@ -3894,7 +3901,7 @@ function splitPostBootstrap(){
 }
 
 // ========================= VERSIONED HELP =========================
-const PEPPERCIPHER_VERSION='2026.10.28.20'; /* 合并版版本，与 PepperArchive APP_VERSION 一致 */
+const PEPPERCIPHER_VERSION='2026.10.28.21'; /* 合并版版本，与 PepperArchive APP_VERSION 一致 */
 function pepperDateCode(d=new Date()){return String(d.getFullYear()).slice(-2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
 function buildHelpHtml(){const v=PEPPERCIPHER_VERSION,date=pepperDateCode();return `<div class="help-doc"><h2>PepperArchive 使用帮助 · 版本 ${v}</h2><p class="sub">本帮助与当前网页程序版本同步生成。PepperArchive 是<strong>离线、本机运行</strong>的文本/文件加密工具；正常加密、解密、自检和纸质恢复均不需要网络。</p>
 <h3>零、当前版本使用方法（本版帮助已随版本更新，与当前界面一致）</h3>
@@ -4081,7 +4088,10 @@ splitPostBootstrap();
           var uniDur3 = pw1 ? uniFinishArgon() : '';
           // encryptText with object spec? It calls pcArgon2Params(spec) which accepts object, good. But its signature is (plain,password,level,noPassword,recordId) where level can be object.
           outText = '档案编号：' + arcId + '\n' + (arcName ? '档案名称：' + arcName + '\n' : '') + '--- 密文包 ---\n' + res.cipher + '\n--- 参数包 ---\n' + res.paramText + '\n--- 密钥包 ---\n' + res.keyText;
-          setStatus(status, '加密成功（三包）。档案编号：' + arcId + (uniDur3 ? '。实际生成时间：' + uniDur3 : '') + '。请把三个包分开保管，缺一不可恢复。', true); if($('printChunks')) $('printChunks').innerHTML=''; if($('printCover')) $('printCover').innerHTML='本次生成的是三包分开保管，没有打印稿。打印稿只在上方选“单包纸质备份”时生成。三包结果在上方输出框里，请把密文包、参数包、密钥包分开保管，缺一不可恢复。';
+          setStatus(status, '加密成功（三包）。档案编号：' + arcId + (uniDur3 ? '。实际生成时间：' + uniDur3 : '') + '。三包打印稿已在下方打印区生成，三个包各从新的一页开始，打印后请裁开分开保管，缺一不可恢复。', true);
+          var _esc3=function(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+          if($('printCover')) $('printCover').innerHTML='PepperArchive 三包纸质备份 · 档案编号：'+arcId+(arcName?' · 档案名称：'+arcName:'')+'<br>生成日期：'+new Date().toLocaleString()+'<br>下面三个包分别从新的一页开始打印，打印后请把三部分裁开、分开保管，不要把三个包长期放在同一张纸上。恢复时把三个包文本粘贴到恢复区，输入同一口令即可。不要把口令印在这张纸上。';
+          if($('printChunks')) $('printChunks').innerHTML='<div class="chunk-block"><div><strong>密文包 Ciphertext</strong> · 档案编号：'+arcId+'</div><pre>'+_esc3(res.cipher)+'</pre></div><div class="chunk-block" style="break-before:page"><div><strong>参数包 Parliaments</strong> · 档案编号：'+arcId+'</div><pre>'+_esc3(res.paramText)+'</pre></div><div class="chunk-block" style="break-before:page"><div><strong>密钥包 Key</strong> · 档案编号：'+arcId+'</div><pre>'+_esc3(res.keyText)+'</pre></div>';
         } else if(output === 'file'){
           var bytes, fname;
           if(isText){ bytes = new TextEncoder().encode($('uniText').value); fname = (arcName || 'text') + '.txt'; }
@@ -4154,6 +4164,16 @@ splitPostBootstrap();
   if(recBtn){
     recBtn.addEventListener('click', async function(){
       var status = $('uniRecStatus');
+      var recProg=$('uniRecProgress'),recBar=$('uniRecProgressBar'),recPctEl=$('uniRecPct'),recEtaEl=$('uniRecProgressEta'),recElapsedEl=$('uniRecProgressElapsed'),recStageEl=$('uniRecStage'),recTimeEl=$('uniRecTime');
+      var recStartMs=performance.now(),recTimer=null,recLastFrac=0;
+      function recSetPct(frac,stage){var p=Math.max(0,Math.min(1,Number(frac)||0));recLastFrac=p;var pctText=(p*100).toFixed(2)+'%';if(recPctEl)recPctEl.textContent=pctText;if(recBar)recBar.style.width=(p*100).toFixed(2)+'%';var tr=$('uniRecProgressTrack');if(tr)tr.setAttribute('aria-valuenow',(p*100).toFixed(2));if(stage&&recStageEl)recStageEl.textContent=stage;var el=Math.max(0,performance.now()-recStartMs)/1000;if(recEtaEl){if(p>0.02&&p<1)recEtaEl.textContent='预计剩余 '+(el*(1-p)/p).toFixed(2)+' 秒';else if(p>=1)recEtaEl.textContent='预计剩余 0.00 秒';else recEtaEl.textContent='预计剩余 --';}if(recElapsedEl)recElapsedEl.textContent='已流逝 '+el.toFixed(2)+' 秒';}
+      function recSetStage(stage){if(recStageEl)recStageEl.textContent=stage;}
+      if(recProg)recProg.style.display='';recSetPct(0,'正在准备恢复…');
+      var recFileBtnEl=$('uniRecoverFile'),encBtnEl=$('uniEncrypt');
+      if(recBtn)recBtn.disabled=true;if(recFileBtnEl)recFileBtnEl.disabled=true;if(encBtnEl)encBtnEl.disabled=true;
+      window.__PA_ARGON_CB=function(frac){recSetPct(frac,frac>=1?'口令计算完成，正在解密、解压和校验…':'正在计算口令（Argon2id）…');};
+      recTimer=setInterval(function(){if(recElapsedEl)recElapsedEl.textContent='已流逝 '+(Math.max(0,performance.now()-recStartMs)/1000).toFixed(2)+' 秒';if(recEtaEl&&recLastFrac>0.02&&recLastFrac<1){var el=Math.max(0,performance.now()-recStartMs)/1000;recEtaEl.textContent='预计剩余 '+(el*(1-recLastFrac)/recLastFrac).toFixed(2)+' 秒';}},200);
+
       try{
         var pw = $('uniRecPw').value;
         var text = $('uniRecText') ? $('uniRecText').value : '';
@@ -4161,6 +4181,11 @@ splitPostBootstrap();
         var fileBytes = null, fileName = '';
         if(fileEl && fileEl.files && fileEl.files[0]){
           var ff = fileEl.files[0]; fileName = ff.name; fileBytes = new Uint8Array(await ff.arrayBuffer());
+        }
+        if(fileBytes){
+          var _asText=''; try{ _asText = new TextDecoder('utf-8').decode(fileBytes); }catch(e){ _asText=''; }
+          if(_asText && /PV[12]\s*\d+\s*\/\s*\d+\s*CRC32/i.test(_asText)){ text=_asText; fileBytes=null; recSetStage('已识别为纸面分块文本文件，正在按分块恢复…'); }
+          else { recSetStage('正在读取文件…'); }
         }
         var photoEl = $('uniRecPhoto');
         var photoFiles = (photoEl && photoEl.files) ? Array.prototype.slice.call(photoEl.files) : [];
@@ -4172,9 +4197,11 @@ splitPostBootstrap();
           text.split(/\r?\n/).forEach(function(ln){ var t = ln.trim(); if(t.indexOf('PAPERQR1|') === 0) frameLines.push(t); });
         }
         if(photoFiles.length){
+          recSetStage('正在识别照片…');
           var Uph = window.__PA_UNIFIED__;
           if(!Uph || !Uph.decodePaperImage) throw new Error('纸质帧识别引擎未加载');
           for(var pi = 0; pi < photoFiles.length; pi++){
+            recSetStage('正在识别第 '+(pi+1)+' / '+photoFiles.length+' 张照片…');
             var found = await Uph.decodePaperImage(photoFiles[pi]);
             found.forEach(function(it){ if(it && it.raw) frameLines.push(String(it.raw).trim()); });
           }
@@ -4189,6 +4216,7 @@ splitPostBootstrap();
           var rp = $('prRecoveredParams') ? $('prRecoveredParams').value : '';
           var rk = $('prRecoveredKey') ? $('prRecoveredKey').value : '';
           if(rc && rp && rk){
+            recSetStage('正在计算口令并解密，请稍候…');
             var decP = await Up.decryptText(rc, pw, rp, rk);
             if($('uniRecOutput')) $('uniRecOutput').value = decP.plain;
             uniRecFileBytes = new TextEncoder().encode(decP.plain); uniRecFileName = 'recovered.txt';
@@ -4205,6 +4233,7 @@ splitPostBootstrap();
           var parsed = parseBackupText(text);
           if(!parsed.complete) throw new Error('分块不完整：' + (parsed.missing ? parsed.missing.join('、') : '请检查缺块'));
           var outer = base32Decode(parsed.joined);
+          recSetStage('正在计算口令并解密，请稍候…');
           var res = await decryptPackage(outer, pw);
           if(res.data && res.fileName){
             // Text vs file: if data decodes as UTF-8 text and filename ends .txt, show text, else offer download
@@ -4246,6 +4275,7 @@ splitPostBootstrap();
           var cipher = extract(['Ciphertext.','PAPER2.']);
           var paramText = extract(['Parliaments.','PAPERPAR2.']);
           var keyText = extract(['Key.','PAPERKEY2.']);
+          recSetStage('正在计算口令并解密，请稍候…');
           var dec = await U.decryptText(cipher, pw, paramText, keyText);
           if($('uniRecOutput')) $('uniRecOutput').value = dec.plain;
           uniRecFileBytes = new TextEncoder().encode(dec.plain); uniRecFileName = 'recovered.txt';
@@ -4264,6 +4294,7 @@ splitPostBootstrap();
           // Binary outer: PV00/01/02/03/04
           var magic = String.fromCharCode(fileBytes[0],fileBytes[1],fileBytes[2],fileBytes[3]);
           if(magic==='PV00'||magic==='PV01'||magic==='PV02'||magic==='PV03'||magic==='PV04'){
+            recSetStage('正在计算口令并解密，请稍候…');
             var r2 = await decryptPackage(fileBytes, pw);
             uniRecFileBytes = r2.data; uniRecFileName = r2.fileName;
             try{ if($('uniRecOutput')) $('uniRecOutput').value = new TextDecoder('utf-8',{fatal:true}).decode(r2.data); } catch(e){ if($('uniRecOutput')) $('uniRecOutput').value=''; }
@@ -4276,6 +4307,7 @@ splitPostBootstrap();
             var Uc = window.__PA_UNIFIED__;
             if(!Uc || !Uc.decryptFile) throw new Error('文件容器引擎未加载');
             var contBlob = new Blob([fileBytes]);
+            recSetStage('正在计算口令并解密，请稍候…');
             var cont = await Uc.decryptFile(contBlob, pw, null, false);
             var contData = new Uint8Array(await cont.blob.arrayBuffer());
             uniRecFileBytes = contData; uniRecFileName = cont.name;
@@ -4288,7 +4320,15 @@ splitPostBootstrap();
           throw new Error('无法识别输入格式：请粘贴 PV 分块、三包，或上传 PV 外层二进制文件。');
         }
         throw new Error('请先粘贴分块/三包文本，或上传文件。');
-      } catch(e){ setStatus(status, '恢复失败：' + (e && e.message ? e.message : e), false); }
+      } catch(e){ setStatus(status, '恢复失败：' + (e && e.message ? e.message : e), false); } finally {
+        if(recTimer){ clearInterval(recTimer); recTimer=null; }
+        if(window.__PA_ARGON_CB) window.__PA_ARGON_CB=null;
+        if(recBtn) recBtn.disabled=false; if(recFileBtnEl) recFileBtnEl.disabled=false; if(encBtnEl) encBtnEl.disabled=false;
+        var _ok = status && status.className && status.className.indexOf('ok')>=0;
+        var _el = (Math.max(0, performance.now()-recStartMs)/1000).toFixed(2);
+        if(_ok){ recSetPct(1,'恢复完成'); if(recTimeEl){ var _st=recTimeEl.querySelector('strong'); if(_st) _st.textContent=_el+' 秒'; } }
+        else { if(recTimeEl){ var _st2=recTimeEl.querySelector('strong'); if(_st2) _st2.textContent=_el+' 秒'; } if(recStageEl && recStageEl.textContent.indexOf('正在')===0) recStageEl.textContent='已结束'; }
+      }
     });
   }
   var recFileBtn = $('uniRecoverFile');
