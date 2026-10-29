@@ -163,7 +163,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
 </head>
 <body>
 <header>
-  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.29.34</span> <span class="ver-sub">加密 · 纸质备份 · 目录</span></h1>
+  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.29.35</span> <span class="ver-sub">加密 · 纸质备份 · 目录</span></h1>
   <p>一个文件、离线运行：加密文本或文件，生成纸面打印稿、三包或加密文件；恢复时自动识别格式；目录只保存索引，不保存口令与密文。</p>
   <p><button class="secondary" id="themeBtn" type="button" aria-label="切换主题" style="display:none">主题</button> <button class="secondary" id="selfTestBtn" type="button" style="display:none">安全自检</button> <button class="secondary" id="helpBtn" type="button" style="display:none">使用帮助</button> <button class="secondary" id="aboutBtn" type="button" style="display:none">关于</button></p>
   <p class="small" style="color:#9ca3af">单文件、离线、无网络请求。口令只存在于本页内存中，绝不上传、不存入浏览器存储。版本 <span id="appVersion"></span> · 格式 PV1/PV2/PV04 · 默认 Argon2id</p>
@@ -193,7 +193,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   <label for="uniArgonPreset">Argon2id 预设</label><select id="uniArgonPreset"><option value="balanced">平衡 64 MiB / t=3 / p=4</option><option value="strong" selected>强 128 MiB / t=3 / p=4（默认）</option><option value="high">高强 256 MiB / t=3 / p=4</option><option value="custom">自定义</option></select>
   <div id="uniArgonCustom" style="display:none"><label>自定义 m（KiB）/ t / p</label><p><input type="number" id="uniArgonM" value="131072" style="width:32%"> <input type="number" id="uniArgonT" value="3" style="width:32%"> <input type="number" id="uniArgonP" value="4" style="width:32%"></p></div>
   <label for="uniComp">压缩方式</label><select id="uniComp"><option value="store">不压缩（最快）</option><option value="gzip" selected>浏览器原生 gzip（默认）</option><option value="deflate1">DEFLATE 级别 1</option><option value="deflate6">DEFLATE 级别 6</option><option value="deflate9">DEFLATE 级别 9</option><option value="lzma1">LZMA 级别 1</option><option value="lzma6">LZMA 级别 6</option><option value="lzma9">LZMA 级别 9（最高，极慢）</option></select>
-  <p><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="uniOutput" value="single" checked style="width:auto"> 单包纸质备份（PV04，CF1 无混淆分块，可打印/粘贴恢复）</label><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="uniOutput" value="three" style="width:auto"> 三包分开保管（密文包/参数包/密钥包，文本和文件都适用）</label><label style="display:inline;font-weight:400"><input type="radio" name="uniOutput" value="file" style="width:auto"> 单个加密文件（PV04 二进制下载）</label></p>
+  <p><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="uniOutput" value="single" checked style="width:auto"> 单包纸质备份（PV04，二维码 CF1、纯文本 CF2 带符号，可打印/粘贴恢复）</label><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="uniOutput" value="three" style="width:auto"> 三包分开保管（密文包/参数包/密钥包，文本和文件都适用）</label><label style="display:inline;font-weight:400"><input type="radio" name="uniOutput" value="file" style="width:auto"> 单个加密文件（PV04 二进制下载）</label></p>
   <p id="uniPrintModeRow"><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="uniPrintMode" value="qr" checked style="width:auto"> 单包纸质：二维码打印稿</label><label style="display:inline;font-weight:400"><input type="radio" name="uniPrintMode" value="text" style="width:auto"> 单包纸质：纯文本打印稿</label></p>
   <label for="uniQRDensity">二维码信息密度（单包二维码和三包二维码都用这个设置，给测试用的，档位给到极端）</label><select id="uniQRDensity"><option value="50">50 字符/码（极低密度，码最大，最容易扫，页数最多）</option><option value="100">100 字符/码（极低密度）</option><option value="200">200 字符/码（低密度）</option><option value="450">450 字符/码</option><option value="700">700 字符/码</option><option value="900" selected>900 字符/码（默认）</option><option value="1200">1200 字符/码（高密度）</option><option value="1800">1800 字符/码（高密度）</option><option value="2500">2500 字符/码（极高密度）</option><option value="3300">3300 字符/码（极高密度，单包二维码物理上限附近，码最小，最难扫）</option></select>
   <label for="uniQRDensityCustom">二维码自定义密度（字符/码，留空用上面选的档；单包 10–3300，三包 50–3300；三包选超过 900 的档时自动用 PF2 高密度格式，单包才按原档生成）</label><input type="number" id="uniQRDensityCustom" placeholder="例如：1500，留空用上面选的档">
@@ -202,15 +202,15 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   <label for="uniTextFontSize">纯文本打印字号（给测试用的，档位给到极端小）</label><select id="uniTextFontSize"><option value="2">2pt（极小，测试打印机极限，几乎看不清）</option><option value="3">3pt（极小）</option><option value="4">4pt（极小）</option><option value="5">5pt（很小）</option><option value="6">6pt（小）</option><option value="8">8pt</option><option value="10">10pt</option><option value="12" selected>12pt（默认）</option><option value="14">14pt</option><option value="16">16pt</option><option value="20">20pt（大）</option></select>
   <label for="uniTextFontSizeCustom">纯文本自定义字号（pt，留空用上面选的档；1–32pt，低于 5pt 可能看不清、打印机可能丢点，属于测试结果）</label><input type="number" id="uniTextFontSizeCustom" placeholder="例如：4，留空用上面选的档">
   <p class="small">密度说明：密度越高，每码装的字符越多，页数越少，但码越小、越难扫、纸损越容易扫不出来；密度越低则相反。这是给你测试用的，极端档位可能扫不出来，属于正常测试结果，请按你自己的纸和相机测试结果选。单包二维码纠错是 EC-M，三包标准二维码纠错是 EC-Q，备用图码自带纠错；超过二维码本身能装的上限时，生成会报错，请降低密度再试。三包：50–900 用旧纸质帧格式（标准二维码 + 备用图码），超过 900 自动用 PF2 高密度格式（仅标准二维码、纠错 M、无备用图码、.27 版起才能恢复，旧格式纸仍可恢复）；单包二维码物理上限是 V40-M 约 3391 字符。</p>
-  <p class="small">无混淆字符说明：新生成的纯文本和二维码分块都用 CF1 格式，数据字符只用 16 个最不易混淆的字符：3、4、7、C、D、F、H、J、K、M、P、R、W、X、Y、-。去掉了 0/O、1/I/L、2/Z、5/S、8/B、6/G、9/q、U/V、4/A、7/T、3/E、M/N 每一对的双方。旧的 Base32 分块（PV1/PV2）仍可恢复，不混拼。日期数字、格式名（CF1/PV2）、普通说明词不是待抄数据，不计入数据字符。</p>
-  <p class="small">单包纸质的二维码/纯文本打印稿直接在下方打印区生成，可直接打印，不用再回到其他表单。文件可选单包纸质或单个加密文件；三包仅适用于文本，不为文件发明新三包格式。</p>
+  <p class="small">纸面字符说明：二维码和纸面文本是两套独立写法，不用同一套字符。二维码仍用 CF1 格式（16 个最不易混淆的字符：3、4、7、C、D、F、H、J、K、M、P、R、W、X、Y、-），因为二维码最省的模式只认这套字符；纯文本从本版起用 CF2 格式（CF1 的 16 字加上 #、$、%、&、(、)、+、-、/、<、=、>、?、@、[、\、]、^、_、{、}、~，共 37 字），同样内容比 CF1 短约两成，抄起来页数少，特殊符号都是按不混淆选的。旧的 CF1 纯文本和 Base32 分块（PV1/PV2）仍可恢复，不混拼。日期数字、格式名（CF1/CF2/PV2）、普通说明词不是待抄数据，不计入数据字符。</p>
+  <p class="small">单包纸质的二维码/纯文本打印稿直接在下方打印区生成，可直接打印，不用再回到其他表单。文件可选单包纸质、单个加密文件或文件三包；文本和文件都适用三包分开保管。</p>
   <p><button id="uniEncrypt" type="button">加密</button> <button id="uniEncryptCancel" class="secondary" type="button" disabled>取消 Argon2id 计算</button> <button id="uniEncryptClear" class="secondary" type="button">清空口令</button></p>
   <div id="uniProgress" style="display:none;margin-top:12px"><div id="uniProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="background:#e5e7eb;border-radius:999px;height:12px;overflow:hidden"><div id="uniProgressBar" style="width:0%;height:100%;background:#111827"></div></div><div><span id="uniPct">0.00%</span> · <span id="uniProgressEta">预计剩余 --</span> · <span id="uniProgressElapsed"></span> · <span id="uniStage"></span></div></div>
   <div id="uniOverallProgress" style="display:none;margin-top:8px"><div id="uniOverallTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="background:#e5e7eb;border-radius:999px;height:12px;overflow:hidden"><div id="uniOverallBar" style="width:0%;height:100%;background:#0f766e"></div></div><div><span id="uniOverallPct">0.00%</span> · <span id="uniOverallStage">尚未开始</span> · <span id="uniOverallElapsed"></span> · <span id="uniOverallHeartbeat"></span></div></div>
   <div class="generation-time" id="uniGenerationTime" aria-live="polite"><span>实际生成时间</span> <strong>--</strong></div>
   <div id="uniEncStatus" class="status">尚未加密。文本或文件二选一，口令留空则不加密。</div>
   <label for="uniEncOutput">加密输出</label><textarea id="uniEncOutput" readonly placeholder="三包或单包分块文本将显示在这里；单个加密文件请用下方下载按钮"></textarea>
-  <p><button id="uniEncDownload" class="secondary" type="button">下载输出</button> <button id="uniTripleQR" class="secondary" type="button">生成三包二维码打印稿</button> <button id="uniTripleCombinedCipher" class="secondary" type="button">密文包合印稿</button> <button id="uniTripleCombinedParams" class="secondary" type="button">参数包合印稿</button> <button id="uniTripleCombinedKey" class="secondary" type="button">密钥包合印稿</button> <button id="uniDownloadCipher" class="secondary" type="button">下载密文包</button> <button id="uniDownloadParams" class="secondary" type="button">下载参数包</button> <button id="uniDownloadKey" class="secondary" type="button">下载密钥包</button> <button id="uniPrint" class="secondary" type="button">打印打印稿</button></p>
+  <p><button id="uniEncDownload" class="secondary" type="button">下载输出</button> <button id="uniTripleQR" class="secondary" type="button">生成三包二维码打印稿</button> <button id="uniTripleCombinedCipher" class="secondary" type="button">密文包合印稿</button> <button id="uniTripleCombinedParams" class="secondary" type="button">参数包合印稿</button> <button id="uniTripleCombinedKey" class="secondary" type="button">密钥包合印稿</button> <button id="uniDownloadCipher" class="secondary" type="button">下载密文包</button> <button id="uniDownloadParams" class="secondary" type="button">下载参数包</button> <button id="uniDownloadKey" class="secondary" type="button">下载密钥包</button> <button id="uniPrint" class="secondary" type="button">打印打印稿</button> <button id="uniSingleCombined" class="secondary" type="button">单包合印稿</button></p>
   <p class="small">三包二维码打印稿：需要先在上方选“三包分开保管”并点加密，生成三包后，再点这个按钮，三包二维码打印稿会出现在下方打印区，三个包各一套，三个包各从新页开始，打印后直接按页分开保管，不用裁剪。900 及以下每页有标准二维码和/或备用图码；超过 900 用 PF2 高密度格式，每帧一个标准二维码，拍照扫描恢复；如需手工抄写，请用纯文本打印稿（已用无混淆字符）。</p>
 </section>
 <section id="sec-encrypt">
@@ -339,15 +339,15 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   </section>
 
   <section id="sec-help">
-    <h2>帮助 · 格式与安全说明（与当前版本 2026.10.29.34 同步）</h2>
+    <h2>帮助 · 格式与安全说明（与当前版本 2026.10.29.35 同步）</h2>
     <p><button id="helpDownloadBtn" type="button">保存本版帮助文件</button> <span class="small">把当前版本的独立帮助文件下载归档，内容与本页帮助同步。</span></p>
     <ul>
       <li><strong>加密：</strong>在“加密”标签页里，文本和文件共用一个表单，口令可留空（留空则不加密，只做压缩+校验）。新加密默认用 Argon2id：平衡 64 MiB / t=3 / p=4，强 128 MiB / t=3 / p=4（默认），高强 256 MiB / t=3 / p=4，也可自定义；PBKDF2 只用于恢复旧备份。加密时显示两条进度：上面一条只算 Argon2id 本身，下面一条是整个生成过程（准备、压缩、Argon2id、加密、编码、打印稿），整体进度只进不退，旁边有已用时间和“仍在进行中”的跳动标记，任何一步都不会看着像卡死；完成后在结果区和状态里都显示实际生成时间；取消按钮可随时终止 Argon2id 计算。浏览器自带的“页面无响应”提示是浏览器自己的保护，页面没有开关能把它关掉，只能让主线程勤让出、每步都有进度；很慢的设备上如果它还是出现，点“等待”继续算，不要点“退出”。</li>
       <li><strong>压缩：</strong>压缩方式可选：不压缩、浏览器原生 gzip（默认）、DEFLATE 级别 1/6/9、LZMA 级别 1/6/9；选哪档都会写进备份，恢复时自动按标志解压。若压缩后反而更大，则原样存储（仍加密）。LZMA 是同步压缩，大文件会阻塞页面一段时间。</li>
-      <li><strong>输出：</strong>文本可选单包纸质备份（新格式 PV04，二维码/纯文本打印稿）、三包分开保管（密文包/参数包/密钥包，文本和文件都适用）、单个加密文件（PV04 二进制下载）；文件可选单包纸质、单个加密文件或文件三包。档案编号可留空，留空自动生成 PA-日期-6 位无混淆随机；新单包和新三包留空时都生成 PA-…，旧备份的 PC-… 编号和 4 位旧档案编号仍可恢复。新生成的单包分块和三包文本打印稿都用 CF1 无混淆格式（见“编码与分块”）。三包生成后，点“生成三包二维码打印稿”可生成三包二维码打印稿，三个包各一套，每页两帧，打印后裁开分开保管；想每包只存一份稿时，点“密文包合印稿”“参数包合印稿”“密钥包合印稿”中对应的那个，点哪个包只生成那个包：先是它的二维码、然后是它的纯文本，印完单独保管，不要和另外两个包的稿放在一起。打印稿生成后，点加密表单里的“打印打印稿”，或打印区顶部的“打印这份打印稿”，会打开浏览器打印预览，只印下方打印稿，不印上方表单。</li>
-      <li><strong>三包首行与打印稿：</strong>密文包、参数包、密钥包的首行都是“APP version: PepperArchive 版本号”，印在纸上也能一眼看出是哪个软件、哪个版本生成的；旧版首行（只有版本号、或没有首行）的包仍能正常恢复。打印稿在“加密”表单选“单包纸质备份”或“三包分开保管”时都会生成，出现在下方打印区；三包文本打印稿三个包各从新页开始，打印后直接按页分开保管，不用裁剪，短包末页的空白是分开保管的代价；三包二维码打印稿每包一套纸质帧，每页有标准二维码和/或备用图码，拍照扫描恢复；选单个加密文件时没有打印稿，结果在上方输出框里，可下载，打印区会直接说明这一点。</li>       <li><strong>恢复：</strong>在“恢复”标签页里，分“文本恢复”和“文件恢复”两块，口令共用。文本恢复粘贴纸面分块、三包文本，或上传纸质帧照片或 PDF 扫描件（标准 QR / PhotoCode；PDF 里是扫描图片（JPEG 或浏览器打印的 Flate 像素图）、单包/三包二维码或文字时可提取，纯矢量 PDF 或不支持的压缩方式会明说失败原因，请另存为图片再上传），也可以在恢复区点“开始实时扫码”，用后置摄像头连续扫码：单包二维码和三包纸质帧都会自动累积到上方文本框（同一码只记一次），集齐后点“恢复文本”即可；实时扫码是摄像头画面在本机实时识别，不是发给别人看的直播，画面不上传；它优先用浏览器自带的扫码能力，电脑浏览器没有自带扫码能力时自动改用程序自带的扫码能力，电脑上也能扫（自带能力一次只认一个码，系统能力一次能认多个码），仍需要支持摄像头的浏览器，且页面要用加密连接或本地打开，否则会明说不可用；文件恢复上传加密文件或打印文本文件。程序自动识别 PV1/PV2/CF1/PV04 分块、三包（包括 CF-TRIPLE 无混淆三包和 PF2 高密度三包）、纸质帧（新旧前缀都接受）、旧文件容器，不用你先选格式；混拼（不同格式分块、三包与分块、两个档案编号）会明确拒绝；旧文件容器直接在这里解密，不用再去其他表单。</li>
+      <li><strong>输出：</strong>文本可选单包纸质备份（新格式 PV04，二维码/纯文本打印稿）、三包分开保管（密文包/参数包/密钥包，文本和文件都适用）、单个加密文件（PV04 二进制下载）；文件可选单包纸质、单个加密文件或文件三包。档案编号可留空，留空自动生成 PA-日期-6 位无混淆随机；新单包和新三包留空时都生成 PA-…，旧备份的 PC-… 编号和 4 位旧档案编号仍可恢复。新生成的单包二维码分块用 CF1、单包纯文本和三包文本打印稿用 CF2（见“编码与分块”）。三包生成后，点“生成三包二维码打印稿”可生成三包二维码打印稿，三个包各一套，每页两帧，打印后裁开分开保管；想每包只存一份稿时，点“密文包合印稿”“参数包合印稿”“密钥包合印稿”中对应的那个，点哪个包只生成那个包：先是它的二维码、然后是它的纯文本，印完单独保管，不要和另外两个包的稿放在一起。打印稿生成后，点加密表单里的“打印打印稿”，或打印区顶部的“打印这份打印稿”，会打开浏览器打印预览，只印下方打印稿，不印上方表单。</li>
+      <li><strong>三包首行与打印稿：</strong>密文包、参数包、密钥包的首行都是“APP version: PepperArchive 版本号”，印在纸上也能一眼看出是哪个软件、哪个版本生成的；旧版首行（只有版本号、或没有首行）的包仍能正常恢复。打印稿在“加密”表单选“单包纸质备份”或“三包分开保管”时都会生成，出现在下方打印区；三包文本打印稿三个包各从新页开始，打印后直接按页分开保管，不用裁剪，短包末页的空白是分开保管的代价；三包二维码打印稿每包一套纸质帧，每页有标准二维码和/或备用图码，拍照扫描恢复；选单个加密文件时没有打印稿，结果在上方输出框里，可下载，打印区会直接说明这一点。</li>       <li><strong>恢复：</strong>在“恢复”标签页里，分“文本恢复”和“文件恢复”两块，口令共用。文本恢复粘贴纸面分块、三包文本，或上传纸质帧照片或 PDF 扫描件（标准 QR / PhotoCode；PDF 里是扫描图片（JPEG 或浏览器打印的 Flate 像素图）、单包/三包二维码或文字时可提取，纯矢量 PDF 或不支持的压缩方式会明说失败原因，请另存为图片再上传），也可以在恢复区点“开始实时扫码”，用后置摄像头连续扫码：单包二维码和三包纸质帧都会自动累积到上方文本框（同一码只记一次），集齐后点“恢复文本”即可；实时扫码是摄像头画面在本机实时识别，不是发给别人看的直播，画面不上传；它优先用浏览器自带的扫码能力，电脑浏览器没有自带扫码能力时自动改用程序自带的扫码能力，电脑上也能扫（自带能力一次只认一个码，系统能力一次能认多个码），仍需要支持摄像头的浏览器，且页面要用加密连接或本地打开，否则会明说不可用；文件恢复上传加密文件或打印文本文件。程序自动识别 PV1/PV2/CF1/PV04 分块、三包（包括 CF-TRIPLE、CF2-TRIPLE 带符号纸面文本和 PF2 高密度三包）、纸质帧（新旧前缀都接受）、旧文件容器，不用你先选格式；混拼（不同格式分块、三包与分块、两个档案编号）会明确拒绝；旧文件容器直接在这里解密，不用再去其他表单。</li>
       <li><strong>恢复进度：</strong>加密时也有进度条，百分比精确到两位小数，旁边有预计剩余、已流逝时间和当前步骤，完成后显示实际生成时间；单包和单个加密文件在 .23 修了一个预计剩余的错误，之前第一次进度回调会把进度直接算成 100%。恢复时有进度条，百分比精确到两位小数（例如 45.67%），旁边还有预计剩余、已流逝时间和当前步骤（正在识别照片、正在计算口令、正在解密等），恢复过程中按钮会暂时禁用、防止重复点，完成后显示实际恢复时间。旧备份用浏览器原生计算时不提供中间百分比，这时已流逝时间在动就说明没有卡死，不会编一个假百分比给你看。</li>       <li><strong>恢复校验：</strong>在“恢复”标签页下方，文件校验选原文件和恢复后的文件，文本校验粘贴原文本和恢复后的文本；两者都逐字节对比，并算两边的 SHA-256，报出第一个不同字节的位置；文本校验还报出第一个不同字符的位置。恢复后文本为空时点文本对比，会自动填入恢复区的结果。按原样对比，不去掉首尾空格和换行。</li>
-      <li><strong>编码与分块：</strong>新生成的纸质分块用 CF1 无混淆格式：数据字符只用 16 个最不易混淆的字符 3、4、7、C、D、F、H、J、K、M、P、R、W、X、Y、-，去掉了 0/O、1/I/L、2/Z、5/S、8/B、6/G、9/q、U/V、4/A、7/T、3/E、M/N 每一对的双方；每块带 CRC（同样用无混淆字符表示），块可乱序粘贴，缺块、坏块、重复冲突块都会按块号报出。旧的 Base32 分块（PV1/PV2，A-Z、2-7）仍可恢复，不与 CF1 混拼。二维码信息密度可自选：单包 10–3300 字符/码、三包 50–3300 字符/码，档位从 50 到 3300 给到极端，密度越高页数越少但越难扫；单包二维码物理上限是 V40-M 约 3391 字符（含档案编号和块头），三包 900 及以下用旧纸质帧格式（标准二维码 + 备用图码，同一包内每页两帧），超过 900 自动用 PF2 高密度格式（仅标准二维码、纠错 M、无备用图码、每帧一页、.27 版起才能恢复，旧格式纸仍可恢复）。纯文本模式每块 480 字符，字体和字号可自选，字号给到 2pt 极小（1–32pt 自定义），低于 5pt 可能看不清、打印机可能丢点，属于测试结果；纯文本打印稿不再固定 40 字一行，浏览器会把长行自动折到纸面可印宽度，数据铺满横向，不会只占纸面左边一小部分，三包每一包各从新页开始、包内可以自然跨页。</li>
+      <li><strong>编码与分块：</strong>新生成的纸质分块分两套：二维码用 CF1 无混淆格式（数据字符只用 16 个最不易混淆的字符 3、4、7、C、D、F、H、J、K、M、P、R、W、X、Y、-），纯文本用 CF2 格式（CF1 的 16 字加上 #、$、%、&、(、)、+、-、/、<、=、>、?、@、[、\、]、^、_、{、}、~，共 37 字，同样内容比 CF1 短约两成）；每块带 CRC（用无混淆字符表示），块可乱序粘贴，缺块、坏块、重复冲突块都会按块号报出。旧的 CF1 纯文本、CF-TRIPLE 三包文本和 Base32 分块（PV1/PV2，A-Z、2-7）仍可恢复，新旧格式不混拼。二维码信息密度可自选：单包 10–3300 字符/码、三包 50–3300 字符/码，档位从 50 到 3300 给到极端，密度越高页数越少但越难扫；单包二维码物理上限是 V40-M 约 3391 字符（含档案编号和块头），三包 900 及以下用旧纸质帧格式（标准二维码 + 备用图码，同一包内每页两帧），超过 900 自动用 PF2 高密度格式（仅标准二维码、纠错 M、无备用图码、每帧一页、.27 版起才能恢复，旧格式纸仍可恢复）。纯文本模式每块 480 字符，字体和字号可自选，字号给到 2pt 极小（1–32pt 自定义），低于 5pt 可能看不清、打印机可能丢点，属于测试结果；纯文本打印稿不再固定 40 字一行，浏览器会把长行自动折到纸面可印宽度，数据铺满横向，不会只占纸面左边一小部分，三包每一包各从新页开始、包内可以自然跨页。</li>
       <li><strong>完整性：</strong>三层校验 —— 块 CRC32、AES-256-GCM 认证标签、原始文件 SHA-256。任何一层失败都不会输出错误文件。</li>
       <li><strong>目录与自检：</strong>目录只保存名称、分类、备注、档案编号、状态和时间等索引信息，不保存密码、密钥秘密或密文；目录 JSON 本身未加密，请像地址簿一样妥善保存。自检一次覆盖纸质往返、三包往返、压缩档位、旧格式恢复、混拼拒绝、Argon2id 向量；第一次用新版本或升级后，先跑自检，自检失败不要用该版本处理新的重要数据。</li>
       <li><strong>上限：</strong>无软件层上限。新单包为 PV04，纸质分块为 PV2（长度字段 8 字节 u64，格式上限 16 EiB），旧 PV1 备份仍可恢复；实际能做多大只看运行机器的内存与硬件，不在代码里设限。恢复时文件名中的路径分隔符会被替换为下划线，防止写出到意外路径。</li>
@@ -366,7 +366,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   <p class="small no-print">提示：打印前请确认每一块都完整印出、没有缺页；建议同时打印两份，分开存放。</p>
 </div>
 
-<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive <span id="pcAppVersion">2026.10.29.34</span> · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
+<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive <span id="pcAppVersion">2026.10.29.35</span> · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
 
 
 <!-- ===== 功能区（原两程序的功能，同一界面下） ===== -->
@@ -395,6 +395,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
         <button id="catExportCsv" type="button">导出 CSV</button>
         <button id="catImport" type="button">导入目录 JSON</button>
         <button id="catRefresh" type="button">刷新目录</button>
+        <button id="catLocalCleanup" type="button" style="display:none">删除旧的本地存储副本</button>
         <input class="catalog-file" id="catImportFile" type="file" accept="application/json,.json">
       </div>
       <div class="notice" id="catStorageStatus" style="margin-top:12px">正在读取本机目录存储…</div>
@@ -600,7 +601,7 @@ if(n+2>=i)return e;if(t=255&e[++n],128!=(192&t))return e;if(o=255&e[++n],128!=(1
 <script>
 'use strict';
 /* PepperArchive 格式 PV1/PV2 —— 单文件离线实现，无外部依赖。PV2 为新生成格式（u64 长度），PV1 仅恢复兼容 */
-var APP_VERSION = '2026.10.29.34';
+var APP_VERSION = '2026.10.29.35';
 /* Worker 需要从本页脚本里截取 QR 编码器源码：必须在脚本同步执行时捕获，事件回调里 document.currentScript 已是 null */
 var PAGE_SCRIPT_TEXT = (typeof document !== 'undefined' && document.currentScript) ? document.currentScript.textContent : null;
 var PBKDF2_ITER = 600000;
@@ -698,7 +699,62 @@ function cfSafeCrc(hex8){ var out=''; for(var i=0;i<8;i++){ out+=CF_ALPH.charAt(
 function cfSafeToHex(safe8){ var out=''; for(var i=0;i<8;i++){ var v=CF_MAP[safe8.charAt(i)]; if(v===undefined) throw new Error('CRC 无混淆字符非法'); out+=v.toString(16).toUpperCase(); } return out; }
 function cfEncodeText(str){ return cfEncode(new TextEncoder().encode(str)); }
 function cfDecodeText(safe){ return new TextDecoder().decode(cfDecode(safe)); }
-function decodeBackupJoined(parsed){ if(parsed && parsed.ver==='CF1') return cfDecode(parsed.joined); return base32Decode(parsed.joined); }
+/* ---------- 纸面文本新编码 CF2 (.35, 与二维码独立): CF1 16 字 + 用户指定 22 个特殊符号, 共 37 字 ----------
+   用户指定特殊符号: # $ % & ( ) + - / < = > ? @ [ \ ] ^ _ { } ~
+   '-' 已在 CF1 里, 去重后新增 21 字, 总字母表 = '347CDFHJKMPRWXY-' + '#$%&()+/<=>?@[\\]^_{}~' (37 字, 顺序固定, 解码用同一顺序)。
+   编码: 每 5 字节一组, 当作 40 位整数转 37 进制, 固定 8 字; 最后一组不足 5 字节时按字节数定字数 (1->2, 2->4, 3->5, 4->7, 5->8),
+   解码时按总字数取模反推最后一组字节数, 所以不用补零、不用额外长度字段, 也不会在尾部多出零字节。
+   线性时间: 每组只算 5 字节, 不是整串当一个大整数 (humanSafe 那种 O(n^2) 在大文件上会卡死, 这里不会)。
+   二维码编码独立不变: 单包二维码仍用 CF1, 三包二维码仍用纸质帧/PF2, 纸面文本变短不会让二维码变大; 旧 CF1/CF-TRIPLE 仍可恢复。 */
+var CF2_ALPH = '347CDFHJKMPRWXY-' + '#$%&()+/<=>?@[\\]^_{}~';
+var CF2_MAP = {}; for (var _ci = 0; _ci < CF2_ALPH.length; _ci++) CF2_MAP[CF2_ALPH.charAt(_ci)] = _ci;
+function cf2Encode(bytes){
+  if(!(bytes instanceof Uint8Array)) bytes = new Uint8Array(bytes);
+  var out = '', lenMap = {1:2, 2:4, 3:5, 4:7, 5:8};
+  for (var off = 0; off < bytes.length; off += 5){
+    var n = Math.min(5, bytes.length - off), val = 0;
+    for (var i = 0; i < n; i++) val = val * 256 + bytes[off + i];
+    var need = lenMap[n], dig = '';
+    if (val === 0) dig = CF2_ALPH.charAt(0);
+    else { while (val > 0){ dig = CF2_ALPH.charAt(val % 37) + dig; val = Math.floor(val / 37); } }
+    while (dig.length < need) dig = CF2_ALPH.charAt(0) + dig;
+    out += dig;
+  }
+  return out;
+}
+function cf2Decode(str){
+  if (typeof str !== 'string') throw new Error('CF2 编码无效');
+  var s = str, out = [];
+  if (!s.length) return new Uint8Array(0);
+  var rem = s.length % 8, byteMap = {2:1, 4:2, 5:3, 7:4, 8:5};
+  var groups = [];
+  for (var off = 0; off < s.length;){
+    var isLast = (off + 8 >= s.length);
+    var glen = isLast ? (rem === 0 ? 8 : rem) : 8;
+    var g = s.slice(off, off + glen); off += glen;
+    var nbytes = isLast ? byteMap[glen] : 5;
+    if (nbytes === undefined) throw new Error('CF2 编码长度无效');
+    var val = 0;
+    for (var i = 0; i < g.length; i++){ var v = CF2_MAP[g.charAt(i)]; if (v === undefined) throw new Error('CF2 编码中出现非法字符：' + g.charAt(i)); val = val * 37 + v; }
+    var tmp = [];
+    for (var k = 0; k < nbytes; k++){ tmp.unshift(val % 256); val = Math.floor(val / 256); }
+    if (val !== 0) throw new Error('CF2 编码数值超出字节范围');
+    for (var t = 0; t < tmp.length; t++) out.push(tmp[t]);
+  }
+  return new Uint8Array(out);
+}
+function cf2EncodeText(str){ return cf2Encode(new TextEncoder().encode(str)); }
+function cf2DecodeText(safe){ return new TextDecoder().decode(cf2Decode(safe)); }
+function makeCF2Chunks(bytes){
+  var cf2 = cf2Encode(bytes);
+  var chunks = [];
+  for (var i = 0; i < cf2.length; i += CHUNK_CHARS){ var part = cf2.slice(i, i + CHUNK_CHARS); var hx = crc32Hex(part); chunks.push({ index: chunks.length + 1, total: 0, text: part, crc: hx, crcSafe: cfSafeCrc(hx), ver: 'CF2' }); }
+  if (chunks.length === 0){ var hx0 = crc32Hex(''); chunks.push({ index: 1, total: 0, text: '', crc: hx0, crcSafe: cfSafeCrc(hx0), ver: 'CF2' }); }
+  chunks.forEach(function(c){ c.total = chunks.length; });
+  return chunks;
+}
+
+function decodeBackupJoined(parsed){ if(parsed && parsed.ver==='CF1') return cfDecode(parsed.joined); if(parsed && parsed.ver==='CF2') return cf2Decode(parsed.joined); return base32Decode(parsed.joined); }
 
 function base32Encode(bytes){
   var out = '', buffer = 0, bits = 0;
@@ -1018,6 +1074,7 @@ function makeChunks(b32, ver){
 function chunkHeader(c){
   var idx = String(c.index).padStart(3, '0'), tot = String(c.total).padStart(3, '0');
   if(c.ver==='CF1') return 'CF1 ' + idx + '/' + tot + ' CRC:' + (c.crcSafe || cfSafeCrc(c.crc));
+  if(c.ver==='CF2') return 'CF2 ' + idx + '/' + tot + ' CRC:' + (c.crcSafe || cfSafeCrc(c.crc));
   return (c.ver || 'PV2') + ' ' + idx + '/' + tot + ' CRC32:' + c.crc;
 }
 function printLineChars(){
@@ -1263,11 +1320,14 @@ function parseBackupText(text){
   }
   /* 中文档案编号行：整行捕获，编号可含空格等任意字符 */
   var am0;
-  var reArchCN = /^档案编号：\s*(.+?)\s*$/gm;
+  /* 打印区块头行是“档案编号：PA-… · CF2 001/002 CRC:…”，编号只到“ · ”为止；封面行“档案编号：PA-…”则到行尾。
+     旧正则 (.+?)$ 会把整行块头当成编号，导致多块被误判成多个档案编号。先按“ · ”截断编号，再把块头行转成纯块头，封面行后续再剥离。 */
+  var reArchCN = /^档案编号：\s*(.+?)(?:\s*·\s*|\s*$)/gm;
   while ((am0 = reArchCN.exec(text)) !== null) pushArch(am0[1]);
+  text = text.replace(/^档案编号：.+? · ((?:PV[12]|CF1|CF2)\s.*)$/gm, '$1');
   /* 二维码 ARCHIVE token：捕获到块头为止，编号可含空格（旧正则只认 [A-Z0-9-] 会把带空格编号截断）；
      替换时只去掉 ARCHIVE:编号 部分，保留后面的块头供后续解析 */
-  text = text.replace(/ARCHIVE:(.+?) ((?:PV[12]|CF1)\s)/g, function(m, id, hdr){ pushArch(id); return hdr; });
+  text = text.replace(/ARCHIVE:(.+?) ((?:PV[12]|CF1|CF2)\s)/g, function(m, id, hdr){ pushArch(id); return hdr; });
   /* 兼容旧的无块头分隔写法 */
   text = text.replace(/ARCHIVE:([^\s]+)\s*/g, function(m, id){ pushArch(id); return ''; });
   if (archIds.length > 1) throw new Error('检测到多个档案编号混在一起：' + archIds.join('、') + '。请按档案编号分开粘贴，不要把不同档案的块混在一起。');
@@ -1275,10 +1335,10 @@ function parseBackupText(text){
      以前是靠生成端拦截用户输入来防，现在解析端剥离封面行，生成端就不再需要拦截 */
   text = text.replace(/^档案编号：[^\n]*$/gm, '').replace(/^档案名称：[^\n]*$/gm, '').replace(/^口令提示：[^\n]*$/gm, '');
   /* 容忍 OCR/手抄差异：pv 大小写不限、斜杠两侧空格、全角冒号；块号/总数不限 4 位；PV1 与 PV2 块头都接受，但不许混拼 */
-  var re = /(PV[12]|CF1)\s*(\d+)\s*\/\s*(\d+)\s*CRC(?:32)?\s*[:：]\s*([0-9A-Fa-f]{8}|[347CDFHJKMPRWXY\-]{8})/gi;
+  var re = /(PV[12]|CF1|CF2)\s*(\d+)\s*\/\s*(\d+)\s*CRC(?:32)?\s*[:：]\s*([0-9A-Fa-f]{8}|[347CDFHJKMPRWXY\-]{8})/gi;
   var matches = [], m;
-  while ((m = re.exec(text)) !== null){ var isCF = (m[1]==='CF1'); var crcHex = isCF ? cfSafeToHex(m[4]) : m[4].toUpperCase(); matches.push({ ver: isCF ? 'CF1' : m[1], index: parseInt(m[2], 10), total: parseInt(m[3], 10), crc: crcHex, start: m.index, end: m.index + m[0].length }); }
-  if (matches.length === 0) throw new Error('没有找到任何 PV1/PV2/CF1 块头（形如 PV2 001/042 CRC32:........ 或 CF1 001/042 CRC:........）。请确认粘贴了完整打印文本且块头未被 OCR 改写。');
+  while ((m = re.exec(text)) !== null){ var isCF = (m[1]==='CF1' || m[1]==='CF2'); var crcHex = isCF ? cfSafeToHex(m[4]) : m[4].toUpperCase(); matches.push({ ver: isCF ? m[1] : m[1], index: parseInt(m[2], 10), total: parseInt(m[3], 10), crc: crcHex, start: m.index, end: m.index + m[0].length }); }
+  if (matches.length === 0) throw new Error('没有找到任何 PV1/PV2/CF1/CF2 块头（形如 PV2 001/042 CRC32:........ 或 CF1/CF2 001/042 CRC:........）。请确认粘贴了完整打印文本且块头未被 OCR 改写。');
   var vers = {};
   matches.forEach(function(x){ vers[x.ver] = true; });
   if (Object.keys(vers).length !== 1) throw new Error('检测到不同格式的块混在一起：' + Object.keys(vers).join('、') + '。请按格式分开粘贴，不要把不同格式的块混在一起。');
@@ -1292,7 +1352,7 @@ function parseBackupText(text){
   var byIndex = {}, bad = [], badIdx = {}, conflicts = [];
   matches.forEach(function(x, k){
     var nextStart = (k + 1 < matches.length) ? matches[k + 1].start : text.length;
-    var raw = (x.ver==='CF1') ? text.slice(x.end, nextStart).toUpperCase().replace(/[^347CDFHJKMPRWXY\-]/g, '') : text.slice(x.end, nextStart).toUpperCase().replace(/[^A-Z2-7]/g, '');
+    var raw = (x.ver==='CF1') ? text.slice(x.end, nextStart).toUpperCase().replace(/[^347CDFHJKMPRWXY\-]/g, '') : (x.ver==='CF2') ? text.slice(x.end, nextStart).toUpperCase().replace(/[^347CDFHJKMPRWXY\-#$%&()+\/<=>?@\[\\\]^_{}~]/g, '') : text.slice(x.end, nextStart).toUpperCase().replace(/[^A-Z2-7]/g, '');
     if (x.index < 1 || x.index > total) { bad.push(x.index + '（块号超出 1..' + total + '）'); return; }
     // PDF 文字层污染 (.28): 单包二维码 PDF 的卡片标题里有一行“CF1001/001 CRC:……”假块头，后面没有数据（只有“第 1/1 码 · QR 版本”）。
     // 真块的数据绝不会是空的，空数据的块头直接忽略，不应把整份判成坏块。
@@ -2060,7 +2120,7 @@ $('btnSelfTest').addEventListener('click', async function(){
 (function(){
 // ========================= CONFIG =========================
 const CFG=Object.freeze({
-  APP_VERSION:'2026.10.29.34',FORMAT_MAJOR:1,FORMAT_MINOR:2,
+  APP_VERSION:'2026.10.29.35',FORMAT_MAJOR:1,FORMAT_MINOR:2,
   MAGIC_TEXT:'AEGISCF1',TEXT_PREFIX:'AEGIS1.',FINAL_MAGIC:'FIN1',HEADER_LEN_V1:104,HEADER_LEN:112,
   CIPHER_ID:1,KDF_ID:1,TAG_BITS:128,TAG_BYTES:16,SALT_BYTES:32,NONCE_PREFIX_BYTES:8,FILE_ID_BYTES:16,
   DEFAULT_CHUNK:4*1024*1024,MIN_CHUNK:64*1024,MAX_CHUNK:64*1024*1024,
@@ -3483,7 +3543,7 @@ function clearNode(el){while(el.firstChild)el.removeChild(el.firstChild)}
 function makeEl(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e}
 async function imageFileToCanvas(file){if(!file||!String(file.type||'').startsWith('image/'))throw new InvalidContainerError('请选择图片照片。');const maxDim=1800,canvas=document.createElement('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});let done=false;if(globalThis.createImageBitmap){try{const bmp=await createImageBitmap(file);try{const scale=Math.min(1,maxDim/Math.max(bmp.width,bmp.height));canvas.width=Math.max(1,Math.round(bmp.width*scale));canvas.height=Math.max(1,Math.round(bmp.height*scale));ctx.drawImage(bmp,0,0,canvas.width,canvas.height);done=true}finally{if(bmp.close)bmp.close()}}catch(_){done=false}}if(!done){const url=URL.createObjectURL(file);try{const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=()=>rej(new InvalidContainerError('当前浏览器无法解码这张照片，请改用 JPEG/PNG 截图或照片。'));img.src=url});const scale=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));ctx.drawImage(img,0,0,canvas.width,canvas.height)}finally{URL.revokeObjectURL(url)}}return canvas}
 async function detectQRFromCanvas(canvas){
-  /* 内置二维码识别 (.25): 系统识别优先，系统没有时用内嵌 jsQR；电脑版 Chrome 没有系统识别，照片识别也不再因此失败。jsQR 一次只返回一个码，多码照片请逐个裁剪或用实时扫码逐个扫。 */
+  /* 内置二维码识别 (.25): 系统识别优先，系统没有时用内嵌 jsQR；电脑版 Chrome 没有系统识别，照片识别也不再因此失败。jsQR 一次只返回一个码，多码照片由 detectAllQRCanvas 逐个遮掉已认出的码再认下一个。 */
   try{
     if(typeof globalThis.jsQR==='function'){
       const ctx=canvas.getContext('2d',{willReadFrequently:true});
@@ -3507,8 +3567,145 @@ function findPhotoFinderCenters(bin,w,h){const candidates=[],step=Math.max(1,Mat
 function orderFinderQuad(list){const pts=list.slice(0,12);if(pts.length<4)throw new InvalidContainerError('PhotoCode 定位标记不足。');function pick(fn,used){let best=null,val=null;for(const p of pts){if(used.has(p))continue;const v=fn(p);if(best===null||v<val){best=p;val=v}}return best}const used=new Set(),tl=pick(p=>p.x+p.y,used);used.add(tl);const br=pick(p=>-(p.x+p.y),used);used.add(br);const tr=pick(p=>-(p.x-p.y),used);used.add(tr);const bl=pick(p=>p.x-p.y,used);if(!tl||!tr||!bl||!br)throw new InvalidContainerError('PhotoCode 四角定位失败。');const area=Math.abs((tl.x*tr.y-tr.x*tl.y)+(tr.x*br.y-br.x*tr.y)+(br.x*bl.y-bl.x*br.y)+(bl.x*tl.y-tl.x*bl.y))/2;if(area<1000)throw new InvalidContainerError('PhotoCode 在照片中太小或定位失败。');return {tl,tr,br,bl,module:(tl.m+tr.m+br.m+bl.m)/4}}
 function projectiveFromQuad(q){const x0=q.tl.x,y0=q.tl.y,x1=q.tr.x,y1=q.tr.y,x2=q.br.x,y2=q.br.y,x3=q.bl.x,y3=q.bl.y,dx1=x1-x2,dx2=x3-x2,dx3=x0-x1+x2-x3,dy1=y1-y2,dy2=y3-y2,dy3=y0-y1+y2-y3;let g=0,h=0;const den=dx1*dy2-dx2*dy1;if(Math.abs(dx3)+Math.abs(dy3)>1e-8){if(Math.abs(den)<1e-9)throw new InvalidContainerError('PhotoCode 透视几何无效。');g=(dx3*dy2-dx2*dy3)/den;h=(dx1*dy3-dx3*dy1)/den}const a=x1-x0+g*x1,b=x3-x0+h*x3,c=x0,d=y1-y0+g*y1,e=y3-y0+h*y3,f=y0;return (u,v)=>{const z=g*u+h*v+1;return {x:(a*u+b*v+c)/z,y:(d*u+e*v+f)/z}}}
 function samplePhotoMatrix(bin,w,h,q){const n=CFG.PHOTO_N,map=projectiveFromQuad(q),m=Array.from({length:n},()=>Array(n).fill(false)),span=n-9,rad=Math.max(0,Math.min(2,Math.floor(q.module*.14)));for(let r=0;r<n;r++)for(let c=0;c<n;c++){const u=(c-4)/span,v=(r-4)/span,p=map(u,v),x=Math.round(p.x),y=Math.round(p.y);let dark=0,total=0;for(let yy=y-rad;yy<=y+rad;yy++)for(let xx=x-rad;xx<=x+rad;xx++)if(xx>=0&&xx<w&&yy>=0&&yy<h){dark+=bin[yy*w+xx];total++}m[r][c]=total?dark*2>=total:false}return m}
-function decodePhotoCodeCanvas(canvas){const ctx=canvas.getContext('2d',{willReadFrequently:true}),im=ctx.getImageData(0,0,canvas.width,canvas.height),w=im.width,h=im.height,gray=new Uint8Array(w*h),hist=new Uint32Array(256);for(let i=0,j=0;i<im.data.length;i+=4,j++){const g=(im.data[i]*77+im.data[i+1]*150+im.data[i+2]*29)>>8;gray[j]=g;hist[g]++}const th=otsuThreshold(hist,gray.length),bin=new Uint8Array(gray.length);for(let i=0;i<gray.length;i++)bin[i]=gray[i]<th?1:0;const centers=findPhotoFinderCenters(bin,w,h),quad=orderFinderQuad(centers),matrix=samplePhotoMatrix(bin,w,h,quad);return photoFrameFromMatrix(matrix)}
-async function decodePaperImage(file){const canvas=await imageFileToCanvas(file),native=await detectNativeQR(canvas),out=[];for(const x of native){if(String(x).startsWith('PF2')){if(!out.some(y=>y.raw===x))out.push({raw:x,method:'标准 QR (PF2 高密度)'});continue}try{await parsePaperFrame(x);if(!out.some(y=>y.raw===x))out.push({raw:x,method:'标准 QR'})}catch(_){}}if(!out.length){try{const r=decodePhotoCodeCanvas(canvas);await parsePaperFrame(r.text);out.push({raw:r.text,method:`PhotoCode${r.corrected?`（纠正 ${r.corrected} bit）`:''}`})}catch(e){if(!(e instanceof InvalidContainerError))throw e}}return out}
+function decodePhotoCodeCanvas(canvas){const ctx=canvas.getContext('2d',{willReadFrequently:true}),im=ctx.getImageData(0,0,canvas.width,canvas.height),w=im.width,h=im.height,gray=new Uint8Array(w*h),hist=new Uint32Array(256);for(let i=0,j=0;i<im.data.length;i+=4,j++){const g=(im.data[i]*77+im.data[i+1]*150+im.data[i+2]*29)>>8;gray[j]=g;hist[g]++}const th=otsuThreshold(hist,gray.length),bin=new Uint8Array(gray.length);for(let i=0;i<gray.length;i++)bin[i]=gray[i]<th?1:0;const centers=findPhotoFinderCenters(bin,w,h),quad=orderFinderQuad(centers),matrix=samplePhotoMatrix(bin,w,h,quad);const fr=photoFrameFromMatrix(matrix);return {text:fr.text,corrected:fr.corrected,quad:quad}}
+function downscaleCanvas(src, maxDim){
+  const m=Math.max(src.width, src.height);
+  if(m<=maxDim) return src;
+  const scale=maxDim/m, cv=document.createElement('canvas');
+  cv.width=Math.max(1, Math.round(src.width*scale)); cv.height=Math.max(1, Math.round(src.height*scale));
+  const ctx=cv.getContext('2d'); ctx.imageSmoothingEnabled=true; ctx.drawImage(src,0,0,cv.width,cv.height);
+  return cv;
+}
+function maskCanvasRect(src, x0, y0, x1, y1){
+  const cv=document.createElement('canvas'); cv.width=src.width; cv.height=src.height;
+  const ctx=cv.getContext('2d'); ctx.drawImage(src,0,0);
+  ctx.fillStyle='#ffffff'; ctx.fillRect(Math.max(0,Math.floor(x0)), Math.max(0,Math.floor(y0)), Math.min(src.width,Math.ceil(x1))-Math.max(0,Math.floor(x0)), Math.min(src.height,Math.ceil(y1))-Math.max(0,Math.floor(y0)));
+  return cv;
+}
+async function detectAllQRCanvas(canvas){
+  // P6 多码：系统扫码本身一次返回多个，直接用它；没有系统扫码时用 jsQR 逐个遮掉已认出的码再认下一个，最多 10 个。
+  // 性能：jsQR 在大图上极慢且在 1200px 以上易失败（.30 实测），先缩到 1000px 再认，文本不变，遮罩只在缩图上做。
+  const workCanvasForNative = (c)=>downscaleCanvas(c, 1000);
+  if(typeof globalThis.BarcodeDetector==='function'){
+    try{
+      if(BarcodeDetector.getSupportedFormats){
+        const formats=await BarcodeDetector.getSupportedFormats();
+        if(formats.includes('qr_code')){
+          const d=new BarcodeDetector({formats:['qr_code']}), out=await d.detect(workCanvasForNative(canvas));
+          const list=out.map(x=>String(x.rawValue||'')).filter(x=>x);
+          if(list.length) return list;
+        }
+      }
+    }catch(_){}
+  }
+  const workCanvas=workCanvasForNative(canvas);
+  const results=[]; let cur=workCanvas;
+  for(let iter=0; iter<10; iter++){
+    let code=null;
+    try{
+      if(typeof globalThis.jsQR!=='function') break;
+      const ctx=cur.getContext('2d',{willReadFrequently:true}); if(!ctx) break;
+      const im=ctx.getImageData(0,0,cur.width,cur.height);
+      code=globalThis.jsQR(im.data, im.width, im.height, {inversionAttempts:'attemptBoth'});
+    }catch(_){ break; }
+    if(!code || !code.data) break;
+    const txt=String(code.data);
+    if(txt && !results.includes(txt)) results.push(txt);
+    const loc=code.location;
+    if(!loc || !loc.topLeftCorner || !loc.topRightCorner || !loc.bottomRightCorner || !loc.bottomLeftCorner) break;
+    const xs=[loc.topLeftCorner.x,loc.topRightCorner.x,loc.bottomRightCorner.x,loc.bottomLeftCorner.x];
+    const ys=[loc.topLeftCorner.y,loc.topRightCorner.y,loc.bottomRightCorner.y,loc.bottomLeftCorner.y];
+    const w=Math.max(...xs)-Math.min(...xs), h=Math.max(...ys)-Math.min(...ys), pad=Math.max(20, w*0.1, h*0.1);
+    cur=maskCanvasRect(cur, Math.min(...xs)-pad, Math.min(...ys)-pad, Math.max(...xs)+pad, Math.max(...ys)+pad);
+  }
+  // P6 分块补救：jsQR 在一张图里有多个二维码时，全图一次往往一个都认不出来（定位标记混在一起，第一次组合就错），
+  // 但把图切成左右/上下两块后，每块里只有一个完整码，jsQR 就能认出来；被切掉一半的码形不成完整定位标记，不会干扰。
+  // 只有全图没认出任何码时才分块，避免单码照片多花时间；先左右/上下，再四分块。
+  if(!results.length && typeof globalThis.jsQR==='function'){
+    const tileSets=[[0,0,0.5,1],[0.5,0,0.5,1],[0,0,1,0.5],[0,0.5,1,0.5],[0.25,0,0.5,1],[0,0.25,1,0.5],[0,0,0.6,1],[0.4,0,0.6,1],[0,0,1,0.6],[0,0.4,1,0.6],[0,0,0.6,0.6],[0.4,0,0.6,0.6],[0,0.4,0.6,0.6],[0.4,0.4,0.6,0.6]];
+    for(const t of tileSets){
+      try{
+        const tile=cropCanvasRect(workCanvas, t[0], t[1], t[2], t[3]);
+        const ctx=tile.getContext('2d',{willReadFrequently:true}); if(!ctx) continue;
+        const im=ctx.getImageData(0,0,tile.width,tile.height);
+        const code=globalThis.jsQR(im.data, im.width, im.height, {inversionAttempts:'attemptBoth'});
+        if(code && code.data && !results.includes(String(code.data))) results.push(String(code.data));
+      }catch(_){}
+      if(results.length>=6) break;
+    }
+  }
+  return results;
+}
+function cropCanvasRect(src, fx, fy, fw, fh){
+  const w=Math.max(1, Math.floor(src.width*fw)), h=Math.max(1, Math.floor(src.height*fh));
+  const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+  const ctx=cv.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,w,h);
+  ctx.drawImage(src, -Math.floor(src.width*fx), -Math.floor(src.height*fy));
+  return cv;
+}
+function decodePhotoCodeCanvasMulti(canvas){
+  // P6 多备用图码：全图定位标记分组解码，不用分块、不涂白。
+  // 全图里有多个图码时，旧的“取前 12 个定位点拼一个框”会把两个码的角混成一个大框、解不出来；分块也慢且不稳。
+  // 新做法：先把全图二值化、一次性找出所有定位标记簇，再按正方形几何分组（同一码的四个角：两边等长、夹角约 90 度、模块大小相近），
+  // 每组单独采样解码、校验通过才算一个码；单码时分组只有一组，和原来结果一致。
+  const srcCanvas=downscaleCanvas(canvas, 1200);
+  const ctx=srcCanvas.getContext('2d',{willReadFrequently:true}), im=ctx.getImageData(0,0,srcCanvas.width,srcCanvas.height), w=im.width, h=im.height, gray=new Uint8Array(w*h), hist=new Uint32Array(256);
+  for(let i=0,j=0;i<im.data.length;i+=4,j++){ const g=(im.data[i]*77+im.data[i+1]*150+im.data[i+2]*29)>>8; gray[j]=g; hist[g]++; }
+  const th=otsuThreshold(hist,gray.length), bin=new Uint8Array(gray.length);
+  for(let i=0;i<gray.length;i++) bin[i]=gray[i]<th?1:0;
+  let centers=[];
+  try{ centers=findPhotoFinderCenters(bin,w,h); }catch(e){ centers=[]; }
+  const results=[];
+  if(centers.length>=4){
+    const seenQuad=new Set();
+    for(let i=0;i<centers.length;i++){
+      const tl=centers[i];
+      for(let j=0;j<centers.length;j++){
+        if(j===i) continue; const a=centers[j]; const v1x=a.x-tl.x, v1y=a.y-tl.y, d1=Math.hypot(v1x,v1y);
+        if(d1<50) continue; if(Math.max(tl.m,a.m)/Math.min(tl.m,a.m)>1.8) continue;
+        for(let k=0;k<centers.length;k++){
+          if(k===i||k===j) continue; const b=centers[k]; const v2x=b.x-tl.x, v2y=b.y-tl.y, d2=Math.hypot(v2x,v2y);
+          if(Math.abs(d2-d1)/d1>0.25) continue; if(Math.max(tl.m,b.m)/Math.min(tl.m,b.m)>1.8) continue;
+          const cos=(v1x*v2x+v1y*v2y)/(d1*d2); if(cos>0.35||cos<-0.35) continue;
+          const expX=tl.x+v1x+v2x, expY=tl.y+v1y+v2y;
+          for(let l=0;l<centers.length;l++){
+            if(l===i||l===j||l===k) continue; const br=centers[l];
+            if(Math.hypot(br.x-expX, br.y-expY)>Math.max(3*tl.m, d1*0.2)) continue;
+            if(Math.max(tl.m,br.m)/Math.min(tl.m,br.m)>1.8) continue;
+            const key=[i,j,k,l].sort((x,y)=>x-y).join(',');
+            if(seenQuad.has(key)) continue; seenQuad.add(key);
+            const quad={tl:tl,tr:a,br:br,bl:b,module:(tl.m+a.m+b.m+br.m)/4};
+            try{
+              const matrix=samplePhotoMatrix(bin,w,h,quad);
+              const fr=photoFrameFromMatrix(matrix);
+              if(fr && fr.text && !results.some(x=>x.text===fr.text)) results.push({text:fr.text,corrected:fr.corrected,quad:quad});
+            }catch(e){}
+          }
+        }
+      }
+      if(results.length>=5) break;
+    }
+  }
+  if(!results.length){
+    try{ const r=decodePhotoCodeCanvas(srcCanvas); if(r && r.text) results.push(r); }catch(e){}
+  }
+  return results;
+}
+async function decodePaperImage(file){
+  const canvas=await imageFileToCanvas(file), out=[];
+  // P6：标准码和备用图码都认，不再“认出标准码就跳过备用图码”，也不再“只认 1 个备用图码”。
+  const qrList=await detectAllQRCanvas(canvas);
+  for(const x of qrList){
+    if(!(String(x).startsWith('PF2') || String(x).startsWith(CFG.PAPER_FRAME_PREFIX) || String(x).startsWith(SPLIT_CFG.PAPER_PREFIX) || String(x).startsWith('PaperFrame|'))) continue;
+    if(String(x).startsWith('PF2')){ if(!out.some(y=>y.raw===x)) out.push({raw:x,method:'标准 QR (PF2 高密度)'}); continue; }
+    try{ await parsePaperFrame(x); if(!out.some(y=>y.raw===x)) out.push({raw:x,method:'标准 QR'}); }catch(_){}
+  }
+  const photoList=decodePhotoCodeCanvasMulti(canvas);
+  for(const r of photoList){
+    try{ await parsePaperFrame(r.text); if(!out.some(y=>y.raw===r.text)) out.push({raw:r.text,method:`PhotoCode${r.corrected?`（纠正 ${r.corrected} bit）`:''}`}); }catch(_){}
+  }
+  return out;
+}
 async function handlePaperImages(fileList){const files=Array.from(fileList||[]);if(!files.length)return;let good=0;for(let i=0;i<files.length;i++){try{$('prScanStatus').textContent=`正在识别 ${i+1}/${files.length}：${files[i].name||'照片'}…`;const found=await decodePaperImage(files[i]);if(!found.length)throw new InvalidContainerError('照片中没有识别到有效的 PepperArchive QR / PhotoCode。');for(const item of found)if(await acceptPaperFrame(item.raw)){good++;try{var _sc=state.paper.scan,_t=_sc.activeType,_c=_t?_sc.byType[_t]:null;$('prScanStatus').textContent=_c?`已通过 ${item.method} 识别第 ${_c.chunks.size}/${_c.total} 页。`:`已通过 ${item.method} 识别。`;}catch(_){$('prScanStatus').textContent=`已通过 ${item.method} 识别。`;}}}catch(e){toast(`${files[i].name||'照片'}：${userMessage(e)}`,'error')}}if(good)toast(`本次识别完成：接受 ${good} 个有效分片。`,'success');updatePaperScanUI()}
 
 // ========================= FILE CONTAINER =========================
@@ -3617,6 +3814,24 @@ function catalogIdbPut(db,record){return new Promise((resolve,reject)=>{try{cons
 function catalogIdbDelete(db,recordId){return new Promise((resolve,reject)=>{try{const tx=db.transaction(CATALOG_CFG.STORE,'readwrite');tx.objectStore(CATALOG_CFG.STORE).delete(recordId);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error||new Error('目录删除失败。'))}catch(e){reject(e)}})}
 function catalogLocalRead(){try{const raw=localStorage.getItem(CATALOG_CFG.STORAGE_KEY);if(!raw)return [];const o=JSON.parse(raw);if(!o||o.version!==CATALOG_CFG.SCHEMA||!Array.isArray(o.records))return [];return o.records.map(x=>catalogNormalizeRecord(x,{allowBlankName:false}))}catch(_){return []}}
 function catalogLocalWrite(records){localStorage.setItem(CATALOG_CFG.STORAGE_KEY,JSON.stringify({version:CATALOG_CFG.SCHEMA,updatedAt:catalogNow(),records},null,2))}
+function catalogLocalRemove(){ try{ localStorage.removeItem(CATALOG_CFG.STORAGE_KEY); }catch(e){} }
+function catalogLocalStaleInfo(){
+  // 只在 IndexedDB 为准时调用：本地存储里还有记录，且与当前目录不完全相同，就是影子副本。
+  try{
+    const local = catalogLocalRead();
+    if(!local.length) return null;
+    const cur = new Map(catalogState.records.map(r=>[r.recordId, r]));
+    const diff = local.filter(r=>{ const c=cur.get(r.recordId); return !c || c.name!==r.name || c.category!==r.category || c.note!==r.note || c.status!==r.status || c.updatedAt!==r.updatedAt; });
+    if(!diff.length && local.length===catalogState.records.length) return null;
+    return {localCount: local.length, diffCount: diff.length, local: local};
+  }catch(e){ return null; }
+}
+function catalogUpdateLocalCleanupButton(){
+  const btn=$('catLocalCleanup'); if(!btn) return;
+  const info = (catalogState.backend==='indexeddb') ? catalogLocalStaleInfo() : null;
+  btn.style.display = info ? '' : 'none';
+  if(info) btn.title = '本地存储里还有 ' + info.localCount + ' 条旧目录，与当前目录有 ' + info.diffCount + ' 条不同；点一下会先把旧目录导出为 JSON 备份，再删除本地存储副本，之后它不会再复活。';
+}
 async function catalogLoad(){
   if(catalogState.loadPromise)return catalogState.loadPromise;
   catalogState.loadPromise=(async()=>{
@@ -3629,14 +3844,27 @@ async function catalogLoad(){
       // of misclassifying a normalization failure as an IndexedDB failure.
       rows=rows.map(x=>catalogNormalizeRecord(x,{allowBlankName:false,allowLegacyId:true}));
       if(!rows.length){
+        // P5 根治：IndexedDB 为单一事实来源。本地存储只做一次性迁移，迁移后必须核对再删本地副本，
+        // 否则下次 IndexedDB 一清空（浏览器清理、手动清空），旧本地副本又会复活，这就是影子问题的根源。
         const fallback=catalogLocalRead();
         if(fallback.length){
           for(const r of fallback)await catalogIdbPut(catalogState.db,r);
-          rows=fallback;
+          const verify=await catalogIdbGetAll(catalogState.db);
+          const verifyIds=new Set(verify.map(x=>x.recordId));
+          const ok = verify.length===fallback.length && fallback.every(r=>verifyIds.has(r.recordId));
+          if(ok){
+            catalogLocalRemove();
+            rows=fallback;
+          } else {
+            // 核对不上：宁可留着本地副本、报错，也不删数据；下次刷新会再试迁移，不会悄悄丢记录。
+            // 审计发现并修正：原来这里把目录设成空的 rows，用户会看到空目录；应显示 IndexedDB 里实际已有的 verify 行，本地副本还在，可导出备份再重试。
+            catalogState.records=verify.map(x=>catalogNormalizeRecord(x,{allowBlankName:false,allowLegacyId:true})).sort(catalogSortRecords('updatedDesc'));
+            catalogState.ready=true;catalogRender();catalogSetStorageStatus('目录迁移核对失败：本地存储副本未删除，请先导出目录 JSON 备份，再点刷新重试。');catalogUpdateLocalCleanupButton();return true;
+          }
         }
       }
       catalogState.records=rows.sort(catalogSortRecords('updatedDesc'));
-      catalogState.ready=true;catalogRender();catalogSetStorageStatus();return true
+      catalogState.ready=true;catalogRender();catalogSetStorageStatus();catalogUpdateLocalCleanupButton();return true
     }catch(e){
       catalogState.db=null;
       try{
@@ -3656,9 +3884,14 @@ async function catalogLoad(){
 function catalogSetStorageStatus(extra){
   const el=$('catStorageStatus');if(!el)return;
   const base=catalogState.backend==='indexeddb'
-    ?'已自动保存到本机浏览器 IndexedDB。'
-    :'已降级到本机 localStorage。';
-  el.textContent=(extra?extra+' ':'')+base+'跨设备或长期保存，请定期导出 JSON。目录导出文件不含密码，但包含账户用途信息。'
+    ?'目录只以本机浏览器 IndexedDB 为准。'
+    :'已降级到本机 localStorage（IndexedDB 打不开时才用，恢复后会再迁回 IndexedDB）。';
+  let stale='';
+  if(catalogState.backend==='indexeddb'){
+    const info=catalogLocalStaleInfo();
+    if(info) stale='检测到一份旧的本地存储目录（共 '+info.localCount+' 条，有 '+info.diffCount+' 条与当前目录不同），已不再用它覆盖当前目录；如需清理，请点“删除旧的本地存储副本”（点之前会先把旧目录导出为 JSON 备份）。';
+  }
+  el.textContent=(extra?extra+' ':'')+base+(stale?stale:'')+'跨设备或长期保存，请定期导出 JSON。目录导出文件不含密码，但包含账户用途信息。'
 }
 async function catalogPersist(record){
   const r=catalogNormalizeRecord(record,{allowBlankName:false});
@@ -3694,10 +3927,10 @@ function catalogExportJson(){const payload=catalogExportPayload(),blob=new Blob(
 function catalogExportCsv(){const rows=[['档案编号','Name','Category','Note','Status','Created At','Updated At'],...catalogState.records.map(r=>[r.recordId,r.name,r.category,r.note,r.status,r.createdAt,r.updatedAt])];const csv='\uFEFF'+rows.map(row=>row.map(catalogEscapeCsv).join(',')).join('\r\n');downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),`PepperArchive-Catalog-${new Date().toISOString().slice(0,10)}-${PEPPERCIPHER_VERSION}.csv`);toast('目录 CSV 已导出。','success')}
 async function catalogImportFile(file){const text=await file.text();let payload;try{payload=JSON.parse(text)}catch(_){throw new Error('目录 JSON 无法解析。')}if(!payload||payload.format!=='PaperCipher-Catalog'||payload.version!==CATALOG_CFG.SCHEMA||!Array.isArray(payload.records))throw new Error('不是有效的 PaperCipher 目录 JSON。');if(payload.records.length>CATALOG_CFG.MAX_RECORDS)throw new Error('目录记录数超过允许上限。');let changed=0;for(const raw of payload.records){const r=catalogNormalizeRecord(raw,{allowBlankName:false}),old=catalogFind(r.recordId);if(!old||String(r.updatedAt)>String(old.updatedAt)){await catalogPersist(r);changed++}}catalogRenderExistingOptions();toast(`目录导入完成：新增/更新 ${changed} 项。重复项以较新的更新时间为准。`,'success')}
 async function catalogIdbClear(db){return new Promise((resolve,reject)=>{try{const tx=db.transaction(CATALOG_CFG.STORE,'readwrite');tx.objectStore(CATALOG_CFG.STORE).clear();tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error||new Error('目录清空失败。'))}catch(e){reject(e)}})}
-async function catalogClearAll(){const count=catalogState.records.length;if(catalogState.db){try{await catalogIdbClear(catalogState.db)}catch(e){}}try{catalogLocalWrite([])}catch(e){}catalogState.records=[];if(catalogState.editId)catalogClearEditor();catalogRender();catalogRenderExistingOptions();return count}
+async function catalogClearAll(){const count=catalogState.records.length;if(catalogState.db){try{await catalogIdbClear(catalogState.db)}catch(e){}}try{catalogLocalRemove()}catch(e){}catalogState.records=[];if(catalogState.editId)catalogClearEditor();catalogRender();catalogRenderExistingOptions();catalogUpdateLocalCleanupButton();return count}
 function catalogShowClearConfirm(){const n=catalogState.records.length;if(!n){toast('目录已经是空的，不用清空。','success');return}const box=$('catClearConfirm');if(box)box.style.display='';const t=$('catClearConfirmText');if(t)t.textContent='确定要清空全部目录吗？共 '+n+' 项，清空后无法恢复。只删除电子目录索引，不删除你的纸质备份、加密文件和口令。';}
 function catalogInitBindings(){
-  $('catSearch').addEventListener('input',catalogRender);$('catSort').addEventListener('change',catalogRender);$('catNew').addEventListener('click',catalogPrepareNew);$('catRefresh').addEventListener('click',async()=>{catalogState.loadPromise=null;catalogState.ready=false;await catalogLoad();toast('目录已刷新。','success')});$('catClearAll').addEventListener('click',catalogShowClearConfirm);$('catClearConfirmNo').addEventListener('click',()=>{const b=$('catClearConfirm');if(b)b.style.display='none'});$('catClearConfirmYes').addEventListener('click',async()=>{const b=$('catClearConfirm');if(b)b.style.display='none';try{const n=await catalogClearAll();toast('已清空全部目录索引，共 '+n+' 项；加密档案本身未删除。','success')}catch(e){toast(e.message||'清空失败。','error')}});$('catExportJson').addEventListener('click',catalogExportJson);$('catExportCsv').addEventListener('click',catalogExportCsv);$('catImport').addEventListener('click',()=>$('catImportFile').click());$('catImportFile').addEventListener('change',async()=>{const f=$('catImportFile').files?.[0];$('catImportFile').value='';if(!f)return;try{await catalogEnsureLoaded();await catalogImportFile(f)}catch(e){toast(e.message||'目录导入失败。','error')}});$('catSave').addEventListener('click',catalogSaveEditor);$('catCancel').addEventListener('click',catalogClearEditor);$('catGenerateId').addEventListener('click',catalogPrepareNew);$('teCatalogMode').addEventListener('change',catalogSyncEncryptionMode);$('teExistingRecord').addEventListener('change',catalogLoadExistingIntoForm);
+  $('catSearch').addEventListener('input',catalogRender);$('catSort').addEventListener('change',catalogRender);$('catNew').addEventListener('click',catalogPrepareNew);$('catRefresh').addEventListener('click',async()=>{catalogState.loadPromise=null;catalogState.ready=false;await catalogLoad();toast('目录已刷新。','success')});$('catClearAll').addEventListener('click',catalogShowClearConfirm);$('catClearConfirmNo').addEventListener('click',()=>{const b=$('catClearConfirm');if(b)b.style.display='none'});$('catClearConfirmYes').addEventListener('click',async()=>{const b=$('catClearConfirm');if(b)b.style.display='none';try{const n=await catalogClearAll();toast('已清空全部目录索引，共 '+n+' 项；加密档案本身未删除。','success')}catch(e){toast(e.message||'清空失败。','error')}});$('catLocalCleanup').addEventListener('click',async()=>{try{const info=catalogLocalStaleInfo();if(!info){toast('本地存储里没有旧目录，不用清理。','success');catalogUpdateLocalCleanupButton();return}const payload={format:'PaperCipher-Catalog',version:CATALOG_CFG.SCHEMA,app:'PaperCipher',appVersion:PEPPERCIPHER_VERSION,exportedAt:catalogNow(),recordCount:info.local.length,records:info.local};downloadBlob(new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}),`PepperArchive-Catalog-LocalBackup-${new Date().toISOString().slice(0,10)}-${PEPPERCIPHER_VERSION}.json`);catalogLocalRemove();catalogUpdateLocalCleanupButton();catalogSetStorageStatus();toast('旧的本地存储副本已导出备份并删除，之后不会再复活。','success')}catch(e){toast(e.message||'清理失败。','error')}});$('catExportJson').addEventListener('click',catalogExportJson);$('catExportCsv').addEventListener('click',catalogExportCsv);$('catImport').addEventListener('click',()=>$('catImportFile').click());$('catImportFile').addEventListener('change',async()=>{const f=$('catImportFile').files?.[0];$('catImportFile').value='';if(!f)return;try{await catalogEnsureLoaded();await catalogImportFile(f)}catch(e){toast(e.message||'目录导入失败。','error')}});$('catSave').addEventListener('click',catalogSaveEditor);$('catCancel').addEventListener('click',catalogClearEditor);$('catGenerateId').addEventListener('click',catalogPrepareNew);$('teCatalogMode').addEventListener('change',catalogSyncEncryptionMode);$('teExistingRecord').addEventListener('change',catalogLoadExistingIntoForm);
 }
 async function catalogInit(){catalogInitBindings();await catalogLoad();catalogRenderExistingOptions();catalogSyncEncryptionMode()}
 
@@ -4127,14 +4360,15 @@ function splitPostBootstrap(){
 }
 
 // ========================= VERSIONED HELP =========================
-const PEPPERCIPHER_VERSION='2026.10.29.34'; /* 合并版版本，与 PepperArchive APP_VERSION 一致 */
+const PEPPERCIPHER_VERSION='2026.10.29.35'; /* 合并版版本，与 PepperArchive APP_VERSION 一致 */
 function pepperDateCode(d=new Date()){return String(d.getFullYear()).slice(-2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
 function buildHelpHtml(){const v=PEPPERCIPHER_VERSION,date=pepperDateCode();return `<div class="help-doc"><h2>PepperArchive 使用帮助 · 版本 ${v}</h2><p class="sub">本帮助与当前网页程序版本同步生成。PepperArchive 是<strong>离线、本机运行</strong>的文本/文件加密工具；正常加密、解密、自检和纸质恢复均不需要网络。</p>
 <h3>零、当前版本使用方法（本版帮助已随版本更新，与当前界面一致）</h3>
 <p>顶部标签页只有五个：<strong>加密、恢复、目录、自检、帮助</strong>。不要再按旧的“文本加密/文本解密/纸质恢复”分标签去找，旧的子表单仍保留在加密标签页下方，功能与新表单相同，不用重复操作。</p>
 <ul>
 <li><strong>加密：</strong>在“加密”里选文本或文件，输入口令（可留空，留空不加密），选 Argon2id 预设（平衡/强/高强/自定义）和压缩档位（不压缩/原生 gzip/DEFLATE 1/6/9/LZMA 1/6/9），选输出：单包纸质（PV04）、三包（文本和文件都适用；文件三包是密文包/参数包/密钥包，缺一不可，恢复后拿回原文件，文件名不变）、单个加密文件。文件三包的电子稿请用“下载密文包/参数包/密钥包”分别下载、分开保管，不要用“下载输出”的合集文件分开保管。加密时看进度条、百分比、预计剩余、已流逝；完成后看实际生成时间。</li>
-<li><strong>恢复：</strong>在“恢复”里分两块：<strong>文本恢复</strong>粘贴纸面分块/三包文本或上传纸质帧照片，或点“开始实时扫码”用后置摄像头连续扫码（单包二维码和三包纸质帧都自动累积到文本框，同一码只记一次，集齐后点“恢复文本”），<strong>文件恢复</strong>上传加密文件/打印文本文件，口令共用。程序自动识别 PV1/PV2/PV04 分块、三包、纸质帧、旧文件容器；混拼明确拒绝。</li><li><strong>新版（.34）变化：</strong>文件也可以三包分开保管了（以前选文件时三包会直接拒绝，说仅文本适用）。做法：选“文件”、选“三包分开保管”，加密后得到密文包/参数包/密钥包三个包，纸稿和电子稿都有：纸稿是下方打印区三个包各从新页开始的纯文本稿，另可点“生成三包二维码打印稿”或每包单独的合印稿；电子稿请点“下载密文包/参数包/密钥包”分别下载、分开保管。恢复时把三个包的文本粘贴到恢复区（或三个下载文件的内容合在一起粘贴），输入同一口令，点恢复后点“下载恢复文件”即可拿回原文件，文件名和内容都和原文件一致，缺一个包、错口令、混了两个档案的包都会明确拒绝。大小不限：大文件照样给打印稿，只是页数多，大文件建议优先用电子三包。注意：文件三包的密文包是新格式（单行 Ciphertext.FILE1 开头，线性编码，大文件不卡），只能用本版起恢复，文本三包和单包、单个加密文件都没动。真机（实体打印机、真手机摄像头）仍未测，模拟通过不等于真机通过。</li><li><strong>新版（.33）变化：</strong>三包合印纠正：.32 的“整套合印”把三个包放在同一套纸里，不对；现在是每包单独一份稿，加密表单里是三个按钮——“密文包合印稿”“参数包合印稿”“密钥包合印稿”，点哪个包只生成那个包：先是它的二维码、然后是它的纯文本，印完单独保管，不要和另外两个包的稿放在一起；三个包缺一不可恢复，恢复时需要另外两个包的稿。旧的纯文本打印稿和二维码打印稿都还在，没动。</li><li><strong>新版（.32）变化：</strong>三包新增“合印打印稿”按钮：以前三包要印两套纸，一套纯文本、一套二维码，现在点“生成三包合印打印稿”，每个包先是二维码、然后是同一包的纯文本，三个包各从新页开始，同一套纸，不用分开印两套；二维码扫不出来时，直接抄下面同一包的纯文本就行。旧的纯文本打印稿和二维码打印稿都还在，没动。注意：整套放在一处就能恢复，分开保管时请按包裁开，每个包的二维码和纯文本仍在一起。</li><li><strong>新版（.31）变化：</strong>PDF 解码升级成全兼容方向：文字、JPEG、Flate、矢量矩形之外，现在还支持扫描仪黑白 PDF 的 CCITT 传真压缩（G4 纯二维、G3 一维、混合，表按 RFC 804 T.4，合成编码器随机块图、73x73 二维码图、一维图实测全对）、老 PDF 的 ASCIIHex/ASCII85/LZW/RunLength 滤波（可多层叠加，例如先 Flate 再 ASCII85）、Flate 的 PNG 预测反预测、1 位掩码图反色、Form 矢量码和一页拆成多条内容流的合并（修了搜 stream 会撞上 endstream 的 bug，之前多流 PDF 的第二条流会被跳过）。仍不支持、且本版明说原因的三档：JBIG2（黑白算术编码，解码器几千行，放进单文件会涨几百 KB 且慢）、JPEG2000（需 OpenJPEG 级解码器，浏览器本身也不直接解）、矢量文字轮廓（没有文字层，得靠 OCR，几 MB 的识别模型不适合单文件离线工具）、加密 PDF（PDF 本身设了打开密码时内容流是加密的，需先在阅读器里解密另存）。遇到这几档时程序不再含糊失败，会直接说清是哪一种、该怎么转。</li><li><strong>新版（.30）变化：</strong>纯矢量二维码 PDF 也能恢复了：有些工具把二维码画成矢量矩形（内容流里一堆矩形填充命令），而不是嵌图片，程序原来只认图片和文字，矢量码一帧都读不出来；现在程序会解析内容流里的矩形填充命令，把黑矩形还原到画布上再扫码，实测自生成的矢量二维码 PDF（矩形画法，单包）照片路和文件路都恢复成功。注意两点：矢量二维码栅格化时要留白边、jsQR 对大图不稳会多尺寸重试，这些是实测踩出来的；文字画成矢量轮廓（没有文字层）仍需 OCR，不在这一版里，Form XObject 引用的矢量码也暂不支持。</li><li><strong>新版（.29）变化：</strong>加密表单里原来不管选什么输出，下面“单包纸质：二维码/纯文本打印稿”那行都一直显示，选三包时看起来像同时选了两个输出，其实下面那行只属于单包，选三包时本来就被忽略；现在只有选单包时才显示那行，选三包或单个加密文件时它自动隐藏。单包那行的旧说法“Base32 分块”也改成“CF1 无混淆分块”，单包从 .22 起生成的就是 CF1，不是 Base32，旧 Base32 仍可恢复。</li><li><strong>新版（.28）变化：</strong>二维码打印成 PDF 再恢复，之前会失败，现在通了：浏览器打印成 PDF 时二维码不是 JPEG，而是 Flate 压缩的原始像素图，程序原来只认 JPEG，所以一帧都读不出来，现在 Flate 图也能解成二维码再识别；单包二维码的照片、PDF 原来也会被过滤掉（照片识别只认纸质帧/PF2），现在单包码也能从照片和 PDF 里进恢复；单包二维码 PDF 的文字层里卡片标题有一行假块头，会把真块的校验拖坏，现在图片解出的数据优先，不掺文字层，假块头也不再判坏块。三包二维码密度 50 档原来也会报“纸质分片大小无效”（界面写 50 可选，底层只认 200 起），现在底层也认 50，50 档实测 33 页、解码后恢复成功。注意：纯矢量 PDF（里面只有矢量线条、没有图片也没有文字数据）仍然恢复不了，程序没有完整的 PDF 渲染器，这一点没变；浏览器打印的 PDF 是光栅图，不是纯矢量，现在已经能恢复。</li><li><strong>新版（.27）变化：</strong>二维码真的到 3300 了：以前选 3300 实际按 900 生成，现在单包二维码编码器扩到 40 版-M（上限 3391 字符），选 3300 就按 3300 生成；三包超过 900 自动用 PF2 高密度格式（每码 3300 字符、纯字母数字、仅标准二维码、纠错 M、无备用图码、.27 版起才能恢复，900 及以下仍是旧格式，旧纸仍可恢复）。打印修了三处：打印时不再把标签栏和“打印稿”标题印出来，数据行铺满纸面横向，三包文本和三包二维码都是每个包各从新页开始、不用裁剪。恢复修了两处：Chrome 打印的 PDF 里是每字一个小块、按字体编码表排的，程序现在会按编码表解回连续文本，所以只有三包文本的 PDF 也能直接在照片路和文件路恢复（口令错会明说认证失败，不是“找不到”）；统一加密成功后目录会自动生成一条（文本/文件、单包/三包/加密文件都进目录，名称空时用文件名或默认名，同一编号已在目录里时不覆盖你改过的名称），加密成功后编号框会清空，下一次加密自动生成新编号，不会两份备份同号。</li><li><strong>新版（.26）变化：</strong>三包二维码密度修了一个上限错误：以前界面写三包到 2000、程序按 2000 传，纸质帧分片只认 200–900，选 3300 时必然报“纸质分片大小无效”；现在三包上限是 900，选超过 900 的档时自动按 900 生成，不再失败，3300 只适用于单包二维码。三包纸面利用率：三包文本不再每包强制新页，改用裁切线分隔，短包不再独占一页空白，打印后沿线裁开分开保管；三包二维码每页放两帧，省一半纸；纯文本行宽改用浏览器实测字宽计算，2 号字时也不再少算宽度。</li><li><strong>新版（.25）变化：</strong>加密多了整条生成过程的进度条（准备、压缩、Argon2id、加密、编码、打印稿），整体进度只进不退，旁边有已用时间和“仍在进行中”的跳动，Argon2id 本身的进度条仍在上面；Argon2id 计算让出主线程更勤，进度不再倒退。纯文本打印稿的行宽按字号自动算满纸面，不再固定 40 字一行，三包每包可自然跨页。实时扫码在电脑上也能用了：浏览器没有自带扫码能力时自动用程序自带的扫码能力，不再直接报不可用；帮助里“直播扫码”已改叫“实时扫码”，它不是发给别人看的直播，画面只在本机处理。</li><li><strong>新版（.23）变化：</strong>恢复区新增实时摄像头扫码（后置摄像头、连续识别、去重累积，单包和三包都支持，离开恢复标签或点恢复时自动停止；无摄像头时会明说不可用，不会假装在扫；浏览器没有自带扫码能力时改用程序自带扫码能力）。加密预计剩余修了一个错误：单包和单个加密文件之前第一次进度回调会把进度直接算成 100%，现在按已完成/总数换算，百分比和预计剩余会一路递减。</li><li><strong>新版（.24）变化：</strong>打印稿生成后有打印按钮了：加密表单里“打印打印稿”，打印区顶部“打印这份打印稿”，点一下打开浏览器打印预览，只印下方打印稿，不印上方表单；还没有打印稿时点打印会明说请先生成，不会把占位提示印出来。</li><li><strong>新版（.22）变化：</strong>新生成的单包分块和三包文本打印稿都用 CF1 无混淆格式，数据字符只用 3、4、7、C、D、F、H、J、K、M、P、R、W、X、Y、-；旧 Base32 分块仍可恢复。二维码密度可自选，单包 10–3300 字符/码、三包 50–2000 字符/页，给到极端；三包生成后可点“生成三包二维码打印稿”，每包一套纸质帧。纯文本打印可自选字体和字号，字号给到 2pt 极小。恢复照片区可上传 PDF 扫描件，PDF 里是扫描图片或文字时可提取，提不出来时会明说原因。</li>
+<li><strong>恢复：</strong>在“恢复”里分两块：<strong>文本恢复</strong>粘贴纸面分块/三包文本或上传纸质帧照片，或点“开始实时扫码”用后置摄像头连续扫码（单包二维码和三包纸质帧都自动累积到文本框，同一码只记一次，集齐后点“恢复文本”），<strong>文件恢复</strong>上传加密文件/打印文本文件，口令共用。程序自动识别 PV1/PV2/PV04 分块、三包、纸质帧、旧文件容器；混拼明确拒绝。</li><li><strong>新版（.35）变化：</strong>单包合印稿：单包纸质备份现在也可以一份稿里先印二维码、后印纯文本，不用印两套，二维码扫不出来时照着抄下面纯文本即可恢复；二维码和纯文本是两套独立写法（二维码用 CF1，纯文本用 CF2），解回来是同一份内容，字串不一样是正常的。纸面文本新格式 CF2：纯文本（单包纯文本、三包文本打印稿、每包合印稿的纯文本部分）从本版起用 CF2，CF1 的 16 字加上 #、$、%、&、(、)、+、-、/、<、=、>、?、@、[、\、]、^、_、{、}、~，共 37 字，同样内容比 CF1 短约两成；二维码编码独立不变（单包二维码仍用 CF1，三包二维码仍用纸质帧/PF2），纸面变短不会让二维码变大；旧的 CF1 纯文本和 CF-TRIPLE 三包文本仍可恢复，新旧不能混拼。目录只以本机浏览器 IndexedDB 为准：旧的本地存储副本在迁移核对无误后自动删除，不再复活；如果 IndexedDB 里已有目录、本地存储里还有旧的不同记录，会提示并给一个清理按钮，点之前先把旧目录导出为 JSON 备份；IndexedDB 打不开时才暂时用本地存储，恢复后会再迁回。照片一次认多个码：标准二维码和备用图码都认，不再认出一个就停；一张照片里有多个标准码、多个备用图码、或者标准码和备用图码混在一起，都能一次认全（同一页的二维码和备用图码是同一份内容时只算一次）。帮助清理：帮助用词已清理，.32 那条已撤销的说明缩成一行，不再误导第一次用的人；加密表单里“三包仅适用于文本”的旧说明已改成文本和文件都适用。文件三包已在 .34 实现，本版只回归验证，未重做。</li>
+      <li><strong>新版（.34）变化：</strong>文件也可以三包分开保管了（以前选文件时三包会直接拒绝，说仅文本适用）。做法：选“文件”、选“三包分开保管”，加密后得到密文包/参数包/密钥包三个包，纸稿和电子稿都有：纸稿是下方打印区三个包各从新页开始的纯文本稿，另可点“生成三包二维码打印稿”或每包单独的合印稿；电子稿请点“下载密文包/参数包/密钥包”分别下载、分开保管。恢复时把三个包的文本粘贴到恢复区（或三个下载文件的内容合在一起粘贴），输入同一口令，点恢复后点“下载恢复文件”即可拿回原文件，文件名和内容都和原文件一致，缺一个包、错口令、混了两个档案的包都会明确拒绝。大小不限：大文件照样给打印稿，只是页数多，大文件建议优先用电子三包。注意：文件三包的密文包是新格式（单行 Ciphertext.FILE1 开头，线性编码，大文件不卡），只能用本版起恢复，文本三包和单包、单个加密文件都没动。真机（实体打印机、真手机摄像头）仍未测，模拟通过不等于真机通过。</li><li><strong>新版（.33）变化：</strong>三包合印纠正：.32 的“整套合印”把三个包放在同一套纸里，不对；现在是每包单独一份稿，加密表单里是三个按钮——“密文包合印稿”“参数包合印稿”“密钥包合印稿”，点哪个包只生成那个包：先是它的二维码、然后是它的纯文本，印完单独保管，不要和另外两个包的稿放在一起；三个包缺一不可恢复，恢复时需要另外两个包的稿。旧的纯文本打印稿和二维码打印稿都还在，没动。</li><li><strong>新版（.32）变化：</strong>已撤销，见 .33。</li><li><strong>新版（.31）变化：</strong>PDF 解码升级成全兼容方向：文字、JPEG、Flate、矢量矩形之外，现在还支持扫描仪黑白 PDF 的 CCITT 传真压缩（G4 纯二维、G3 一维、混合，表按 RFC 804 T.4，合成编码器随机块图、73x73 二维码图、一维图实测全对）、老 PDF 的 ASCIIHex/ASCII85/LZW/RunLength 滤波（可多层叠加，例如先 Flate 再 ASCII85）、Flate 的 PNG 预测反预测、1 位掩码图反色、Form 矢量码和一页拆成多条内容流的合并（修了搜 stream 会撞上 endstream 的 bug，之前多流 PDF 的第二条流会被跳过）。仍不支持、且本版明说原因的三档：JBIG2（黑白算术编码，解码器几千行，放进单文件会涨几百 KB 且慢）、JPEG2000（需 OpenJPEG 级解码器，浏览器本身也不直接解）、矢量文字轮廓（没有文字层，得靠 OCR，几 MB 的识别模型不适合单文件离线工具）、加密 PDF（PDF 本身设了打开密码时内容流是加密的，需先在阅读器里解密另存）。遇到这几档时程序不再含糊失败，会直接说清是哪一种、该怎么转。</li><li><strong>新版（.30）变化：</strong>纯矢量二维码 PDF 也能恢复了：有些工具把二维码画成矢量矩形（内容流里一堆矩形填充命令），而不是嵌图片，程序原来只认图片和文字，矢量码一帧都读不出来；现在程序会解析内容流里的矩形填充命令，把黑矩形还原到画布上再扫码，实测自生成的矢量二维码 PDF（矩形画法，单包）照片路和文件路都恢复成功。注意两点：矢量二维码栅格化时要留白边、jsQR 对大图不稳会多尺寸重试，这些是实测踩出来的；文字画成矢量轮廓（没有文字层）仍需 OCR，不在这一版里，Form XObject 引用的矢量码也暂不支持。</li><li><strong>新版（.29）变化：</strong>加密表单里原来不管选什么输出，下面“单包纸质：二维码/纯文本打印稿”那行都一直显示，选三包时看起来像同时选了两个输出，其实下面那行只属于单包，选三包时本来就被忽略；现在只有选单包时才显示那行，选三包或单个加密文件时它自动隐藏。单包那行的旧说法“Base32 分块”也改成“CF1 无混淆分块”，单包从 .22 起生成的就是 CF1，不是 Base32，旧 Base32 仍可恢复。</li><li><strong>新版（.28）变化：</strong>二维码打印成 PDF 再恢复，之前会失败，现在通了：浏览器打印成 PDF 时二维码不是 JPEG，而是 Flate 压缩的原始像素图，程序原来只认 JPEG，所以一帧都读不出来，现在 Flate 图也能解成二维码再识别；单包二维码的照片、PDF 原来也会被过滤掉（照片识别只认纸质帧/PF2），现在单包码也能从照片和 PDF 里进恢复；单包二维码 PDF 的文字层里卡片标题有一行假块头，会把真块的校验拖坏，现在图片解出的数据优先，不掺文字层，假块头也不再判坏块。三包二维码密度 50 档原来也会报“纸质分片大小无效”（界面写 50 可选，底层只认 200 起），现在底层也认 50，50 档实测 33 页、解码后恢复成功。注意：纯矢量 PDF（里面只有矢量线条、没有图片也没有文字数据）仍然恢复不了，程序没有完整的 PDF 渲染器，这一点没变；浏览器打印的 PDF 是光栅图，不是纯矢量，现在已经能恢复。</li><li><strong>新版（.27）变化：</strong>二维码真的到 3300 了：以前选 3300 实际按 900 生成，现在单包二维码编码器扩到 40 版-M（上限 3391 字符），选 3300 就按 3300 生成；三包超过 900 自动用 PF2 高密度格式（每码 3300 字符、纯字母数字、仅标准二维码、纠错 M、无备用图码、.27 版起才能恢复，900 及以下仍是旧格式，旧纸仍可恢复）。打印修了三处：打印时不再把标签栏和“打印稿”标题印出来，数据行铺满纸面横向，三包文本和三包二维码都是每个包各从新页开始、不用裁剪。恢复修了两处：Chrome 打印的 PDF 里是每字一个小块、按字体编码表排的，程序现在会按编码表解回连续文本，所以只有三包文本的 PDF 也能直接在照片路和文件路恢复（口令错会明说认证失败，不是“找不到”）；加密成功后目录会自动生成一条（文本/文件、单包/三包/加密文件都进目录，名称空时用文件名或默认名，同一编号已在目录里时不覆盖你改过的名称），加密成功后编号框会清空，下一次加密自动生成新编号，不会两份备份同号。</li><li><strong>新版（.26）变化：</strong>三包二维码密度修了一个上限错误：以前界面写三包到 2000、程序按 2000 传，纸质帧分片只认 200–900，选 3300 时必然报“纸质分片大小无效”；现在三包上限是 900，选超过 900 的档时自动按 900 生成，不再失败，3300 只适用于单包二维码。三包纸面利用率：三包文本不再每包强制新页，改用裁切线分隔，短包不再独占一页空白，打印后沿线裁开分开保管；三包二维码每页放两帧，省一半纸；纯文本行宽改用浏览器实测字宽计算，2 号字时也不再少算宽度。</li><li><strong>新版（.25）变化：</strong>加密多了整条生成过程的进度条（准备、压缩、Argon2id、加密、编码、打印稿），整体进度只进不退，旁边有已用时间和“仍在进行中”的跳动，Argon2id 本身的进度条仍在上面；Argon2id 计算让出主线程更勤，进度不再倒退。纯文本打印稿的行宽按字号自动算满纸面，不再固定 40 字一行，三包每包可自然跨页。实时扫码在电脑上也能用了：浏览器没有自带扫码能力时自动用程序自带的扫码能力，不再直接报不可用；帮助里“直播扫码”已改叫“实时扫码”，它不是发给别人看的直播，画面只在本机处理。</li><li><strong>新版（.23）变化：</strong>恢复区新增实时摄像头扫码（后置摄像头、连续识别、去重累积，单包和三包都支持，离开恢复标签或点恢复时自动停止；无摄像头时会明说不可用，不会假装在扫；浏览器没有自带扫码能力时改用程序自带扫码能力）。加密预计剩余修了一个错误：单包和单个加密文件之前第一次进度回调会把进度直接算成 100%，现在按已完成/总数换算，百分比和预计剩余会一路递减。</li><li><strong>新版（.24）变化：</strong>打印稿生成后有打印按钮了：加密表单里“打印打印稿”，打印区顶部“打印这份打印稿”，点一下打开浏览器打印预览，只印下方打印稿，不印上方表单；还没有打印稿时点打印会明说请先生成，不会把占位提示印出来。</li><li><strong>新版（.22）变化：</strong>新生成的单包分块和三包文本打印稿都用 CF1 无混淆格式，数据字符只用 3、4、7、C、D、F、H、J、K、M、P、R、W、X、Y、-；旧 Base32 分块仍可恢复。二维码密度可自选，单包 10–3300 字符/码、三包 50–2000 字符/页，给到极端；三包生成后可点“生成三包二维码打印稿”，每包一套纸质帧。纯文本打印可自选字体和字号，字号给到 2pt 极小。恢复照片区可上传 PDF 扫描件，PDF 里是扫描图片或文字时可提取，提不出来时会明说原因。</li>
 <li><strong>恢复校验：</strong>在“恢复”下方，文件校验选两个文件，文本校验粘贴两段文本；都逐字节对比 + SHA-256 + 第一个不同位置，文本还报第一个不同字符。</li>
 <li><strong>自检：</strong>在“自检”里点“自检（纸质+三包+压缩+旧格式+Argon2id）”，通过后再处理重要数据。</li>
 </ul>
@@ -4183,7 +4417,7 @@ $('clearOnHide').addEventListener('change',()=>toast($('clearOnHide').checked?'�
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&$('clearOnHide').checked){$('tdPlain').value='';$('tdResult').classList.remove('show');resetFileResults('dec');state.unsavedPlain=false;toast('已执行页面隐藏时的尽力清理。')}for(const pre of ['te','td'])textHandleProgressVisibilityChange(pre)});window.addEventListener('beforeunload',e=>{if(state.busy||state.unsavedPlain){e.preventDefault();e.returnValue=''}});window.addEventListener('pagehide',()=>{clearPreview('selected');clearPreview('decrypted')});
 updateStrength('te');updateStrength('fe');resetPaperScan();setTab('ca');const c=capabilities();$('prQrCompat').textContent=c.barcodeDetector?'浏览器提供 BarcodeDetector；若调用失败将自动使用 PhotoCode。':'当前浏览器未提供 BarcodeDetector；使用 PhotoCode 离线识别。';if(!c.fileSystemAccess){$('feForceStream').disabled=true;$('fdForceStream').disabled=true}$('aboutBtn').title=`Core Crypto: ${c.crypto?'OK':'Unavailable'} · Enhanced file save: ${c.fileSystemAccess?'Yes':'No'}`;
 }
-window.__PA_UNIFIED__={downloadCurrentHelp:downloadCurrentHelp,runSelfTests:runSelfTests,splitArgon2id:splitArgon2id,pcDerive:pcDerive,encryptText:encryptText,decryptText:decryptText,encryptFileTriple:encryptFileTriple,decryptFileTriple:decryptFileTriple,splitParseCipher:splitParseCipher,splitParseParams:splitParseParams,splitParseKey:splitParseKey,validateSplitArgon2Params:validateSplitArgon2Params,argon2Preset:argon2Preset,catalogNewRecordId:catalogNewRecordId,catalogAddFromEncryption:catalogAddFromEncryption,catalogFind:catalogFind,catalogEnsureLoaded:catalogEnsureLoaded,decryptFile:decryptFile,encryptFile:encryptFile,splitMakePaperFrames:splitMakePaperFrames,pf2MakeFrames:pf2MakeFrames,pf2Reassemble:pf2Reassemble,acceptPaperFrame:acceptPaperFrame,resetPaperScan:resetPaperScan,parsePaperFrame:parsePaperFrame,decodePaperImage:decodePaperImage,detectQRFromCanvas:detectQRFromCanvas,renderStandardQR:renderStandardQR,renderPhotoCode:renderPhotoCode,renderQRAlphanumericM:renderQRAlphanumericM,otsuThreshold:otsuThreshold,operationStart:operationStart,operationEnd:operationEnd,cancelCurrent:cancelCurrent,textStartProgress:textStartProgress,textFinishProgress:textFinishProgress,textStopProgress:textStopProgress,updateArgon2Progress:updateArgon2Progress,getArgonProgress:function(){ return {percent:textProgressModel.lastPercent, eta:textProgressModel.lastEtaText}; }};
+window.__PA_UNIFIED__={downloadCurrentHelp:downloadCurrentHelp,runSelfTests:runSelfTests,splitArgon2id:splitArgon2id,pcDerive:pcDerive,encryptText:encryptText,decryptText:decryptText,encryptFileTriple:encryptFileTriple,decryptFileTriple:decryptFileTriple,splitParseCipher:splitParseCipher,splitParseParams:splitParseParams,splitParseKey:splitParseKey,validateSplitArgon2Params:validateSplitArgon2Params,argon2Preset:argon2Preset,catalogNewRecordId:catalogNewRecordId,catalogAddFromEncryption:catalogAddFromEncryption,catalogFind:catalogFind,catalogEnsureLoaded:catalogEnsureLoaded,decryptFile:decryptFile,encryptFile:encryptFile,splitMakePaperFrames:splitMakePaperFrames,pf2MakeFrames:pf2MakeFrames,pf2Reassemble:pf2Reassemble,acceptPaperFrame:acceptPaperFrame,resetPaperScan:resetPaperScan,parsePaperFrame:parsePaperFrame,decodePaperImage:decodePaperImage,detectQRFromCanvas:detectQRFromCanvas,detectAllQRCanvas:detectAllQRCanvas,renderStandardQR:renderStandardQR,renderPhotoCode:renderPhotoCode,renderQRAlphanumericM:renderQRAlphanumericM,otsuThreshold:otsuThreshold,operationStart:operationStart,operationEnd:operationEnd,cancelCurrent:cancelCurrent,textStartProgress:textStartProgress,textFinishProgress:textFinishProgress,textStopProgress:textStopProgress,updateArgon2Progress:updateArgon2Progress,getArgonProgress:function(){ return {percent:textProgressModel.lastPercent, eta:textProgressModel.lastEtaText}; }};
 bootstrap();
 splitPostBootstrap();
 })();
@@ -4314,9 +4548,9 @@ splitPostBootstrap();
   async function uniPaint(){ await new Promise(function(r){ setTimeout(r,0); }); if(typeof requestAnimationFrame==='function'){ await new Promise(function(r){ try{ requestAnimationFrame(function(){ r(); }); }catch(e){ r(); } }); } }
   // Unified encrypt
   async function uniCatalogAutoAdd(arcId, arcName, isText, fileName, output){
-    /* 目录自动生成 (.27): 统一加密成功后自动在目录里建一条，不用用户再去“新建目录项”手动补录。
-       旧引擎里这个逻辑只在旧表单的目录模式里触发，统一表单没有目录字段，所以从没触发过，这就是用户说的“自动生成功能没了”。
-       另外一个坑：旧引擎脚本是 IIFE，目录函数根本不是全局函数，统一脚本直接调 catalogFind 会报“未定义”而静默失败，所以必须走 __PA_UNIFIED__ 暴露的目录函数。
+    /* 目录自动生成 (.27): 加密表单加密成功后自动在目录里建一条，不用用户再去“新建目录项”手动补录。
+       旧引擎里这个逻辑只在旧表单的目录模式里触发，加密表单没有目录字段，所以从没触发过，这就是用户说的“自动生成功能没了”。
+       另外一个坑：旧引擎脚本是 IIFE，目录函数根本不是全局函数，加密表单脚本直接调 catalogFind 会报“未定义”而静默失败，所以必须走 __PA_UNIFIED__ 暴露的目录函数。
        规则：名称优先用用户填的档案名称；没填时，文件用文件名，文本用“文本备份”；分类按输出类型；同一档案编号已在目录里时不覆盖用户已改过的名称，只刷新时间。
        目录失败不影响加密本身（目录只是索引，不含口令与密文），失败时静默记日志，不把加密判为失败。 */
     try{
@@ -4393,7 +4627,7 @@ splitPostBootstrap();
           // 原因：文本三包的密文包用的是整体大整数编码，字节数一上万就呈平方级变慢，320KB 文件会直接卡死页面；直接加密只用线性编码，任意大小都按字节数线性增长。
           // 做法：与文本三包同一套 Argon2id + AES-256-GCM + 秘密（Secret K）+ 档案编号/Key ID 绑定，参数包、密钥包与文本三包完全相同；
           // 区别只在密文包：密文包是单行 Ciphertext.FILE1.<文件头 Base64>.<密文 Base64>，文件头里是文件名/原大小/原文件 SHA-256/压缩标志/压缩后长度，密文是压缩后文件字节的 AES-GCM 输出。
-          // 纸稿（CF-TRIPLE 文本、三包二维码、按包合印稿）仍复用，因为输出文本格式与文本三包一致，都是三个包加分隔标记；大小不限，只在状态里提示大文件页数多、优先用电子三包。
+          // 纸稿（CF2-TRIPLE 文本、三包二维码、按包合印稿）仍复用，因为输出文本格式与文本三包一致，都是三个包加分隔标记；大小不限，只在状态里提示大文件页数多、优先用电子三包。
           var fFile = $('uniFile').files[0]; if(!fFile) throw new Error('请先选择文件。');
           var fBytes = new Uint8Array(await fFile.arrayBuffer()); var fName = fFile.name || 'file.bin';
           var Uf = window.__PA_UNIFIED__;
@@ -4406,9 +4640,9 @@ splitPostBootstrap();
           outText = '档案编号：' + arcId + '\n' + (arcName ? '档案名称：' + arcName + '\n' : '') + '文件三包（原文件：' + fName + '，' + fBytes.length + ' 字节，压缩后 ' + resF.compLen + ' 字节，压缩标志 ' + resF.compFlag + '）\n--- 密文包 ---\n' + resF.cipher + '\n--- 参数包 ---\n' + resF.paramText + '\n--- 密钥包 ---\n' + resF.keyText;
           setStatus(status, '加密成功（文件三包）。档案编号：' + arcId + (uniDurF3 ? '。实际生成时间：' + uniDurF3 : '') + '。原文件：' + fName + '，' + fBytes.length + ' 字节。纸稿已在下方打印区生成（三个包各从新页开始），电子稿请用下方“下载密文包/参数包/密钥包”分别下载、分开保管，不要用“下载输出”的合集文件分开保管（合集里三个包在一起，起不到分开保管的作用）。大文件打印页数很多，这是按要求不限大小、照样给打印稿；大文件建议优先用电子三包。' + (uniCatF3 ? '目录已自动生成一条。' : ''), true);
           var _escF=function(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
-          var _cfWrapF=function(t){ var cf=cfEncodeText(t); var LC = (typeof printLineChars==='function') ? printLineChars() : 40; var lines=[]; for(var li=0; li<cf.length; li+=LC){ var line=cf.slice(li, li+LC); var groups=[]; for(var gj=0; gj<line.length; gj+=8) groups.push(line.slice(gj, gj+8)); lines.push(groups.join(' ')); } return lines.join('\n'); };
-          if($('printCover')) $('printCover').innerHTML='PepperArchive 文件三包纸质备份 · 档案编号：'+arcId+(arcName?' · 档案名称：'+arcName:'')+'<br>原文件：'+_escF(fName)+'，'+fBytes.length+' 字节<br>生成日期：'+new Date().toLocaleString()+'<br>下面三个包各从新页开始，打印后直接按页分开保管，不用裁剪，不要把三个包长期放在一起。恢复时把三个包的无混淆文本粘贴到恢复区，输入同一口令，点恢复后点“下载恢复文件”即可拿回原文件（文件名与原文件一致）。不要把口令印在这张纸上。';
-          if($('printChunks')) $('printChunks').innerHTML='<div class="chunk-block" style="break-inside:auto;page-break-inside:auto"><div><strong>密文包 Ciphertext（CF-TRIPLE 无混淆，文件三包）</strong> · 档案编号：'+arcId+'</div><pre>CF-TRIPLE-CIPHER\n'+_escF(_cfWrapF(resF.cipher))+'\nCF-TRIPLE-CIPHER-END'+'</pre></div>'+'<div class="chunk-block" style="break-inside:auto;page-break-inside:auto;break-before:page;page-break-before:always"><div><strong>参数包 Parliaments（CF-TRIPLE 无混淆，文件三包）</strong> · 档案编号：'+arcId+'</div><pre>CF-TRIPLE-PARAMS\n'+_escF(_cfWrapF(resF.paramText))+'\nCF-TRIPLE-PARAMS-END'+'</pre></div>'+'<div class="chunk-block" style="break-inside:auto;page-break-inside:auto;break-before:page;page-break-before:always"><div><strong>密钥包 Key（CF-TRIPLE 无混淆，文件三包）</strong> · 档案编号：'+arcId+'</div><pre>CF-TRIPLE-KEY\n'+_escF(_cfWrapF(resF.keyText))+'\nCF-TRIPLE-KEY-END'+'</pre></div>'; uniApplyTextFont(); uniOverallSet(100, '已完成：文件三包打印稿已生成');
+          var _cfWrapF=function(t){ var cf=cf2EncodeText(t); var LC = (typeof printLineChars==='function') ? printLineChars() : 40; var lines=[]; for(var li=0; li<cf.length; li+=LC){ var line=cf.slice(li, li+LC); var groups=[]; for(var gj=0; gj<line.length; gj+=8) groups.push(line.slice(gj, gj+8)); lines.push(groups.join(' ')); } return lines.join('\n'); };
+          if($('printCover')) $('printCover').innerHTML='PepperArchive 文件三包纸质备份 · 档案编号：'+arcId+(arcName?' · 档案名称：'+arcName:'')+'<br>原文件：'+_escF(fName)+'，'+fBytes.length+' 字节<br>生成日期：'+new Date().toLocaleString()+'<br>下面三个包各从新页开始，打印后直接按页分开保管，不用裁剪，不要把三个包长期放在一起。恢复时把三个包的带符号纸面文本粘贴到恢复区，输入同一口令，点恢复后点“下载恢复文件”即可拿回原文件（文件名与原文件一致）。不要把口令印在这张纸上。';
+          if($('printChunks')) $('printChunks').innerHTML='<div class="chunk-block" style="break-inside:auto;page-break-inside:auto"><div><strong>密文包 Ciphertext（CF2-TRIPLE 带符号纸面文本，文件三包）</strong> · 档案编号：'+arcId+'</div><pre>CF2-TRIPLE-CIPHER\n'+_escF(_cfWrapF(resF.cipher))+'\nCF2-TRIPLE-CIPHER-END'+'</pre></div>'+'<div class="chunk-block" style="break-inside:auto;page-break-inside:auto;break-before:page;page-break-before:always"><div><strong>参数包 Parliaments（CF2-TRIPLE 带符号纸面文本，文件三包）</strong> · 档案编号：'+arcId+'</div><pre>CF2-TRIPLE-PARAMS\n'+_escF(_cfWrapF(resF.paramText))+'\nCF2-TRIPLE-PARAMS-END'+'</pre></div>'+'<div class="chunk-block" style="break-inside:auto;page-break-inside:auto;break-before:page;page-break-before:always"><div><strong>密钥包 Key（CF2-TRIPLE 带符号纸面文本，文件三包）</strong> · 档案编号：'+arcId+'</div><pre>CF2-TRIPLE-KEY\n'+_escF(_cfWrapF(resF.keyText))+'\nCF2-TRIPLE-KEY-END'+'</pre></div>'; uniApplyTextFont(); uniOverallSet(100, '已完成：文件三包打印稿已生成');
         } else if(output === 'three'){
           var txt = $('uniText').value;
           var U = window.__PA_UNIFIED__;
@@ -4420,11 +4654,11 @@ splitPostBootstrap();
           var uniCat3 = await uniCatalogAutoAdd(arcId, arcName, true, '', 'three');
           // encryptText with object spec? It calls pcArgon2Params(spec) which accepts object, good. But its signature is (plain,password,level,noPassword,recordId) where level can be object.
           outText = '档案编号：' + arcId + '\n' + (arcName ? '档案名称：' + arcName + '\n' : '') + '--- 密文包 ---\n' + res.cipher + '\n--- 参数包 ---\n' + res.paramText + '\n--- 密钥包 ---\n' + res.keyText;
-          setStatus(status, '加密成功（三包）。档案编号：' + arcId + (uniDur3 ? '。实际生成时间：' + uniDur3 : '') + '。三包打印稿已在下方打印区生成（CF-TRIPLE 无混淆格式），三个包各从新页开始，打印后直接按页分开保管，不用裁剪，缺一不可恢复。' + (uniCat3 ? '目录已自动生成一条。' : ''), true);
+          setStatus(status, '加密成功（三包）。档案编号：' + arcId + (uniDur3 ? '。实际生成时间：' + uniDur3 : '') + '。三包打印稿已在下方打印区生成（CF2-TRIPLE 带符号纸面文本格式），三个包各从新页开始，打印后直接按页分开保管，不用裁剪，缺一不可恢复。' + (uniCat3 ? '目录已自动生成一条。' : ''), true);
           var _esc3=function(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
-          var _cfWrap=function(t){ var cf=cfEncodeText(t); var LC = (typeof printLineChars==='function') ? printLineChars() : 40; var lines=[]; for(var li=0; li<cf.length; li+=LC){ var line=cf.slice(li, li+LC); var groups=[]; for(var gj=0; gj<line.length; gj+=8) groups.push(line.slice(gj, gj+8)); lines.push(groups.join(' ')); } return lines.join('\n'); };
-          if($('printCover')) $('printCover').innerHTML='PepperArchive 三包纸质备份 · 档案编号：'+arcId+(arcName?' · 档案名称：'+arcName:'')+'<br>生成日期：'+new Date().toLocaleString()+'<br>下面三个包各从新页开始，打印后直接按页分开保管，不用裁剪，不要把三个包长期放在一起。恢复时把三个包的无混淆文本粘贴到恢复区，输入同一口令即可（恢复会自动识别 CF-TRIPLE 并解回原包）。不要把口令印在这张纸上。';
-          if($('printChunks')) $('printChunks').innerHTML='<div class="chunk-block" style="break-inside:auto;page-break-inside:auto"><div><strong>密文包 Ciphertext（CF-TRIPLE 无混淆）</strong> · 档案编号：'+arcId+'</div><pre>CF-TRIPLE-CIPHER\n'+_esc3(_cfWrap(res.cipher))+'\nCF-TRIPLE-CIPHER-END'+'</pre></div>'+'<div class="chunk-block" style="break-inside:auto;page-break-inside:auto;break-before:page;page-break-before:always"><div><strong>参数包 Parliaments（CF-TRIPLE 无混淆）</strong> · 档案编号：'+arcId+'</div><pre>CF-TRIPLE-PARAMS\n'+_esc3(_cfWrap(res.paramText))+'\nCF-TRIPLE-PARAMS-END'+'</pre></div>'+'<div class="chunk-block" style="break-inside:auto;page-break-inside:auto;break-before:page;page-break-before:always"><div><strong>密钥包 Key（CF-TRIPLE 无混淆）</strong> · 档案编号：'+arcId+'</div><pre>CF-TRIPLE-KEY\n'+_esc3(_cfWrap(res.keyText))+'\nCF-TRIPLE-KEY-END'+'</pre></div>'; uniApplyTextFont(); uniOverallSet(100, '已完成：三包打印稿已生成');
+          var _cfWrap=function(t){ var cf=cf2EncodeText(t); var LC = (typeof printLineChars==='function') ? printLineChars() : 40; var lines=[]; for(var li=0; li<cf.length; li+=LC){ var line=cf.slice(li, li+LC); var groups=[]; for(var gj=0; gj<line.length; gj+=8) groups.push(line.slice(gj, gj+8)); lines.push(groups.join(' ')); } return lines.join('\n'); };
+          if($('printCover')) $('printCover').innerHTML='PepperArchive 三包纸质备份 · 档案编号：'+arcId+(arcName?' · 档案名称：'+arcName:'')+'<br>生成日期：'+new Date().toLocaleString()+'<br>下面三个包各从新页开始，打印后直接按页分开保管，不用裁剪，不要把三个包长期放在一起。恢复时把三个包的带符号纸面文本粘贴到恢复区，输入同一口令即可（恢复会自动识别 CF2-TRIPLE 并解回原包）。不要把口令印在这张纸上。';
+          if($('printChunks')) $('printChunks').innerHTML='<div class="chunk-block" style="break-inside:auto;page-break-inside:auto"><div><strong>密文包 Ciphertext（CF2-TRIPLE 带符号纸面文本）</strong> · 档案编号：'+arcId+'</div><pre>CF2-TRIPLE-CIPHER\n'+_esc3(_cfWrap(res.cipher))+'\nCF2-TRIPLE-CIPHER-END'+'</pre></div>'+'<div class="chunk-block" style="break-inside:auto;page-break-inside:auto;break-before:page;page-break-before:always"><div><strong>参数包 Parliaments（CF2-TRIPLE 带符号纸面文本）</strong> · 档案编号：'+arcId+'</div><pre>CF2-TRIPLE-PARAMS\n'+_esc3(_cfWrap(res.paramText))+'\nCF2-TRIPLE-PARAMS-END'+'</pre></div>'+'<div class="chunk-block" style="break-inside:auto;page-break-inside:auto;break-before:page;page-break-before:always"><div><strong>密钥包 Key（CF2-TRIPLE 带符号纸面文本）</strong> · 档案编号：'+arcId+'</div><pre>CF2-TRIPLE-KEY\n'+_esc3(_cfWrap(res.keyText))+'\nCF2-TRIPLE-KEY-END'+'</pre></div>'; uniApplyTextFont(); uniOverallSet(100, '已完成：三包打印稿已生成');
         } else if(output === 'file'){
           var bytes, fname;
           if(isText){ bytes = new TextEncoder().encode($('uniText').value); fname = (arcName || 'text') + '.txt'; }
@@ -4465,15 +4699,18 @@ splitPostBootstrap();
             qrChunkChars = Math.min(qrChunkChars, maxChunk);
             if(qrChunkChars < 10) qrChunkChars = 10;
           }
-          var chunks = (printMode === 'qr') ? makeQRChunks(cfText, qrChunkChars, 'CF1') : makeCFChunks(pkg2.outer);
+          var qrChunks = makeQRChunks(cfText, qrChunkChars, 'CF1');
+          var textChunks = makeCF2Chunks(pkg2.outer);
+          var chunks = (printMode === 'qr') ? qrChunks : textChunks;
           var meta = { date: new Date().toLocaleString(), hint: '', origSize: bytes2.length, compSize: (pkg2.compLen || pkg2.outer.length), encSize: pkg2.outer.length, unencrypted: !pw1, archiveId: arcId, archiveName: arcName || fname2 };
+          try{ window.__PA_SINGLE_COMBINED__ = {chunks: chunks, qrChunks: qrChunks, textChunks: textChunks, meta: meta}; }catch(e){}
           currentPrintText = buildPrintText(chunks, meta);
           currentChunks = chunks;
           if(printMode === 'qr'){ await renderPrintQR(chunks, meta, function(pct, label){ var st = $('uniStage'); if(st) st.textContent = label || ''; uniOverallSet(85 + Math.max(0, Math.min(100, pct)-30)/70*15, '正在生成打印稿：' + (label || '')); }); }
           else { await renderPrint(chunks, meta, function(pct, label){ var st = $('uniStage'); if(st) st.textContent = label || ''; uniOverallSet(85 + Math.max(0, Math.min(100, pct)-30)/70*15, '正在生成打印稿：' + (label || '')); }); uniApplyTextFont(); } uniOverallSet(100, '已完成：打印稿已生成');
           outText = currentPrintText;
           var uniCatS = await uniCatalogAutoAdd(arcId, arcName, isText, fname2, 'single');
-          setStatus(status, '加密成功（单包纸质备份，' + (pkg2.format || 'PV2/PV04') + '，CF1 无混淆格式，' + chunks.length + ' 块，' + (printMode === 'qr' ? ('二维码，密度 ' + qrChunkChars + ' 字符/码') : ('纯文本，字体 ' + uniGetTextFont().font + '，字号 ' + uniGetTextFont().size + 'pt')) + '，打印稿已在下方打印区生成，可直接打印）。档案编号：' + arcId + (typeof uniDurS !== 'undefined' && uniDurS ? '。实际生成时间：' + uniDurS : '') + '。请先用恢复区粘贴本稿做一次恢复测试，确认无误再打印存档。' + (typeof uniCatS !== 'undefined' && uniCatS ? '目录已自动生成一条。' : ''), true);
+          setStatus(status, '加密成功（单包纸质备份，' + (pkg2.format || 'PV2/PV04') + '，二维码用 CF1、纯文本用 CF2（含特殊符号，见帮助“编码与分块”），二维码 ' + qrChunks.length + ' 块、纯文本 ' + textChunks.length + ' 块，' + (printMode === 'qr' ? ('当前打印稿是二维码，密度 ' + qrChunkChars + ' 字符/码') : ('当前打印稿是纯文本，字体 ' + uniGetTextFont().font + '，字号 ' + uniGetTextFont().size + 'pt')) + '，打印稿已在下方打印区生成，可直接打印；点“单包合印稿”可把二维码和纯文本印在同一份稿里）。档案编号：' + arcId + (typeof uniDurS !== 'undefined' && uniDurS ? '。实际生成时间：' + uniDurS : '') + '。请先用恢复区粘贴本稿做一次恢复测试，确认无误再打印存档。' + (typeof uniCatS !== 'undefined' && uniCatS ? '目录已自动生成一条。' : ''), true);
         }
         if($('uniEncOutput')) $('uniEncOutput').value = outText; uniOverallStop();
         /* 档案编号防重用 (.27): uniIdOrAuto 会把自动生成的编号填回输入框，下一次加密若不清空就会沿用同一编号，
@@ -4645,12 +4882,12 @@ splitPostBootstrap();
         var arcIdMatch = outTxt.match(/档案编号：\s*(PA-[^\s\n]+)/);
         var arcIdT = arcIdMatch ? arcIdMatch[1] : '';
         var labels = {cipher:'密文包 Ciphertext', params:'参数包 Parliaments', key:'密钥包 Key'};
-        var tripleHeaders = {cipher:['CF-TRIPLE-CIPHER','CF-TRIPLE-CIPHER-END'], params:['CF-TRIPLE-PARAMS','CF-TRIPLE-PARAMS-END'], key:['CF-TRIPLE-KEY','CF-TRIPLE-KEY-END']};
+        var tripleHeaders = {cipher:['CF2-TRIPLE-CIPHER','CF2-TRIPLE-CIPHER-END'], params:['CF2-TRIPLE-PARAMS','CF2-TRIPLE-PARAMS-END'], key:['CF2-TRIPLE-KEY','CF2-TRIPLE-KEY-END']};
         var host = $('printChunks');
         if(!host) throw new Error('打印区未找到');
         host.innerHTML = '';
         var _escC=function(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
-        var _cfWrapC=function(t){ var cf=cfEncodeText(t); var LC = (typeof printLineChars==='function') ? printLineChars() : 40; var lines=[]; for(var li=0; li<cf.length; li+=LC){ var line=cf.slice(li, li+LC); var groups=[]; for(var gj=0; gj<line.length; gj+=8) groups.push(line.slice(gj, gj+8)); lines.push(groups.join(' ')); } return lines.join('\n'); };
+        var _cfWrapC=function(t){ var cf=cf2EncodeText(t); var LC = (typeof printLineChars==='function') ? printLineChars() : 40; var lines=[]; for(var li=0; li<cf.length; li+=LC){ var line=cf.slice(li, li+LC); var groups=[]; for(var gj=0; gj<line.length; gj+=8) groups.push(line.slice(gj, gj+8)); lines.push(groups.join(' ')); } return lines.join('\n'); };
         var frames;
         if(isPF2){
           if(!U.pf2MakeFrames || !U.renderQRAlphanumericM) throw new Error('PF2 高密度引擎未加载');
@@ -4699,7 +4936,7 @@ splitPostBootstrap();
         textDiv.className = 'chunk-block';
         try{ textDiv.style.setProperty('break-inside', 'auto', 'important'); textDiv.style.setProperty('page-break-inside', 'auto', 'important'); textDiv.style.setProperty('break-before', 'page', 'important'); textDiv.style.setProperty('page-break-before', 'always', 'important'); }catch(e){ textDiv.style.breakBefore = 'page'; }
         var hd = tripleHeaders[pkgKeyOnly];
-        textDiv.innerHTML = '<div><strong>' + labels[pkgKeyOnly] + ' 纯文本（CF-TRIPLE 无混淆，与上方二维码同一包）</strong> · 档案编号：' + arcIdT + '</div><pre>' + hd[0] + '\n' + _escC(_cfWrapC(pkgText)) + '\n' + hd[1] + '</pre><div class="paper-note">上面是本包的纯文本版，与上方二维码是同一包数据：二维码扫不出来时，把这段纯文本粘贴到恢复区，输入同一口令即可恢复；三个包缺一不可，恢复时需要另外两个包的稿。不要把口令印在这张纸上。</div>';
+        textDiv.innerHTML = '<div><strong>' + labels[pkgKeyOnly] + ' 纯文本（CF2-TRIPLE 带符号纸面文本，与上方二维码同一包）</strong> · 档案编号：' + arcIdT + '</div><pre>' + hd[0] + '\n' + _escC(_cfWrapC(pkgText)) + '\n' + hd[1] + '</pre><div class="paper-note">上面是本包的纯文本版，与上方二维码是同一包数据：二维码扫不出来时，把这段纯文本粘贴到恢复区，输入同一口令即可恢复；三个包缺一不可，恢复时需要另外两个包的稿。不要把口令印在这张纸上。</div>';
         host.appendChild(textDiv); totalCards++;
         uniApplyTextFont();
         if($('printCover')) $('printCover').innerHTML = 'PepperArchive 三包合印稿（仅' + labels[pkgKeyOnly] + '） · 档案编号：' + arcIdT + '<br>生成日期：' + new Date().toLocaleString() + '<br>' + (isPF2 ? ('密度：' + qrCharsPF2 + ' 字符/码 · 模式：仅标准二维码（PF2，纠错 M，无备用图码）') : ('密度：' + chunkChars + ' 字符/页 · 模式：' + (mode==='dual' ? '双码' : mode==='qr' ? '仅标准二维码' : '仅备用图码'))) + '<br>这份稿里只有' + labels[pkgKeyOnly] + '：先是它的二维码、然后是它的纯文本，同一份稿，不用分开印两套；印完请单独保管，不要和另外两个包的稿放在一起，三个包缺一不可恢复。恢复时需要另外两个包的稿，输入同一口令即可。不要把口令印在这张纸上。';
@@ -4874,7 +5111,7 @@ splitPostBootstrap();
         if(arrText) texts.push(arrText);
       }
     }
-    /* Chrome 打印 PDF 每字一个 Tj (.27): 用换行连接会把“CF-TRIPLE-CIPHER”拆成“C\nF\n-\n…”，恢复搜不到标记。
+    /* Chrome 打印 PDF 每字一个 Tj (.27): 用换行连接会把“CF2-TRIPLE-CIPHER”拆成“C\nF\n-\n…”，恢复搜不到标记。
        这里用空串连接，恢复解析本来就会去掉空白、按标记和块头切分，所以合并不影响恢复，反而让标记和数据连续。 */
     return texts.join('');
   }
@@ -5669,12 +5906,12 @@ function uniPdfCcittDecode(bytes, width, height, params){
     var imageTextAll = imageTexts.join('\n');
     // 图片数据优先 (.28): 单包二维码 PDF 的文字层只有封面和卡片标题，没有数据，但封面里的拉丁字母会被分块解析当成数据接在真块后面，导致 CRC 失败。
     // 图片已经解出完整分块时，只返回图片数据，不掺文字层；文字层是数据的三包文本 PDF 里没有图片，走下面原来的路。
-    if(imageTextAll && /(?:ARCHIVE:|CF1\s*\d+\s*\/\s*\d+\s*CRC)/.test(imageTextAll)){
+    if(imageTextAll && /(?:ARCHIVE:|CF1\s*\d+|CF2\s*\d+\s*\/\s*\d+\s*CRC)/.test(imageTextAll)){
       return {frames: frames, text: imageTextAll, unsupported: (window.__PA_PDF_UNSUPPORTED__||[]).slice()};
     }
     // 只有当解码文本里没有任何可识别标记时，才把原始字节当作兜底（未压缩 PDF 的明文就藏在原始字节里）；已解出标记时不再附加 20 万字乱码，避免干扰后续解析。
     var direct = latin.replace(/\r/g,'\n');
-    var hasMarker = /(CF-TRIPLE|PV[12]\s*\d|CF1\s*\d|PaperFrame|PAPERQR|AEGISQR|PF2|Ciphertext\.|Parliaments\.|Key\.)/.test(extractedAll);
+    var hasMarker = /(CF-TRIPLE|CF2-TRIPLE|PV[12]\s*\d|CF1\s*\d|CF2\s*\d|PaperFrame|PAPERQR|AEGISQR|PF2|Ciphertext\.|Parliaments\.|Key\.)/.test(extractedAll);
     return {frames: frames, text: hasMarker ? extractedAll : (extractedAll + '\n' + direct), unsupported: (window.__PA_PDF_UNSUPPORTED__||[]).slice()};
   }
   window.__PA_PDF_EXTRACT__ = uniExtractPdf;
@@ -5713,7 +5950,7 @@ function uniPdfCcittDecode(bytes, width, height, params){
               var _pdfOut = await uniExtractPdf(_pdfBlob);
               if(_pdfOut.frames && _pdfOut.frames.length) pdfFramesFromFile = _pdfOut.frames.slice();
               if(_pdfOut.text) pdfTextFromFile = _pdfOut.text;
-              var _hasPdfMarker = /(CF-TRIPLE|PV[12]\s*\d|CF1\s*\d|PaperFrame|PAPERQR|AEGISQR|PF2|Ciphertext\.|Parliaments\.|Key\.)/.test(pdfTextFromFile);
+              var _hasPdfMarker = /(CF-TRIPLE|CF2-TRIPLE|PV[12]\s*\d|CF1\s*\d|CF2\s*\d|PaperFrame|PAPERQR|AEGISQR|PF2|Ciphertext\.|Parliaments\.|Key\.)/.test(pdfTextFromFile);
               if(_hasPdfMarker || pdfFramesFromFile.length){
                 text = (text ? text + '\n' : '') + pdfTextFromFile;
                 fileBytes = null;
@@ -5722,7 +5959,7 @@ function uniPdfCcittDecode(bytes, width, height, params){
             }catch(e){}
           }
           var _asText=''; try{ _asText = new TextDecoder('utf-8').decode(fileBytes || new Uint8Array(0)); }catch(e){ _asText=''; }
-          if(_asText && (/(?:PV[12]|CF1)\s*\d+\s*\/\s*\d+\s*CRC/i.test(_asText) || _asText.indexOf('Ciphertext.')>=0 || _asText.indexOf('Parliaments.')>=0 || _asText.indexOf('Key.')>=0 || _asText.indexOf('PAPERQR1|')>=0 || _asText.indexOf('AEGISQR1|')>=0 || _asText.indexOf('PaperFrame|')>=0 || _asText.indexOf('CF-TRIPLE-')>=0 || _asText.indexOf('PF2')>=0)){ text=_asText; fileBytes=null; recSetStage('已识别为文本文件，正在按文本恢复…'); }
+          if(_asText && (/(?:PV[12]|CF1|CF2)\s*\d+\s*\/\s*\d+\s*CRC/i.test(_asText) || _asText.indexOf('Ciphertext.')>=0 || _asText.indexOf('Parliaments.')>=0 || _asText.indexOf('Key.')>=0 || _asText.indexOf('PAPERQR1|')>=0 || _asText.indexOf('AEGISQR1|')>=0 || _asText.indexOf('PaperFrame|')>=0 || _asText.indexOf('CF-TRIPLE-')>=0 || _asText.indexOf('CF2-TRIPLE-')>=0 || _asText.indexOf('PF2')>=0)){ text=_asText; fileBytes=null; recSetStage('已识别为文本文件，正在按文本恢复…'); }
           else { recSetStage('正在读取文件…'); }
         }
         var photoEl = $('uniRecPhoto');
@@ -5749,8 +5986,8 @@ function uniPdfCcittDecode(bytes, width, height, params){
                 var _pdf = await uniExtractPdf(_pf);
                 _pdf.frames.forEach(function(fr){ frameLines.push(fr); });
                 if(_pdf.text){
-                  var _hasChunk = /(?:PV[12]|CF1)\s*\d+\s*\/\s*\d+\s*CRC/i.test(_pdf.text) || _pdf.text.indexOf('ARCHIVE:')>=0;
-                  var _hasTriple = _pdf.text.indexOf('CF-TRIPLE-')>=0 || _pdf.text.indexOf('Ciphertext.')>=0 || _pdf.text.indexOf('Parliaments.')>=0 || _pdf.text.indexOf('Key.')>=0;
+                  var _hasChunk = /(?:PV[12]|CF1|CF2)\s*\d+\s*\/\s*\d+\s*CRC/i.test(_pdf.text) || _pdf.text.indexOf('ARCHIVE:')>=0;
+                  var _hasTriple = _pdf.text.indexOf('CF-TRIPLE-')>=0 || _pdf.text.indexOf('CF2-TRIPLE-')>=0 || _pdf.text.indexOf('Ciphertext.')>=0 || _pdf.text.indexOf('Parliaments.')>=0 || _pdf.text.indexOf('Key.')>=0;
                   var _hasFrameText = _pdf.text.indexOf('PAPERQR1|')>=0 || _pdf.text.indexOf('AEGISQR1|')>=0 || _pdf.text.indexOf('PaperFrame|')>=0 || _pdf.text.indexOf('PF2')>=0;
                   if(_hasChunk || _hasTriple || _hasFrameText){
                     text = (text ? text + '\n' : '') + _pdf.text;
@@ -5783,17 +6020,22 @@ function uniPdfCcittDecode(bytes, width, height, params){
                 var cv2 = document.createElement('canvas'); cv2.width = imgEl2.naturalWidth; cv2.height = imgEl2.naturalHeight;
                 var ctx2 = cv2.getContext('2d'); ctx2.drawImage(imgEl2, 0, 0);
                 URL.revokeObjectURL(url2);
-                var qrSingle = await Uph.detectQRFromCanvas(cv2);
-                if(qrSingle && qrSingle.indexOf('ARCHIVE:')===0){
-                  text = (text ? text + '\n' : '') + qrSingle;
+                if(Uph.detectAllQRCanvas){
+                  var qrAll = await Uph.detectAllQRCanvas(cv2);
+                  qrAll.forEach(function(qrT){ if(qrT && qrT.indexOf('ARCHIVE:')===0 && text.indexOf(qrT)<0) text = (text ? text + '\n' : '') + qrT; });
+                } else {
+                  var qrSingle = await Uph.detectQRFromCanvas(cv2);
+                  if(qrSingle && qrSingle.indexOf('ARCHIVE:')===0){
+                    text = (text ? text + '\n' : '') + qrSingle;
+                  }
                 }
               }
             }catch(e){}
           }
           if(!frameLines.length && !text) throw new Error(pdfFailNote || '照片中没有识别到有效的纸质帧（标准 QR / PhotoCode）。请靠近单个码拍清晰，或改用粘贴纸质帧文本。');
-          if(!frameLines.length && text && pdfFailNote && !/(?:PV[12]|CF1)\s*\d+\s*\/\s*\d+\s*CRC/i.test(text) && text.indexOf('CF-TRIPLE-')<0 && text.indexOf('Ciphertext.')<0){
+          if(!frameLines.length && text && pdfFailNote && !/(?:PV[12]|CF1|CF2)\s*\d+\s*\/\s*\d+\s*CRC/i.test(text) && text.indexOf('CF-TRIPLE-')<0 && text.indexOf('CF2-TRIPLE-')<0 && text.indexOf('Ciphertext.')<0){
             // PDF text was added but not recognizable as chunks/triple/frames, and no frames found: report PDF note instead of falling through to generic error
-            if(!/(?:PV[12]|CF1)/.test(text)) throw new Error(pdfFailNote);
+            if(!/(?:PV[12]|CF1|CF2)/.test(text)) throw new Error(pdfFailNote);
           }
         }
         // Case PF2 (.27): PF2 高密度三包帧，来自粘贴文本、照片解码或 PDF 图片解码。PF2 帧不走旧纸质帧解析（会拒），先在这里解回三包。
@@ -5856,7 +6098,7 @@ function uniPdfCcittDecode(bytes, width, height, params){
           return;
         }
         // Case A: text contains PV blocks
-        if(text && /(?:PV[12]|CF1)\s*\d+\s*\/\s*\d+\s*CRC/i.test(text)){
+        if(text && /(?:PV[12]|CF1|CF2)\s*\d+\s*\/\s*\d+\s*CRC/i.test(text)){
           var parsed = parseBackupText(text);
           if(!parsed.complete) throw new Error('分块不完整：' + (parsed.missing ? parsed.missing.join('、') : '请检查缺块'));
           var outer = decodeBackupJoined(parsed);
@@ -5875,6 +6117,43 @@ function uniPdfCcittDecode(bytes, width, height, params){
               setStatus(status, '恢复成功（' + res.format + '，二进制文件，请下载）。文件名：' + res.fileName, true);
             }
           }
+          return;
+        }
+        // Case B0b: CF2-TRIPLE (.35, 带符号纸面文本): 标记与 CF-TRIPLE 不同, 解码用 CF2, 其余解密路径与 CF-TRIPLE 完全一致
+        if(text && text.indexOf('CF2-TRIPLE-')>=0){
+          var Ucf2 = window.__PA_UNIFIED__;
+          if(!Ucf2 || !Ucf2.decryptText) throw new Error('三包引擎未加载');
+          function cf2Extract(marker){
+            var start = text.indexOf(marker);
+            if(start<0) throw new Error('缺少一个包，请把三个包都粘贴进来。');
+            var endMarker = marker + '-END';
+            var end = text.indexOf(endMarker, start+marker.length);
+            var src = text;
+            if(end<0){
+              src = text.replace(/^.*(?:档案编号|密文包|参数包|密钥包).*$/gm, '');
+              start = src.indexOf(marker);
+              if(start<0) throw new Error('缺少一个包，请把三个包都粘贴进来。');
+              end = src.length;
+              ['CF2-TRIPLE-CIPHER','CF2-TRIPLE-PARAMS','CF2-TRIPLE-KEY'].forEach(function(m2){ if(m2!==marker){ var idx=src.indexOf(m2, start+marker.length); if(idx>=0 && idx<end) end=idx; } });
+            }
+            var raw = src.slice(start+marker.length, end).toUpperCase().replace(/[^347CDFHJKMPRWXY\-#$%&()+\/<=>?@\[\\\]^_{}~]/g, '');
+            if(!raw) throw new Error('缺少一个包，请把三个包都粘贴进来。');
+            return cf2DecodeText(raw);
+          }
+          var cipherCF2 = cf2Extract('CF2-TRIPLE-CIPHER');
+          var paramCF2 = cf2Extract('CF2-TRIPLE-PARAMS');
+          var keyCF2 = cf2Extract('CF2-TRIPLE-KEY');
+          recSetStage('正在计算口令并解密，请稍候…');
+          if(cipherCF2 && cipherCF2.indexOf('Ciphertext.FILE1.')>=0){
+            var decFCF2 = await Ucf2.decryptFileTriple(cipherCF2, pw, paramCF2, keyCF2);
+            uniRecFileBytes = decFCF2.data; uniRecFileName = decFCF2.fileName;
+            try{ if($('uniRecOutput')) $('uniRecOutput').value = new TextDecoder('utf-8',{fatal:true}).decode(decFCF2.data); }catch(e){ if($('uniRecOutput')) $('uniRecOutput').value=''; }
+            setStatus(status, '恢复成功（文件三包，CF2-TRIPLE 带符号纸面文本）。档案编号：' + (decFCF2.recordId || '（无）') + '。文件名：' + uniRecFileName + '，' + uniRecFileBytes.length + ' 字节，请点“下载恢复文件”保存。', true); return;
+          }
+          var decCF2 = await Ucf2.decryptText(cipherCF2, pw, paramCF2, keyCF2);
+          if($('uniRecOutput')) $('uniRecOutput').value = decCF2.plain;
+          uniRecFileBytes = new TextEncoder().encode(decCF2.plain); uniRecFileName = 'recovered.txt';
+          setStatus(status, '恢复成功（三包，CF2-TRIPLE 带符号纸面文本）。档案编号：' + (decCF2.recordId || '（无）'), true);
           return;
         }
         // Case B0: CF-TRIPLE confusion-free triple print
@@ -5958,7 +6237,7 @@ function uniPdfCcittDecode(bytes, width, height, params){
           // Check if it's text chunks file
           var asText = '';
           try{ asText = new TextDecoder('utf-8').decode(fileBytes); } catch(e){ asText = ''; }
-          if(asText && /(?:PV[12]|CF1)\s*\d+\s*\/\s*\d+\s*CRC/i.test(asText)){
+          if(asText && /(?:PV[12]|CF1|CF2)\s*\d+\s*\/\s*\d+\s*CRC/i.test(asText)){
             if($('uniRecText')) $('uniRecText').value = asText;
             recSetStage('正在计算口令并解密，请稍候…');
             var parsedF = parseBackupText(asText);
@@ -6029,6 +6308,42 @@ function uniPdfCcittDecode(bytes, width, height, params){
     return true;
   }
   var uniPrintBtn = $('uniPrint'); if(uniPrintBtn) uniPrintBtn.addEventListener('click', uniDoPrint);
+  // 单包合印稿 (P1, .35): 单包同理于三包按包合印，二维码在前、纯文本在后，同一份稿，不用印两套。
+  // 关键：二维码和纯文本用同一套分块（加密时那套），不是重新分块，否则两套块号/总数不一致，混在一起粘贴会按块号报错。
+  // 做法：先按原有二维码渲染把二维码铺在打印区，再在后面另起一页追加同一套分块的纯文本块；封面改成合印说明。
+  var uniSingleCombinedBtn = $('uniSingleCombined');
+  if(uniSingleCombinedBtn){
+    uniSingleCombinedBtn.addEventListener('click', async function(){
+      var status = $('uniEncStatus');
+      try{
+        var outEl = document.querySelector('input[name="uniOutput"]:checked');
+        if(!outEl || outEl.value !== 'single') throw new Error('请先在上方选“单包纸质备份”并点加密，生成单包后再点这个按钮。');
+        var sc = window.__PA_SINGLE_COMBINED__;
+        if(!sc || !sc.chunks || !sc.chunks.length) throw new Error('请先点加密生成单包打印稿，再点单包合印稿。');
+        var chunks = sc.qrChunks && sc.qrChunks.length ? sc.qrChunks : sc.chunks;
+        var textChunks = sc.textChunks && sc.textChunks.length ? sc.textChunks : sc.chunks;
+        var meta = sc.meta;
+        if(typeof renderPrintQR !== 'function') throw new Error('二维码打印引擎未加载');
+        await renderPrintQR(chunks, meta);
+        // 追加纯文本：与 renderPrint 同一格式（块头 + 行），第一块另起一页，后面自然跨页。
+        // 二维码和纯文本是两套独立编码（.35）：二维码用 CF1，纯文本用 CF2（含特殊符号），两套解回来是同一份内容，不是同一串字，不要逐字对照。
+        var host = $('printChunks');
+        if(!host) throw new Error('打印区未找到');
+        textChunks.forEach(function(c, ci){
+          var blk = document.createElement('div'); blk.className = 'chunk-block';
+          try{ blk.style.setProperty('break-inside', 'auto', 'important'); blk.style.setProperty('page-break-inside', 'auto', 'important'); if(ci===0){ blk.style.setProperty('break-before', 'page', 'important'); blk.style.setProperty('page-break-before', 'always', 'important'); } }catch(e){ if(ci===0) blk.style.breakBefore = 'page'; }
+          blk.innerHTML = '<div class="chead">' + (meta.archiveId ? esc(archiveLine(meta.archiveId)) + ' · ' : '') + esc(chunkHeader(c)) + '</div><pre>' + esc(formatChunkLines(c.text, printLineChars())) + '</pre>';
+          host.appendChild(blk);
+        });
+        uniApplyTextFont();
+        if($('printCover')) $('printCover').innerHTML = 'PepperArchive 单包合印稿 · 档案编号：' + (meta.archiveId || '') + (meta.archiveName ? ' · 档案名称：' + meta.archiveName : '') + '<br>生成日期：' + meta.date + '<br>二维码 ' + chunks.length + ' 块、纯文本 ' + textChunks.length + ' 块 · 原文件大小：' + meta.origSize + ' 字节 · 压缩后：' + meta.compSize + ' 字节 · ' + (meta.unencrypted ? '外层（未加密）：' : '加密后：') + meta.encSize + ' 字节<br>这份稿先是二维码、然后是纯文本，同一份稿，不用分开印两套；二维码扫不出来时，照着抄下面纯文本即可恢复，块可乱序，缺块、坏块会按块号报出。二维码和纯文本是两套独立写法，解回来是同一份内容，字串不一样是正常的，不要逐字对照。不要把口令印在这张纸上。';
+        if(status) setStatus(status, '单包合印稿已生成：先二维码、后纯文本，同一份稿，共 ' + chunks.length + ' 个二维码 + ' + textChunks.length + ' 个纯文本块，已在下方打印区，可直接打印；二维码扫不出来时，照着抄下面纯文本即可恢复。', true);
+      }catch(e){
+        if(status) setStatus(status, '单包合印稿生成失败：' + (e && e.message ? e.message : e), false);
+      }
+    });
+  }
+
   var uniPrintDraftBtn = $('uniPrintDraft'); if(uniPrintDraftBtn) uniPrintDraftBtn.addEventListener('click', uniDoPrint);
   // Live camera scanning (.23): rear camera preview + continuous QR detection.
   // Single-package QR payloads (ARCHIVE + CF1/PV chunk) and triple paper-frame payloads
@@ -6066,7 +6381,7 @@ function uniPdfCcittDecode(bytes, width, height, params){
       liveUpdateProgress();
       return 'frame';
     }
-    var cm = t.match(/(?:PV[12]|CF1)\s*(\d+)\s*\/\s*(\d+)\s*CRC/i);
+    var cm = t.match(/(?:PV[12]|CF1|CF2)\s*(\d+)\s*\/\s*(\d+)\s*CRC/i);
     if(cm){
       var idx = parseInt(cm[1], 10), tot = parseInt(cm[2], 10);
       if(liveChunkTotal===0) liveChunkTotal = tot;
@@ -6290,6 +6605,34 @@ function uniPdfCcittDecode(bytes, width, height, params){
           }catch(e){}
           ok('CF1 无混淆往返（分块+三包，数据字符只用安全字母表）', cfDataOk && cfCharsOk && cfTripleOk);
         } catch(e){ ok('CF1 无混淆往返（' + e.message + '）', false); }
+        // 11b. CF2 (.35, 带符号纸面文本) roundtrip: 5-byte chunk lengths 1..5 + large, plus triple CF2 text decode
+        try{
+          var cf2LensOk = true;
+          [0,1,2,3,4,5,6,7,9,10,11,100,1000].forEach(function(n){
+            var arr = new Uint8Array(n); for(var ii=0; ii<n; ii++) arr[ii] = (ii*37+11)%256;
+            var enc2 = cf2Encode(arr), dec2 = cf2Decode(enc2);
+            if(dec2.length!==n || !dec2.every(function(b,i){ return b===arr[i]; })) cf2LensOk = false;
+          });
+          var cf2Sample = new TextEncoder().encode('CF2 自检，带符号纸面文本 abc 123');
+          var cf2Pkg = await encryptSingleArgon2(cf2Sample, 'cf2-test.txt', 'UniTest-Password-123', null, 'gzip', {memoryKiB:8192, timeCost:1, parallelism:1});
+          var cf2Chunks = makeCF2Chunks(cf2Pkg.outer);
+          var cf2Txt = cf2Chunks.map(function(c){ return chunkHeader(c) + '\n' + c.text; }).join('\n');
+          var cf2Parsed = parseBackupText(cf2Txt);
+          var cf2Rec = await decryptPackage(decodeBackupJoined(cf2Parsed), 'UniTest-Password-123');
+          var cf2DataOk = cf2Parsed.complete && cf2Parsed.ver==='CF2' && cf2Rec.format==='PV04' && new TextDecoder().decode(cf2Rec.data)==='CF2 自检，带符号纸面文本 abc 123';
+          var cf2ShorterOk = cf2Encode(cf2Pkg.outer).length < cfEncode(cf2Pkg.outer).length;
+          var cf2TripleOk = false;
+          try{
+            var cf2Arc = (typeof generateArchiveId === 'function') ? generateArchiveId() : 'PA-20261028-TEST';
+            var cf2Enc3 = await U.encryptText('三包 CF2 自检', 'UniTest-Password-123', {memoryKiB:8192, timeCost:1, parallelism:1}, false, cf2Arc);
+            var cf2CipherBack = cf2DecodeText(cf2EncodeText(cf2Enc3.cipher));
+            var cf2ParamBack = cf2DecodeText(cf2EncodeText(cf2Enc3.paramText));
+            var cf2KeyBack = cf2DecodeText(cf2EncodeText(cf2Enc3.keyText));
+            var cf2Dec3 = await U.decryptText(cf2CipherBack, 'UniTest-Password-123', cf2ParamBack, cf2KeyBack);
+            cf2TripleOk = cf2Dec3.plain==='三包 CF2 自检' && cf2Dec3.recordId===cf2Arc;
+          }catch(e){}
+          ok('CF2 带符号纸面文本往返（分块+三包，长度覆盖 0-1000 字节，纸面比 CF1 短）', cf2LensOk && cf2DataOk && cf2ShorterOk && cf2TripleOk);
+        } catch(e){ ok('CF2 带符号纸面文本往返（' + e.message + '）', false); }
         // 12. Old paper-frame prefixes + Otsu bimodal (P1/P2 fixes)
         try{
           var otsuOk = false, prefixOk = false;
