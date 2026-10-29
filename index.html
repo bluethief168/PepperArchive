@@ -163,7 +163,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
 </head>
 <body>
 <header>
-  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.28</span> <span class="ver-sub">加密 · 纸质备份 · 目录</span></h1>
+  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.29</span> <span class="ver-sub">加密 · 纸质备份 · 目录</span></h1>
   <p>一个文件、离线运行：加密文本或文件，生成纸面打印稿、三包或加密文件；恢复时自动识别格式；目录只保存索引，不保存口令与密文。</p>
   <p><button class="secondary" id="themeBtn" type="button" aria-label="切换主题" style="display:none">主题</button> <button class="secondary" id="selfTestBtn" type="button" style="display:none">安全自检</button> <button class="secondary" id="helpBtn" type="button" style="display:none">使用帮助</button> <button class="secondary" id="aboutBtn" type="button" style="display:none">关于</button></p>
   <p class="small" style="color:#9ca3af">单文件、离线、无网络请求。口令只存在于本页内存中，绝不上传、不存入浏览器存储。版本 <span id="appVersion"></span> · 格式 PV1/PV2/PV04 · 默认 Argon2id</p>
@@ -193,8 +193,8 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   <label for="uniArgonPreset">Argon2id 预设</label><select id="uniArgonPreset"><option value="balanced">平衡 64 MiB / t=3 / p=4</option><option value="strong" selected>强 128 MiB / t=3 / p=4（默认）</option><option value="high">高强 256 MiB / t=3 / p=4</option><option value="custom">自定义</option></select>
   <div id="uniArgonCustom" style="display:none"><label>自定义 m（KiB）/ t / p</label><p><input type="number" id="uniArgonM" value="131072" style="width:32%"> <input type="number" id="uniArgonT" value="3" style="width:32%"> <input type="number" id="uniArgonP" value="4" style="width:32%"></p></div>
   <label for="uniComp">压缩方式</label><select id="uniComp"><option value="store">不压缩（最快）</option><option value="gzip" selected>浏览器原生 gzip（默认）</option><option value="deflate1">DEFLATE 级别 1</option><option value="deflate6">DEFLATE 级别 6</option><option value="deflate9">DEFLATE 级别 9</option><option value="lzma1">LZMA 级别 1</option><option value="lzma6">LZMA 级别 6</option><option value="lzma9">LZMA 级别 9（最高，极慢）</option></select>
-  <p><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="uniOutput" value="single" checked style="width:auto"> 单包纸质备份（PV04，Base32 分块，可打印/粘贴恢复）</label><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="uniOutput" value="three" style="width:auto"> 三包分开保管（密文包/参数包/密钥包，仅文本适用）</label><label style="display:inline;font-weight:400"><input type="radio" name="uniOutput" value="file" style="width:auto"> 单个加密文件（PV04 二进制下载）</label></p>
-  <p><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="uniPrintMode" value="qr" checked style="width:auto"> 单包纸质：二维码打印稿</label><label style="display:inline;font-weight:400"><input type="radio" name="uniPrintMode" value="text" style="width:auto"> 单包纸质：纯文本打印稿</label></p>
+  <p><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="uniOutput" value="single" checked style="width:auto"> 单包纸质备份（PV04，CF1 无混淆分块，可打印/粘贴恢复）</label><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="uniOutput" value="three" style="width:auto"> 三包分开保管（密文包/参数包/密钥包，仅文本适用）</label><label style="display:inline;font-weight:400"><input type="radio" name="uniOutput" value="file" style="width:auto"> 单个加密文件（PV04 二进制下载）</label></p>
+  <p id="uniPrintModeRow"><label style="display:inline;font-weight:400;margin-right:16px"><input type="radio" name="uniPrintMode" value="qr" checked style="width:auto"> 单包纸质：二维码打印稿</label><label style="display:inline;font-weight:400"><input type="radio" name="uniPrintMode" value="text" style="width:auto"> 单包纸质：纯文本打印稿</label></p>
   <label for="uniQRDensity">二维码信息密度（单包二维码和三包二维码都用这个设置，给测试用的，档位给到极端）</label><select id="uniQRDensity"><option value="50">50 字符/码（极低密度，码最大，最容易扫，页数最多）</option><option value="100">100 字符/码（极低密度）</option><option value="200">200 字符/码（低密度）</option><option value="450">450 字符/码</option><option value="700">700 字符/码</option><option value="900" selected>900 字符/码（默认）</option><option value="1200">1200 字符/码（高密度）</option><option value="1800">1800 字符/码（高密度）</option><option value="2500">2500 字符/码（极高密度）</option><option value="3300">3300 字符/码（极高密度，单包二维码物理上限附近，码最小，最难扫）</option></select>
   <label for="uniQRDensityCustom">二维码自定义密度（字符/码，留空用上面选的档；单包 10–3300，三包 50–3300；三包选超过 900 的档时自动用 PF2 高密度格式，单包才按原档生成）</label><input type="number" id="uniQRDensityCustom" placeholder="例如：1500，留空用上面选的档">
   <label for="uniTripleQRMode">三包二维码模式</label><select id="uniTripleQRMode"><option value="dual" selected>双码：标准二维码 + 备用图码（默认）</option><option value="qr">仅标准二维码（高密度时用，备用图码每页约 1000 字符上限）</option><option value="photo">仅备用图码</option></select>
@@ -339,7 +339,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   </section>
 
   <section id="sec-help">
-    <h2>帮助 · 格式与安全说明（与当前版本 2026.10.28.28 同步）</h2>
+    <h2>帮助 · 格式与安全说明（与当前版本 2026.10.28.29 同步）</h2>
     <p><button id="helpDownloadBtn" type="button">保存本版帮助文件</button> <span class="small">把当前版本的独立帮助文件下载归档，内容与本页帮助同步。</span></p>
     <ul>
       <li><strong>加密：</strong>在“加密”标签页里，文本和文件共用一个表单，口令可留空（留空则不加密，只做压缩+校验）。新加密默认用 Argon2id：平衡 64 MiB / t=3 / p=4，强 128 MiB / t=3 / p=4（默认），高强 256 MiB / t=3 / p=4，也可自定义；PBKDF2 只用于恢复旧备份。加密时显示两条进度：上面一条只算 Argon2id 本身，下面一条是整个生成过程（准备、压缩、Argon2id、加密、编码、打印稿），整体进度只进不退，旁边有已用时间和“仍在进行中”的跳动标记，任何一步都不会看着像卡死；完成后在结果区和状态里都显示实际生成时间；取消按钮可随时终止 Argon2id 计算。浏览器自带的“页面无响应”提示是浏览器自己的保护，页面没有开关能把它关掉，只能让主线程勤让出、每步都有进度；很慢的设备上如果它还是出现，点“等待”继续算，不要点“退出”。</li>
@@ -366,7 +366,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   <p class="small no-print">提示：打印前请确认每一块都完整印出、没有缺页；建议同时打印两份，分开存放。</p>
 </div>
 
-<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive <span id="pcAppVersion">2026.10.28.28</span> · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
+<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive <span id="pcAppVersion">2026.10.28.29</span> · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
 
 
 <!-- ===== 功能区（原两程序的功能，同一界面下） ===== -->
@@ -600,7 +600,7 @@ if(n+2>=i)return e;if(t=255&e[++n],128!=(192&t))return e;if(o=255&e[++n],128!=(1
 <script>
 'use strict';
 /* PepperArchive 格式 PV1/PV2 —— 单文件离线实现，无外部依赖。PV2 为新生成格式（u64 长度），PV1 仅恢复兼容 */
-var APP_VERSION = '2026.10.28.28';
+var APP_VERSION = '2026.10.28.29';
 /* Worker 需要从本页脚本里截取 QR 编码器源码：必须在脚本同步执行时捕获，事件回调里 document.currentScript 已是 null */
 var PAGE_SCRIPT_TEXT = (typeof document !== 'undefined' && document.currentScript) ? document.currentScript.textContent : null;
 var PBKDF2_ITER = 600000;
@@ -2060,7 +2060,7 @@ $('btnSelfTest').addEventListener('click', async function(){
 (function(){
 // ========================= CONFIG =========================
 const CFG=Object.freeze({
-  APP_VERSION:'2026.10.28.28',FORMAT_MAJOR:1,FORMAT_MINOR:2,
+  APP_VERSION:'2026.10.28.29',FORMAT_MAJOR:1,FORMAT_MINOR:2,
   MAGIC_TEXT:'AEGISCF1',TEXT_PREFIX:'AEGIS1.',FINAL_MAGIC:'FIN1',HEADER_LEN_V1:104,HEADER_LEN:112,
   CIPHER_ID:1,KDF_ID:1,TAG_BITS:128,TAG_BYTES:16,SALT_BYTES:32,NONCE_PREFIX_BYTES:8,FILE_ID_BYTES:16,
   DEFAULT_CHUNK:4*1024*1024,MIN_CHUNK:64*1024,MAX_CHUNK:64*1024*1024,
@@ -4036,14 +4036,14 @@ function splitPostBootstrap(){
 }
 
 // ========================= VERSIONED HELP =========================
-const PEPPERCIPHER_VERSION='2026.10.28.28'; /* 合并版版本，与 PepperArchive APP_VERSION 一致 */
+const PEPPERCIPHER_VERSION='2026.10.28.29'; /* 合并版版本，与 PepperArchive APP_VERSION 一致 */
 function pepperDateCode(d=new Date()){return String(d.getFullYear()).slice(-2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
 function buildHelpHtml(){const v=PEPPERCIPHER_VERSION,date=pepperDateCode();return `<div class="help-doc"><h2>PepperArchive 使用帮助 · 版本 ${v}</h2><p class="sub">本帮助与当前网页程序版本同步生成。PepperArchive 是<strong>离线、本机运行</strong>的文本/文件加密工具；正常加密、解密、自检和纸质恢复均不需要网络。</p>
 <h3>零、当前版本使用方法（本版帮助已随版本更新，与当前界面一致）</h3>
 <p>顶部标签页只有五个：<strong>加密、恢复、目录、自检、帮助</strong>。不要再按旧的“文本加密/文本解密/纸质恢复”分标签去找，旧的子表单仍保留在加密标签页下方，功能与新表单相同，不用重复操作。</p>
 <ul>
 <li><strong>加密：</strong>在“加密”里选文本或文件，输入口令（可留空，留空不加密），选 Argon2id 预设（平衡/强/高强/自定义）和压缩档位（不压缩/原生 gzip/DEFLATE 1/6/9/LZMA 1/6/9），选输出：单包纸质（PV04）、三包（仅文本）、单个加密文件。加密时看进度条、百分比、预计剩余、已流逝；完成后看实际生成时间。</li>
-<li><strong>恢复：</strong>在“恢复”里分两块：<strong>文本恢复</strong>粘贴纸面分块/三包文本或上传纸质帧照片，或点“开始实时扫码”用后置摄像头连续扫码（单包二维码和三包纸质帧都自动累积到文本框，同一码只记一次，集齐后点“恢复文本”），<strong>文件恢复</strong>上传加密文件/打印文本文件，口令共用。程序自动识别 PV1/PV2/PV04 分块、三包、纸质帧、旧文件容器；混拼明确拒绝。</li><li><strong>新版（.28）变化：</strong>二维码打印成 PDF 再恢复，之前会失败，现在通了：浏览器打印成 PDF 时二维码不是 JPEG，而是 Flate 压缩的原始像素图，程序原来只认 JPEG，所以一帧都读不出来，现在 Flate 图也能解成二维码再识别；单包二维码的照片、PDF 原来也会被过滤掉（照片识别只认纸质帧/PF2），现在单包码也能从照片和 PDF 里进恢复；单包二维码 PDF 的文字层里卡片标题有一行假块头，会把真块的校验拖坏，现在图片解出的数据优先，不掺文字层，假块头也不再判坏块。三包二维码密度 50 档原来也会报“纸质分片大小无效”（界面写 50 可选，底层只认 200 起），现在底层也认 50，50 档实测 33 页、解码后恢复成功。注意：纯矢量 PDF（里面只有矢量线条、没有图片也没有文字数据）仍然恢复不了，程序没有完整的 PDF 渲染器，这一点没变；浏览器打印的 PDF 是光栅图，不是纯矢量，现在已经能恢复。</li><li><strong>新版（.27）变化：</strong>二维码真的到 3300 了：以前选 3300 实际按 900 生成，现在单包二维码编码器扩到 40 版-M（上限 3391 字符），选 3300 就按 3300 生成；三包超过 900 自动用 PF2 高密度格式（每码 3300 字符、纯字母数字、仅标准二维码、纠错 M、无备用图码、.27 版起才能恢复，900 及以下仍是旧格式，旧纸仍可恢复）。打印修了三处：打印时不再把标签栏和“打印稿”标题印出来，数据行铺满纸面横向，三包文本和三包二维码都是每个包各从新页开始、不用裁剪。恢复修了两处：Chrome 打印的 PDF 里是每字一个小块、按字体编码表排的，程序现在会按编码表解回连续文本，所以只有三包文本的 PDF 也能直接在照片路和文件路恢复（口令错会明说认证失败，不是“找不到”）；统一加密成功后目录会自动生成一条（文本/文件、单包/三包/加密文件都进目录，名称空时用文件名或默认名，同一编号已在目录里时不覆盖你改过的名称），加密成功后编号框会清空，下一次加密自动生成新编号，不会两份备份同号。</li><li><strong>新版（.26）变化：</strong>三包二维码密度修了一个上限错误：以前界面写三包到 2000、程序按 2000 传，纸质帧分片只认 200–900，选 3300 时必然报“纸质分片大小无效”；现在三包上限是 900，选超过 900 的档时自动按 900 生成，不再失败，3300 只适用于单包二维码。三包纸面利用率：三包文本不再每包强制新页，改用裁切线分隔，短包不再独占一页空白，打印后沿线裁开分开保管；三包二维码每页放两帧，省一半纸；纯文本行宽改用浏览器实测字宽计算，2 号字时也不再少算宽度。</li><li><strong>新版（.25）变化：</strong>加密多了整条生成过程的进度条（准备、压缩、Argon2id、加密、编码、打印稿），整体进度只进不退，旁边有已用时间和“仍在进行中”的跳动，Argon2id 本身的进度条仍在上面；Argon2id 计算让出主线程更勤，进度不再倒退。纯文本打印稿的行宽按字号自动算满纸面，不再固定 40 字一行，三包每包可自然跨页。实时扫码在电脑上也能用了：浏览器没有自带扫码能力时自动用程序自带的扫码能力，不再直接报不可用；帮助里“直播扫码”已改叫“实时扫码”，它不是发给别人看的直播，画面只在本机处理。</li><li><strong>新版（.23）变化：</strong>恢复区新增实时摄像头扫码（后置摄像头、连续识别、去重累积，单包和三包都支持，离开恢复标签或点恢复时自动停止；无摄像头时会明说不可用，不会假装在扫；浏览器没有自带扫码能力时改用程序自带扫码能力）。加密预计剩余修了一个错误：单包和单个加密文件之前第一次进度回调会把进度直接算成 100%，现在按已完成/总数换算，百分比和预计剩余会一路递减。</li><li><strong>新版（.24）变化：</strong>打印稿生成后有打印按钮了：加密表单里“打印打印稿”，打印区顶部“打印这份打印稿”，点一下打开浏览器打印预览，只印下方打印稿，不印上方表单；还没有打印稿时点打印会明说请先生成，不会把占位提示印出来。</li><li><strong>新版（.22）变化：</strong>新生成的单包分块和三包文本打印稿都用 CF1 无混淆格式，数据字符只用 3、4、7、C、D、F、H、J、K、M、P、R、W、X、Y、-；旧 Base32 分块仍可恢复。二维码密度可自选，单包 10–3300 字符/码、三包 50–2000 字符/页，给到极端；三包生成后可点“生成三包二维码打印稿”，每包一套纸质帧。纯文本打印可自选字体和字号，字号给到 2pt 极小。恢复照片区可上传 PDF 扫描件，PDF 里是扫描图片或文字时可提取，提不出来时会明说原因。</li>
+<li><strong>恢复：</strong>在“恢复”里分两块：<strong>文本恢复</strong>粘贴纸面分块/三包文本或上传纸质帧照片，或点“开始实时扫码”用后置摄像头连续扫码（单包二维码和三包纸质帧都自动累积到文本框，同一码只记一次，集齐后点“恢复文本”），<strong>文件恢复</strong>上传加密文件/打印文本文件，口令共用。程序自动识别 PV1/PV2/PV04 分块、三包、纸质帧、旧文件容器；混拼明确拒绝。</li><li><strong>新版（.29）变化：</strong>加密表单里原来不管选什么输出，下面“单包纸质：二维码/纯文本打印稿”那行都一直显示，选三包时看起来像同时选了两个输出，其实下面那行只属于单包，选三包时本来就被忽略；现在只有选单包时才显示那行，选三包或单个加密文件时它自动隐藏。单包那行的旧说法“Base32 分块”也改成“CF1 无混淆分块”，单包从 .22 起生成的就是 CF1，不是 Base32，旧 Base32 仍可恢复。</li><li><strong>新版（.28）变化：</strong>二维码打印成 PDF 再恢复，之前会失败，现在通了：浏览器打印成 PDF 时二维码不是 JPEG，而是 Flate 压缩的原始像素图，程序原来只认 JPEG，所以一帧都读不出来，现在 Flate 图也能解成二维码再识别；单包二维码的照片、PDF 原来也会被过滤掉（照片识别只认纸质帧/PF2），现在单包码也能从照片和 PDF 里进恢复；单包二维码 PDF 的文字层里卡片标题有一行假块头，会把真块的校验拖坏，现在图片解出的数据优先，不掺文字层，假块头也不再判坏块。三包二维码密度 50 档原来也会报“纸质分片大小无效”（界面写 50 可选，底层只认 200 起），现在底层也认 50，50 档实测 33 页、解码后恢复成功。注意：纯矢量 PDF（里面只有矢量线条、没有图片也没有文字数据）仍然恢复不了，程序没有完整的 PDF 渲染器，这一点没变；浏览器打印的 PDF 是光栅图，不是纯矢量，现在已经能恢复。</li><li><strong>新版（.27）变化：</strong>二维码真的到 3300 了：以前选 3300 实际按 900 生成，现在单包二维码编码器扩到 40 版-M（上限 3391 字符），选 3300 就按 3300 生成；三包超过 900 自动用 PF2 高密度格式（每码 3300 字符、纯字母数字、仅标准二维码、纠错 M、无备用图码、.27 版起才能恢复，900 及以下仍是旧格式，旧纸仍可恢复）。打印修了三处：打印时不再把标签栏和“打印稿”标题印出来，数据行铺满纸面横向，三包文本和三包二维码都是每个包各从新页开始、不用裁剪。恢复修了两处：Chrome 打印的 PDF 里是每字一个小块、按字体编码表排的，程序现在会按编码表解回连续文本，所以只有三包文本的 PDF 也能直接在照片路和文件路恢复（口令错会明说认证失败，不是“找不到”）；统一加密成功后目录会自动生成一条（文本/文件、单包/三包/加密文件都进目录，名称空时用文件名或默认名，同一编号已在目录里时不覆盖你改过的名称），加密成功后编号框会清空，下一次加密自动生成新编号，不会两份备份同号。</li><li><strong>新版（.26）变化：</strong>三包二维码密度修了一个上限错误：以前界面写三包到 2000、程序按 2000 传，纸质帧分片只认 200–900，选 3300 时必然报“纸质分片大小无效”；现在三包上限是 900，选超过 900 的档时自动按 900 生成，不再失败，3300 只适用于单包二维码。三包纸面利用率：三包文本不再每包强制新页，改用裁切线分隔，短包不再独占一页空白，打印后沿线裁开分开保管；三包二维码每页放两帧，省一半纸；纯文本行宽改用浏览器实测字宽计算，2 号字时也不再少算宽度。</li><li><strong>新版（.25）变化：</strong>加密多了整条生成过程的进度条（准备、压缩、Argon2id、加密、编码、打印稿），整体进度只进不退，旁边有已用时间和“仍在进行中”的跳动，Argon2id 本身的进度条仍在上面；Argon2id 计算让出主线程更勤，进度不再倒退。纯文本打印稿的行宽按字号自动算满纸面，不再固定 40 字一行，三包每包可自然跨页。实时扫码在电脑上也能用了：浏览器没有自带扫码能力时自动用程序自带的扫码能力，不再直接报不可用；帮助里“直播扫码”已改叫“实时扫码”，它不是发给别人看的直播，画面只在本机处理。</li><li><strong>新版（.23）变化：</strong>恢复区新增实时摄像头扫码（后置摄像头、连续识别、去重累积，单包和三包都支持，离开恢复标签或点恢复时自动停止；无摄像头时会明说不可用，不会假装在扫；浏览器没有自带扫码能力时改用程序自带扫码能力）。加密预计剩余修了一个错误：单包和单个加密文件之前第一次进度回调会把进度直接算成 100%，现在按已完成/总数换算，百分比和预计剩余会一路递减。</li><li><strong>新版（.24）变化：</strong>打印稿生成后有打印按钮了：加密表单里“打印打印稿”，打印区顶部“打印这份打印稿”，点一下打开浏览器打印预览，只印下方打印稿，不印上方表单；还没有打印稿时点打印会明说请先生成，不会把占位提示印出来。</li><li><strong>新版（.22）变化：</strong>新生成的单包分块和三包文本打印稿都用 CF1 无混淆格式，数据字符只用 3、4、7、C、D、F、H、J、K、M、P、R、W、X、Y、-；旧 Base32 分块仍可恢复。二维码密度可自选，单包 10–3300 字符/码、三包 50–2000 字符/页，给到极端；三包生成后可点“生成三包二维码打印稿”，每包一套纸质帧。纯文本打印可自选字体和字号，字号给到 2pt 极小。恢复照片区可上传 PDF 扫描件，PDF 里是扫描图片或文字时可提取，提不出来时会明说原因。</li>
 <li><strong>恢复校验：</strong>在“恢复”下方，文件校验选两个文件，文本校验粘贴两段文本；都逐字节对比 + SHA-256 + 第一个不同位置，文本还报第一个不同字符。</li>
 <li><strong>自检：</strong>在“自检”里点“自检（纸质+三包+压缩+旧格式+Argon2id）”，通过后再处理重要数据。</li>
 </ul>
@@ -4482,6 +4482,17 @@ splitPostBootstrap();
   }
   var clrBtn = $('uniEncryptClear');
   if(clrBtn){ clrBtn.addEventListener('click', function(){ if($('uniPw1')) $('uniPw1').value=''; if($('uniPw2')) $('uniPw2').value=''; }); }
+  // 打印方式行只属于单包 (.29): 上面选三包或单个加密文件时，下面那行本来就被忽略，却一直显示，看起来像同时选了两个输出。
+  // 现在按上面选的输出来显示/隐藏：只有选单包时才显示，选三包时三包文本由加密本身生成、三包二维码走单独的“生成三包二维码打印稿”按钮，选文件时根本没有打印稿。
+  function uniSyncPrintModeRow(){
+    try{
+      var outEl = document.querySelector('input[name="uniOutput"]:checked');
+      var row = $('uniPrintModeRow');
+      if(row) row.style.display = (outEl && outEl.value === 'single') ? '' : 'none';
+    }catch(e){}
+  }
+  document.querySelectorAll('input[name="uniOutput"]').forEach(function(r){ r.addEventListener('change', uniSyncPrintModeRow); });
+  uniSyncPrintModeRow();
   var uniCancelBtn = $('uniEncryptCancel');
   if(uniCancelBtn){ uniCancelBtn.addEventListener('click', function(){ try{ var U = window.__PA_UNIFIED__; if(U && U.cancelCurrent) U.cancelCurrent(); }catch(e){} }); }
   // Unified recover
