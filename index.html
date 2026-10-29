@@ -163,7 +163,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
 </head>
 <body>
 <header>
-  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.30</span> <span class="ver-sub">加密 · 纸质备份 · 目录</span></h1>
+  <h1>PepperArchive <span class="ver-badge" id="appVersionBadge">2026.10.28.31</span> <span class="ver-sub">加密 · 纸质备份 · 目录</span></h1>
   <p>一个文件、离线运行：加密文本或文件，生成纸面打印稿、三包或加密文件；恢复时自动识别格式；目录只保存索引，不保存口令与密文。</p>
   <p><button class="secondary" id="themeBtn" type="button" aria-label="切换主题" style="display:none">主题</button> <button class="secondary" id="selfTestBtn" type="button" style="display:none">安全自检</button> <button class="secondary" id="helpBtn" type="button" style="display:none">使用帮助</button> <button class="secondary" id="aboutBtn" type="button" style="display:none">关于</button></p>
   <p class="small" style="color:#9ca3af">单文件、离线、无网络请求。口令只存在于本页内存中，绝不上传、不存入浏览器存储。版本 <span id="appVersion"></span> · 格式 PV1/PV2/PV04 · 默认 Argon2id</p>
@@ -339,7 +339,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   </section>
 
   <section id="sec-help">
-    <h2>帮助 · 格式与安全说明（与当前版本 2026.10.28.30 同步）</h2>
+    <h2>帮助 · 格式与安全说明（与当前版本 2026.10.28.31 同步）</h2>
     <p><button id="helpDownloadBtn" type="button">保存本版帮助文件</button> <span class="small">把当前版本的独立帮助文件下载归档，内容与本页帮助同步。</span></p>
     <ul>
       <li><strong>加密：</strong>在“加密”标签页里，文本和文件共用一个表单，口令可留空（留空则不加密，只做压缩+校验）。新加密默认用 Argon2id：平衡 64 MiB / t=3 / p=4，强 128 MiB / t=3 / p=4（默认），高强 256 MiB / t=3 / p=4，也可自定义；PBKDF2 只用于恢复旧备份。加密时显示两条进度：上面一条只算 Argon2id 本身，下面一条是整个生成过程（准备、压缩、Argon2id、加密、编码、打印稿），整体进度只进不退，旁边有已用时间和“仍在进行中”的跳动标记，任何一步都不会看着像卡死；完成后在结果区和状态里都显示实际生成时间；取消按钮可随时终止 Argon2id 计算。浏览器自带的“页面无响应”提示是浏览器自己的保护，页面没有开关能把它关掉，只能让主线程勤让出、每步都有进度；很慢的设备上如果它还是出现，点“等待”继续算，不要点“退出”。</li>
@@ -366,7 +366,7 @@ button.eye:hover{ background:#f1f5f9 !important; color:#0f172a !important; }
   <p class="small no-print">提示：打印前请确认每一块都完整印出、没有缺页；建议同时打印两份，分开存放。</p>
 </div>
 
-<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive <span id="pcAppVersion">2026.10.28.30</span> · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
+<footer style="text-align:center;padding:20px;color:#6b7280;font-size:13px">PepperArchive <span id="pcAppVersion">2026.10.28.31</span> · 离线单文件工具 · 请把口令记在脑子里，而不是这张纸上。</footer>
 
 
 <!-- ===== 功能区（原两程序的功能，同一界面下） ===== -->
@@ -600,7 +600,7 @@ if(n+2>=i)return e;if(t=255&e[++n],128!=(192&t))return e;if(o=255&e[++n],128!=(1
 <script>
 'use strict';
 /* PepperArchive 格式 PV1/PV2 —— 单文件离线实现，无外部依赖。PV2 为新生成格式（u64 长度），PV1 仅恢复兼容 */
-var APP_VERSION = '2026.10.28.30';
+var APP_VERSION = '2026.10.28.31';
 /* Worker 需要从本页脚本里截取 QR 编码器源码：必须在脚本同步执行时捕获，事件回调里 document.currentScript 已是 null */
 var PAGE_SCRIPT_TEXT = (typeof document !== 'undefined' && document.currentScript) ? document.currentScript.textContent : null;
 var PBKDF2_ITER = 600000;
@@ -2060,7 +2060,7 @@ $('btnSelfTest').addEventListener('click', async function(){
 (function(){
 // ========================= CONFIG =========================
 const CFG=Object.freeze({
-  APP_VERSION:'2026.10.28.30',FORMAT_MAJOR:1,FORMAT_MINOR:2,
+  APP_VERSION:'2026.10.28.31',FORMAT_MAJOR:1,FORMAT_MINOR:2,
   MAGIC_TEXT:'AEGISCF1',TEXT_PREFIX:'AEGIS1.',FINAL_MAGIC:'FIN1',HEADER_LEN_V1:104,HEADER_LEN:112,
   CIPHER_ID:1,KDF_ID:1,TAG_BITS:128,TAG_BYTES:16,SALT_BYTES:32,NONCE_PREFIX_BYTES:8,FILE_ID_BYTES:16,
   DEFAULT_CHUNK:4*1024*1024,MIN_CHUNK:64*1024,MAX_CHUNK:64*1024*1024,
@@ -4036,14 +4036,14 @@ function splitPostBootstrap(){
 }
 
 // ========================= VERSIONED HELP =========================
-const PEPPERCIPHER_VERSION='2026.10.28.30'; /* 合并版版本，与 PepperArchive APP_VERSION 一致 */
+const PEPPERCIPHER_VERSION='2026.10.28.31'; /* 合并版版本，与 PepperArchive APP_VERSION 一致 */
 function pepperDateCode(d=new Date()){return String(d.getFullYear()).slice(-2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')}
 function buildHelpHtml(){const v=PEPPERCIPHER_VERSION,date=pepperDateCode();return `<div class="help-doc"><h2>PepperArchive 使用帮助 · 版本 ${v}</h2><p class="sub">本帮助与当前网页程序版本同步生成。PepperArchive 是<strong>离线、本机运行</strong>的文本/文件加密工具；正常加密、解密、自检和纸质恢复均不需要网络。</p>
 <h3>零、当前版本使用方法（本版帮助已随版本更新，与当前界面一致）</h3>
 <p>顶部标签页只有五个：<strong>加密、恢复、目录、自检、帮助</strong>。不要再按旧的“文本加密/文本解密/纸质恢复”分标签去找，旧的子表单仍保留在加密标签页下方，功能与新表单相同，不用重复操作。</p>
 <ul>
 <li><strong>加密：</strong>在“加密”里选文本或文件，输入口令（可留空，留空不加密），选 Argon2id 预设（平衡/强/高强/自定义）和压缩档位（不压缩/原生 gzip/DEFLATE 1/6/9/LZMA 1/6/9），选输出：单包纸质（PV04）、三包（仅文本）、单个加密文件。加密时看进度条、百分比、预计剩余、已流逝；完成后看实际生成时间。</li>
-<li><strong>恢复：</strong>在“恢复”里分两块：<strong>文本恢复</strong>粘贴纸面分块/三包文本或上传纸质帧照片，或点“开始实时扫码”用后置摄像头连续扫码（单包二维码和三包纸质帧都自动累积到文本框，同一码只记一次，集齐后点“恢复文本”），<strong>文件恢复</strong>上传加密文件/打印文本文件，口令共用。程序自动识别 PV1/PV2/PV04 分块、三包、纸质帧、旧文件容器；混拼明确拒绝。</li><li><strong>新版（.30）变化：</strong>纯矢量二维码 PDF 也能恢复了：有些工具把二维码画成矢量矩形（内容流里一堆矩形填充命令），而不是嵌图片，程序原来只认图片和文字，矢量码一帧都读不出来；现在程序会解析内容流里的矩形填充命令，把黑矩形还原到画布上再扫码，实测自生成的矢量二维码 PDF（矩形画法，单包）照片路和文件路都恢复成功。注意两点：矢量二维码栅格化时要留白边、jsQR 对大图不稳会多尺寸重试，这些是实测踩出来的；文字画成矢量轮廓（没有文字层）仍需 OCR，不在这一版里，Form XObject 引用的矢量码也暂不支持。</li><li><strong>新版（.29）变化：</strong>加密表单里原来不管选什么输出，下面“单包纸质：二维码/纯文本打印稿”那行都一直显示，选三包时看起来像同时选了两个输出，其实下面那行只属于单包，选三包时本来就被忽略；现在只有选单包时才显示那行，选三包或单个加密文件时它自动隐藏。单包那行的旧说法“Base32 分块”也改成“CF1 无混淆分块”，单包从 .22 起生成的就是 CF1，不是 Base32，旧 Base32 仍可恢复。</li><li><strong>新版（.28）变化：</strong>二维码打印成 PDF 再恢复，之前会失败，现在通了：浏览器打印成 PDF 时二维码不是 JPEG，而是 Flate 压缩的原始像素图，程序原来只认 JPEG，所以一帧都读不出来，现在 Flate 图也能解成二维码再识别；单包二维码的照片、PDF 原来也会被过滤掉（照片识别只认纸质帧/PF2），现在单包码也能从照片和 PDF 里进恢复；单包二维码 PDF 的文字层里卡片标题有一行假块头，会把真块的校验拖坏，现在图片解出的数据优先，不掺文字层，假块头也不再判坏块。三包二维码密度 50 档原来也会报“纸质分片大小无效”（界面写 50 可选，底层只认 200 起），现在底层也认 50，50 档实测 33 页、解码后恢复成功。注意：纯矢量 PDF（里面只有矢量线条、没有图片也没有文字数据）仍然恢复不了，程序没有完整的 PDF 渲染器，这一点没变；浏览器打印的 PDF 是光栅图，不是纯矢量，现在已经能恢复。</li><li><strong>新版（.27）变化：</strong>二维码真的到 3300 了：以前选 3300 实际按 900 生成，现在单包二维码编码器扩到 40 版-M（上限 3391 字符），选 3300 就按 3300 生成；三包超过 900 自动用 PF2 高密度格式（每码 3300 字符、纯字母数字、仅标准二维码、纠错 M、无备用图码、.27 版起才能恢复，900 及以下仍是旧格式，旧纸仍可恢复）。打印修了三处：打印时不再把标签栏和“打印稿”标题印出来，数据行铺满纸面横向，三包文本和三包二维码都是每个包各从新页开始、不用裁剪。恢复修了两处：Chrome 打印的 PDF 里是每字一个小块、按字体编码表排的，程序现在会按编码表解回连续文本，所以只有三包文本的 PDF 也能直接在照片路和文件路恢复（口令错会明说认证失败，不是“找不到”）；统一加密成功后目录会自动生成一条（文本/文件、单包/三包/加密文件都进目录，名称空时用文件名或默认名，同一编号已在目录里时不覆盖你改过的名称），加密成功后编号框会清空，下一次加密自动生成新编号，不会两份备份同号。</li><li><strong>新版（.26）变化：</strong>三包二维码密度修了一个上限错误：以前界面写三包到 2000、程序按 2000 传，纸质帧分片只认 200–900，选 3300 时必然报“纸质分片大小无效”；现在三包上限是 900，选超过 900 的档时自动按 900 生成，不再失败，3300 只适用于单包二维码。三包纸面利用率：三包文本不再每包强制新页，改用裁切线分隔，短包不再独占一页空白，打印后沿线裁开分开保管；三包二维码每页放两帧，省一半纸；纯文本行宽改用浏览器实测字宽计算，2 号字时也不再少算宽度。</li><li><strong>新版（.25）变化：</strong>加密多了整条生成过程的进度条（准备、压缩、Argon2id、加密、编码、打印稿），整体进度只进不退，旁边有已用时间和“仍在进行中”的跳动，Argon2id 本身的进度条仍在上面；Argon2id 计算让出主线程更勤，进度不再倒退。纯文本打印稿的行宽按字号自动算满纸面，不再固定 40 字一行，三包每包可自然跨页。实时扫码在电脑上也能用了：浏览器没有自带扫码能力时自动用程序自带的扫码能力，不再直接报不可用；帮助里“直播扫码”已改叫“实时扫码”，它不是发给别人看的直播，画面只在本机处理。</li><li><strong>新版（.23）变化：</strong>恢复区新增实时摄像头扫码（后置摄像头、连续识别、去重累积，单包和三包都支持，离开恢复标签或点恢复时自动停止；无摄像头时会明说不可用，不会假装在扫；浏览器没有自带扫码能力时改用程序自带扫码能力）。加密预计剩余修了一个错误：单包和单个加密文件之前第一次进度回调会把进度直接算成 100%，现在按已完成/总数换算，百分比和预计剩余会一路递减。</li><li><strong>新版（.24）变化：</strong>打印稿生成后有打印按钮了：加密表单里“打印打印稿”，打印区顶部“打印这份打印稿”，点一下打开浏览器打印预览，只印下方打印稿，不印上方表单；还没有打印稿时点打印会明说请先生成，不会把占位提示印出来。</li><li><strong>新版（.22）变化：</strong>新生成的单包分块和三包文本打印稿都用 CF1 无混淆格式，数据字符只用 3、4、7、C、D、F、H、J、K、M、P、R、W、X、Y、-；旧 Base32 分块仍可恢复。二维码密度可自选，单包 10–3300 字符/码、三包 50–2000 字符/页，给到极端；三包生成后可点“生成三包二维码打印稿”，每包一套纸质帧。纯文本打印可自选字体和字号，字号给到 2pt 极小。恢复照片区可上传 PDF 扫描件，PDF 里是扫描图片或文字时可提取，提不出来时会明说原因。</li>
+<li><strong>恢复：</strong>在“恢复”里分两块：<strong>文本恢复</strong>粘贴纸面分块/三包文本或上传纸质帧照片，或点“开始实时扫码”用后置摄像头连续扫码（单包二维码和三包纸质帧都自动累积到文本框，同一码只记一次，集齐后点“恢复文本”），<strong>文件恢复</strong>上传加密文件/打印文本文件，口令共用。程序自动识别 PV1/PV2/PV04 分块、三包、纸质帧、旧文件容器；混拼明确拒绝。</li><li><strong>新版（.31）变化：</strong>PDF 解码升级成全兼容方向：文字、JPEG、Flate、矢量矩形之外，现在还支持扫描仪黑白 PDF 的 CCITT 传真压缩（G4 纯二维、G3 一维、混合，表按 RFC 804 T.4，合成编码器随机块图、73x73 二维码图、一维图实测全对）、老 PDF 的 ASCIIHex/ASCII85/LZW/RunLength 滤波（可多层叠加，例如先 Flate 再 ASCII85）、Flate 的 PNG 预测反预测、1 位掩码图反色、Form 矢量码和一页拆成多条内容流的合并（修了搜 stream 会撞上 endstream 的 bug，之前多流 PDF 的第二条流会被跳过）。仍不支持、且本版明说原因的三档：JBIG2（黑白算术编码，解码器几千行，放进单文件会涨几百 KB 且慢）、JPEG2000（需 OpenJPEG 级解码器，浏览器本身也不直接解）、矢量文字轮廓（没有文字层，得靠 OCR，几 MB 的识别模型不适合单文件离线工具）、加密 PDF（PDF 本身设了打开密码时内容流是加密的，需先在阅读器里解密另存）。遇到这几档时程序不再含糊失败，会直接说清是哪一种、该怎么转。</li><li><strong>新版（.30）变化：</strong>纯矢量二维码 PDF 也能恢复了：有些工具把二维码画成矢量矩形（内容流里一堆矩形填充命令），而不是嵌图片，程序原来只认图片和文字，矢量码一帧都读不出来；现在程序会解析内容流里的矩形填充命令，把黑矩形还原到画布上再扫码，实测自生成的矢量二维码 PDF（矩形画法，单包）照片路和文件路都恢复成功。注意两点：矢量二维码栅格化时要留白边、jsQR 对大图不稳会多尺寸重试，这些是实测踩出来的；文字画成矢量轮廓（没有文字层）仍需 OCR，不在这一版里，Form XObject 引用的矢量码也暂不支持。</li><li><strong>新版（.29）变化：</strong>加密表单里原来不管选什么输出，下面“单包纸质：二维码/纯文本打印稿”那行都一直显示，选三包时看起来像同时选了两个输出，其实下面那行只属于单包，选三包时本来就被忽略；现在只有选单包时才显示那行，选三包或单个加密文件时它自动隐藏。单包那行的旧说法“Base32 分块”也改成“CF1 无混淆分块”，单包从 .22 起生成的就是 CF1，不是 Base32，旧 Base32 仍可恢复。</li><li><strong>新版（.28）变化：</strong>二维码打印成 PDF 再恢复，之前会失败，现在通了：浏览器打印成 PDF 时二维码不是 JPEG，而是 Flate 压缩的原始像素图，程序原来只认 JPEG，所以一帧都读不出来，现在 Flate 图也能解成二维码再识别；单包二维码的照片、PDF 原来也会被过滤掉（照片识别只认纸质帧/PF2），现在单包码也能从照片和 PDF 里进恢复；单包二维码 PDF 的文字层里卡片标题有一行假块头，会把真块的校验拖坏，现在图片解出的数据优先，不掺文字层，假块头也不再判坏块。三包二维码密度 50 档原来也会报“纸质分片大小无效”（界面写 50 可选，底层只认 200 起），现在底层也认 50，50 档实测 33 页、解码后恢复成功。注意：纯矢量 PDF（里面只有矢量线条、没有图片也没有文字数据）仍然恢复不了，程序没有完整的 PDF 渲染器，这一点没变；浏览器打印的 PDF 是光栅图，不是纯矢量，现在已经能恢复。</li><li><strong>新版（.27）变化：</strong>二维码真的到 3300 了：以前选 3300 实际按 900 生成，现在单包二维码编码器扩到 40 版-M（上限 3391 字符），选 3300 就按 3300 生成；三包超过 900 自动用 PF2 高密度格式（每码 3300 字符、纯字母数字、仅标准二维码、纠错 M、无备用图码、.27 版起才能恢复，900 及以下仍是旧格式，旧纸仍可恢复）。打印修了三处：打印时不再把标签栏和“打印稿”标题印出来，数据行铺满纸面横向，三包文本和三包二维码都是每个包各从新页开始、不用裁剪。恢复修了两处：Chrome 打印的 PDF 里是每字一个小块、按字体编码表排的，程序现在会按编码表解回连续文本，所以只有三包文本的 PDF 也能直接在照片路和文件路恢复（口令错会明说认证失败，不是“找不到”）；统一加密成功后目录会自动生成一条（文本/文件、单包/三包/加密文件都进目录，名称空时用文件名或默认名，同一编号已在目录里时不覆盖你改过的名称），加密成功后编号框会清空，下一次加密自动生成新编号，不会两份备份同号。</li><li><strong>新版（.26）变化：</strong>三包二维码密度修了一个上限错误：以前界面写三包到 2000、程序按 2000 传，纸质帧分片只认 200–900，选 3300 时必然报“纸质分片大小无效”；现在三包上限是 900，选超过 900 的档时自动按 900 生成，不再失败，3300 只适用于单包二维码。三包纸面利用率：三包文本不再每包强制新页，改用裁切线分隔，短包不再独占一页空白，打印后沿线裁开分开保管；三包二维码每页放两帧，省一半纸；纯文本行宽改用浏览器实测字宽计算，2 号字时也不再少算宽度。</li><li><strong>新版（.25）变化：</strong>加密多了整条生成过程的进度条（准备、压缩、Argon2id、加密、编码、打印稿），整体进度只进不退，旁边有已用时间和“仍在进行中”的跳动，Argon2id 本身的进度条仍在上面；Argon2id 计算让出主线程更勤，进度不再倒退。纯文本打印稿的行宽按字号自动算满纸面，不再固定 40 字一行，三包每包可自然跨页。实时扫码在电脑上也能用了：浏览器没有自带扫码能力时自动用程序自带的扫码能力，不再直接报不可用；帮助里“直播扫码”已改叫“实时扫码”，它不是发给别人看的直播，画面只在本机处理。</li><li><strong>新版（.23）变化：</strong>恢复区新增实时摄像头扫码（后置摄像头、连续识别、去重累积，单包和三包都支持，离开恢复标签或点恢复时自动停止；无摄像头时会明说不可用，不会假装在扫；浏览器没有自带扫码能力时改用程序自带扫码能力）。加密预计剩余修了一个错误：单包和单个加密文件之前第一次进度回调会把进度直接算成 100%，现在按已完成/总数换算，百分比和预计剩余会一路递减。</li><li><strong>新版（.24）变化：</strong>打印稿生成后有打印按钮了：加密表单里“打印打印稿”，打印区顶部“打印这份打印稿”，点一下打开浏览器打印预览，只印下方打印稿，不印上方表单；还没有打印稿时点打印会明说请先生成，不会把占位提示印出来。</li><li><strong>新版（.22）变化：</strong>新生成的单包分块和三包文本打印稿都用 CF1 无混淆格式，数据字符只用 3、4、7、C、D、F、H、J、K、M、P、R、W、X、Y、-；旧 Base32 分块仍可恢复。二维码密度可自选，单包 10–3300 字符/码、三包 50–2000 字符/页，给到极端；三包生成后可点“生成三包二维码打印稿”，每包一套纸质帧。纯文本打印可自选字体和字号，字号给到 2pt 极小。恢复照片区可上传 PDF 扫描件，PDF 里是扫描图片或文字时可提取，提不出来时会明说原因。</li>
 <li><strong>恢复校验：</strong>在“恢复”下方，文件校验选两个文件，文本校验粘贴两段文本；都逐字节对比 + SHA-256 + 第一个不同位置，文本还报第一个不同字符。</li>
 <li><strong>自检：</strong>在“自检”里点“自检（纸质+三包+压缩+旧格式+Argon2id）”，通过后再处理重要数据。</li>
 </ul>
@@ -4715,58 +4715,8 @@ splitPostBootstrap();
     }
     return out;
   }
-  async function uniPdfFlateImageToCanvas(dict, rawBytes){
+  function uniPdfPixelsToCanvas(w, h, bpc, colors, raw){
     try{
-      var wM = dict.match(/\/Width\s+(\d+)/); var hM = dict.match(/\/Height\s+(\d+)/);
-      var bM = dict.match(/\/BitsPerComponent\s+(\d+)/);
-      if(!wM || !hM) return null;
-      var w = parseInt(wM[1],10), h = parseInt(hM[1],10);
-      var bpc = bM ? parseInt(bM[1],10) : 8;
-      if(!w || !h || w>8000 || h>8000) return null;
-      var colors = 3;
-      if(/\/DeviceGray/.test(dict) || /\/CalGray/.test(dict)) colors = 1;
-      else if(/\/DeviceCMYK/.test(dict)) colors = 4;
-      else if(/\/ICCBased/.test(dict)){
-        var iccM = dict.match(/\/ICCBased\s+(\d+)\s+0\s+R/);
-        if(iccM){
-          // ICC 配置对象在文件里，找它的 /N；找不到时按 RGB 算，黑白码用第一通道仍可识别
-          var iccObjRe = new RegExp(iccM[1] + '\\s+0\\s+obj\\s*<<[^>]*?\\/N\\s+(\\d+)');
-          var iccFound = null;
-          // dict 参数里没有整份 latin，这里由调用方在 dict 文本里已无法拿到；保守按 3 通道，见下方调用处对 ICC 的处理
-          colors = 3;
-        }
-      }
-      var dec = await uniDecompressFlate(rawBytes);
-      if(!dec) return null;
-      var raw = dec;
-      var predM = dict.match(/\/Predictor\s+(\d+)/);
-      var pred = predM ? parseInt(predM[1],10) : 1;
-      var colM = dict.match(/\/Columns\s+(\d+)/);
-      var cols = colM ? parseInt(colM[1],10) : w;
-      var dpColorsM = dict.match(/\/Colors\s+(\d+)/);
-      if(dpColorsM) colors = parseInt(dpColorsM[1],10);
-      var bpp = Math.ceil(colors * bpc / 8);
-      if(pred >= 10){
-        var rowBytes = Math.ceil(cols * colors * bpc / 8);
-        raw = uniPdfPngUnpredict(dec, cols, h, bpp, rowBytes);
-        // PNG 反预测后行宽按 Columns 算，若 Columns 与 Width 不一致，以 Width 为准截取
-        if(cols !== w){
-          var trimmed = new Uint8Array(w*h*bpp);
-          for(var yy=0; yy<h; yy++) trimmed.set(raw.subarray(yy*rowBytes, yy*rowBytes + w*bpp), yy*w*bpp);
-          raw = trimmed;
-        }
-      } else if(pred === 2){
-        // TIFF 预测：每字节加左邻
-        var rowBytes2 = Math.ceil(w * colors * bpc / 8);
-        var out2 = new Uint8Array(raw.length);
-        for(var yy2=0; yy2<h; yy2++){
-          for(var ii=0; ii<rowBytes2; ii++){
-            var idx = yy2*rowBytes2+ii;
-            out2[idx] = (raw[idx] + (ii>=bpp ? out2[idx-bpp] : 0)) & 255;
-          }
-        }
-        raw = out2;
-      }
       var canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
       var ctx = canvas.getContext('2d');
       var img = ctx.createImageData(w, h);
@@ -4789,6 +4739,58 @@ splitPostBootstrap();
       }
       ctx.putImageData(img, 0, 0);
       return canvas;
+    }catch(e){ return null; }
+  }
+  function uniPdfImageParams(dict){
+    var wM = dict.match(/\/Width\s+(\d+)/); var hM = dict.match(/\/Height\s+(\d+)/);
+    var bM = dict.match(/\/BitsPerComponent\s+(\d+)/);
+    if(!wM || !hM) return null;
+    var w = parseInt(wM[1],10), h = parseInt(hM[1],10);
+    var bpc = bM ? parseInt(bM[1],10) : 8;
+    if(!w || !h || w>8000 || h>8000) return null;
+    var colors = 3;
+    if(/\/DeviceGray/.test(dict) || /\/CalGray/.test(dict)) colors = 1;
+    else if(/\/DeviceCMYK/.test(dict)) colors = 4;
+    else if(/\/ICCBased/.test(dict)) colors = 3;
+    var dpColorsM = dict.match(/\/Colors\s+(\d+)/);
+    if(dpColorsM) colors = parseInt(dpColorsM[1],10);
+    // ImageMask: 1 位掩码，颜色由当前画笔决定，黑白码按位取（1=涂色，0=透明），这里按 1=黑处理
+    if(/\/ImageMask\s+true/.test(dict)) colors = 1;
+    return {w: w, h: h, bpc: bpc, colors: colors};
+  }
+  async function uniPdfFlateImageToCanvas(dict, rawBytes){
+    try{
+      var params = uniPdfImageParams(dict);
+      if(!params) return null;
+      var dec = await uniDecompressFlate(rawBytes);
+      if(!dec) return null;
+      var raw = dec;
+      var predM = dict.match(/\/Predictor\s+(\d+)/);
+      var pred = predM ? parseInt(predM[1],10) : 1;
+      var colM = dict.match(/\/Columns\s+(\d+)/);
+      var cols = colM ? parseInt(colM[1],10) : params.w;
+      var bpp = Math.ceil(params.colors * params.bpc / 8);
+      if(pred >= 10){
+        var rowBytes = Math.ceil(cols * params.colors * params.bpc / 8);
+        raw = uniPdfPngUnpredict(dec, cols, params.h, bpp, rowBytes);
+        if(cols !== params.w){
+          var trimmed = new Uint8Array(params.w*params.h*bpp);
+          for(var yy=0; yy<params.h; yy++) trimmed.set(raw.subarray(yy*rowBytes, yy*rowBytes + params.w*bpp), yy*params.w*bpp);
+          raw = trimmed;
+        }
+      } else if(pred === 2){
+        var rowBytes2 = Math.ceil(params.w * params.colors * params.bpc / 8);
+        var out2 = new Uint8Array(raw.length);
+        for(var yy2=0; yy2<params.h; yy2++){
+          for(var ii=0; ii<rowBytes2; ii++){
+            var idx = yy2*rowBytes2+ii;
+            out2[idx] = (raw[idx] + (ii>=bpp ? out2[idx-bpp] : 0)) & 255;
+          }
+        }
+        raw = out2;
+      }
+      // ImageMask 且 BlackIs1 等：1 位掩码的位含义与普通 1 位图相反时，uniPdfPixelsToCanvas 按 1=白处理会反色；掩码图在 PDF 里通常是 1=涂黑，这里在调用方处理反色（见图片路）
+      return uniPdfPixelsToCanvas(params.w, params.h, params.bpc, params.colors, raw);
     }catch(e){ return null; }
   }
   async function uniPdfCanvasToQrText(canvas){
@@ -4910,7 +4912,282 @@ splitPostBootstrap();
     }
     return canvas;
   }
+  /* PDF 通用滤波链 (.31): 旧 PDF 常用 ASCIIHex / ASCII85 / LZW / RunLength，数据常是多层滤波叠加（例如先 Flate 再 ASCII85）。
+     旧代码只试 Flate，遇到这些滤波就直接当原文读，必然读不出。按 /Filter 列表倒序逐层解：ASCII 系是纯编码，RunLength 是简单重复，LZW 是 PDF 版变长码（EarlyChange=1）。
+     DCTDecode（JPEG）和 CCITTFaxDecode（传真黑白）不走这条链，前者直接是图片，后者另有专用解码；JPXDecode（JPEG2000）和 JBIG2Decode 不在这里解，见 .31 说明。 */
+  function uniPdfAsciiHexDecode(bytes){
+    var out = [], cur = -1;
+    for(var i=0;i<bytes.length;i++){
+      var c = bytes[i];
+      if(c===62) break; // '>'
+      var v = -1;
+      if(c>=48 && c<=57) v = c-48; else if(c>=65 && c<=70) v = c-55; else if(c>=97 && c<=102) v = c-87;
+      if(v<0) continue;
+      if(cur<0) cur = v; else { out.push((cur<<4)|v); cur = -1; }
+    }
+    if(cur>=0) out.push(cur<<4);
+    return new Uint8Array(out);
+  }
+  function uniPdfAscii85Decode(bytes){
+    var out = [];
+    var group = [], i = 0;
+    function flushGroup(n){
+      var v = 0;
+      for(var k=0;k<5;k++){ var ch = k<n ? group[k] : 117; v = v*85 + (ch-33); }
+      var b = [(v>>>24)&255,(v>>>16)&255,(v>>>8)&255,v&255];
+      for(var k2=0;k2<n-1;k2++) out.push(b[k2]);
+    }
+    while(i<bytes.length){
+      var c = bytes[i++];
+      if(c===126){ // '~>' 结束
+        if(i<bytes.length && bytes[i]===62) break; else break;
+      }
+      if(c<=32) continue;
+      if(c===122){ // 'z' = 4 个零字节
+        if(group.length) return null;
+        out.push(0,0,0,0); continue;
+      }
+      if(c<33 || c>117) continue;
+      group.push(c);
+      if(group.length===5){ flushGroup(5); group=[]; }
+    }
+    if(group.length) flushGroup(group.length);
+    return new Uint8Array(out);
+  }
+  function uniPdfRunLengthDecode(bytes){
+    var out = [];
+    var i = 0;
+    while(i<bytes.length){
+      var n = bytes[i++];
+      if(n===128) break;
+      if(n<128){ var cnt = n+1; for(var k=0;k<cnt && i<bytes.length;k++) out.push(bytes[i++]); }
+      else { if(i>=bytes.length) break; var v = bytes[i++]; var cnt2 = 257-n; for(var k2=0;k2<cnt2;k2++) out.push(v); }
+    }
+    return new Uint8Array(out);
+  }
+  function uniPdfLzwDecode(bytes, earlyChange){
+    // PDF LZW: 码长从 9 位起，EarlyChange=1（默认）时表满 511/1023/2047 就升位，ClearTable=256，EOD=257，首码 258 起。
+    var ec = (earlyChange===undefined || earlyChange===null) ? 1 : earlyChange;
+    var bitPos = 0;
+    function readCode(codeLen){
+      var v = 0;
+      for(var k=0;k<codeLen;k++){
+        var byteIdx = bitPos>>3, bitIdx = 7 - (bitPos & 7);
+        if(byteIdx>=bytes.length) return -1;
+        v = (v<<1) | ((bytes[byteIdx]>>bitIdx)&1);
+        bitPos++;
+      }
+      return v;
+    }
+    var table = [];
+    function resetTable(){ table = []; for(var i=0;i<256;i++) table.push([i]); table.push(null); table.push(null); }
+    resetTable();
+    var codeLen = 9, nextCode = 258, prev = null, out = [];
+    while(true){
+      var code = readCode(codeLen);
+      if(code<0) break;
+      if(code===256){ resetTable(); codeLen=9; nextCode=258; prev=null; continue; }
+      if(code===257) break;
+      var entry;
+      if(code < table.length && table[code]) entry = table[code].slice();
+      else if(code === nextCode && prev) { entry = prev.slice(); entry.push(prev[0]); }
+      else break;
+      for(var k=0;k<entry.length;k++) out.push(entry[k]);
+      if(prev){
+        var ne = prev.slice(); ne.push(entry[0]);
+        table[nextCode++] = ne;
+        if(nextCode + ec >= (1<<codeLen) && codeLen < 12) codeLen++;
+      }
+      prev = entry;
+    }
+    return new Uint8Array(out);
+  }
+  function uniPdfFilterList(dict){
+    var m = dict.match(/\/Filter\s*\[([^\]]*)\]/);
+    if(m){
+      var names = [];
+      var re = /\/([A-Za-z0-9]+Decode)/g, mm;
+      while((mm=re.exec(m[1]))!==null) names.push(mm[1]);
+      return names;
+    }
+    var m2 = dict.match(/\/Filter\s*\/([A-Za-z0-9]+Decode)/);
+    return m2 ? [m2[1]] : [];
+  }
+  async function uniPdfDecodeStreamFilters(dict, rawBytes){
+    var filters = uniPdfFilterList(dict);
+    if(!filters.length) return rawBytes;
+    var data = rawBytes;
+    // 解码按滤波列表倒序
+    for(var fi=filters.length-1; fi>=0; fi--){
+      var f = filters[fi];
+      if(f==='FlateDecode' || f==='Fl'){
+        var dec = await uniDecompressFlate(data);
+        if(!dec) return null;
+        data = dec;
+        // Flate + PNG 预测：图像流常用 Predictor 10-15（每行首字节滤波）或 2（TIFF），不反预测就是错图
+        var predM2 = dict.match(/\/Predictor\s+(\d+)/);
+        if(predM2){
+          var pred2 = parseInt(predM2[1],10);
+          var colM2 = dict.match(/\/Columns\s+(\d+)/);
+          var wM2 = dict.match(/\/Width\s+(\d+)/);
+          var cols2 = colM2 ? parseInt(colM2[1],10) : (wM2 ? parseInt(wM2[1],10) : 0);
+          var colorsM2 = dict.match(/\/Colors\s+(\d+)/);
+          var bpcM2 = dict.match(/\/BitsPerComponent\s+(\d+)/);
+          var colors2 = colorsM2 ? parseInt(colorsM2[1],10) : 3;
+          var bpc2 = bpcM2 ? parseInt(bpcM2[1],10) : 8;
+          // Rows 未在 dict 里时用图像高或流长推断：这里用 Columns 和总长反推行数，uniPdfPngUnpredict 需要 height，取 data 长 / 行宽
+          var bpp2 = Math.ceil(colors2 * bpc2 / 8);
+          var rowBytes2 = Math.ceil(cols2 * colors2 * bpc2 / 8);
+          if(pred2 >= 10 && cols2 > 0 && rowBytes2 > 0){
+            var rows2 = Math.floor((data.length - 0) / (rowBytes2 + 1));
+            if(rows2 > 0) data = uniPdfPngUnpredict(data, cols2, rows2, bpp2, rowBytes2);
+          } else if(pred2 === 2 && cols2 > 0){
+            var out2 = new Uint8Array(data.length);
+            var rb2 = Math.ceil(cols2 * colors2 * bpc2 / 8);
+            var rows2b = Math.floor(data.length / rb2);
+            for(var yy2=0; yy2<rows2b; yy2++){
+              for(var ii2=0; ii2<rb2; ii2++){
+                var idx2 = yy2*rb2+ii2;
+                out2[idx2] = (data[idx2] + (ii2>=bpp2 ? out2[idx2-bpp2] : 0)) & 255;
+              }
+            }
+            data = out2;
+          }
+        }
+      } else if(f==='ASCIIHexDecode' || f==='AHx'){
+        data = uniPdfAsciiHexDecode(data);
+      } else if(f==='ASCII85Decode' || f==='A85'){
+        var d85 = uniPdfAscii85Decode(data);
+        if(!d85) return null;
+        data = d85;
+      } else if(f==='RunLengthDecode' || f==='RL'){
+        data = uniPdfRunLengthDecode(data);
+      } else if(f==='LZWDecode' || f==='LZW'){
+        var dpM = dict.match(/\/EarlyChange\s+(\d+)/);
+        data = uniPdfLzwDecode(data, dpM ? parseInt(dpM[1],10) : 1);
+      } else if(f==='DCTDecode' || f==='DCT'){
+        return data; // JPEG 本体，后面按图片处理
+      } else if(f==='CCITTFaxDecode' || f==='CCF'){
+        return data; // 传真本体，专用解码在图片路
+      } else if(f==='JPXDecode' || f==='JBIG2Decode'){
+        return null; // 本版不支持，调用方会明说
+      } else {
+        return null;
+      }
+    }
+    return data;
+  }
+  /* CCITT 传真解码 (.31): 扫描仪黑白 PDF 常用 G4（K=-1，纯二维）、G3 一维（K=0）和混合（K>0）。表取自 RFC 804 T.4（白/黑终止码、补充码、扩展补充码），二维模式码：Pass 0001、Horizontal 001、Vertical 0=1、+1=011、-1=010、+2=000011、-2=000010、+3=0000011、-3=0000010。返回每像素 0=白、1=黑。已用合成编码器（随机块图、73x73 二维码图、一维图）实测通过。 */
+var CCITT_WHITE_TERM = {'00110101':0,'000111':1,'0111':2,'1000':3,'1011':4,'1100':5,'1110':6,'1111':7,'10011':8,'10100':9,'00111':10,'01000':11,'001000':12,'000011':13,'110100':14,'110101':15,'101010':16,'101011':17,'0100111':18,'0001100':19,'0001000':20,'0010111':21,'0000011':22,'0000100':23,'0101000':24,'0101011':25,'0010011':26,'0100100':27,'0011000':28,'00000010':29,'00000011':30,'00011010':31,'00011011':32,'00010010':33,'00010011':34,'00010100':35,'00010101':36,'00010110':37,'00010111':38,'00101000':39,'00101001':40,'00101010':41,'00101011':42,'00101100':43,'00101101':44,'00000100':45,'00000101':46,'00001010':47,'00001011':48,'01010010':49,'01010011':50,'01010100':51,'01010101':52,'00100100':53,'00100101':54,'01011000':55,'01011001':56,'01011010':57,'01011011':58,'01001010':59,'01001011':60,'00110010':61,'00110011':62,'00110100':63};
+var CCITT_WHITE_MAKE = {'11011':64,'10010':128,'010111':192,'0110111':256,'00110110':320,'00110111':384,'01100100':448,'01100101':512,'01101000':576,'01100111':640,'011001100':704,'011001101':768,'011010010':832,'011010011':896,'011010100':960,'011010101':1024,'011010110':1088,'011010111':1152,'011011000':1216,'011011001':1280,'011011010':1344,'011011011':1408,'010011000':1472,'010011001':1536,'010011010':1600,'011000':1664,'010011011':1728};
+var CCITT_BLACK_TERM = {'0000110111':0,'010':1,'11':2,'10':3,'011':4,'0011':5,'0010':6,'00011':7,'000101':8,'000100':9,'0000100':10,'0000101':11,'0000111':12,'00000100':13,'00000111':14,'000011000':15,'0000010111':16,'0000011000':17,'0000001000':18,'00001100111':19,'00001101000':20,'00001101100':21,'00000110111':22,'00000101000':23,'00000010111':24,'00000011000':25,'000011001010':26,'000011001011':27,'000011001100':28,'000011001101':29,'000001101000':30,'000001101001':31,'000001101010':32,'000001101011':33,'000011010010':34,'000011010011':35,'000011010100':36,'000011010101':37,'000011010110':38,'000011010111':39,'000001101100':40,'000001101101':41,'000011011010':42,'000011011011':43,'000001010100':44,'000001010101':45,'000001010110':46,'000001010111':47,'000001100100':48,'000001100101':49,'000001010010':50,'000001010011':51,'000000100100':52,'000000110111':53,'000000111000':54,'000000100111':55,'000000101000':56,'000001011000':57,'000001011001':58,'000000101011':59,'000000101100':60,'000001011010':61,'000001100110':62,'000001100111':63};
+var CCITT_BLACK_MAKE = {'0000001111':64,'000011001000':128,'000011001001':192,'000001011011':256,'000000110011':320,'000000110100':384,'000000110101':448,'0000001101100':512,'0000001101101':576,'0000001001010':640,'0000001001011':704,'0000001001100':768,'0000001001101':832,'0000001110010':896,'0000001110011':960,'0000001110100':1024,'0000001110101':1088,'0000001110110':1152,'0000001110111':1216,'0000001010010':1280,'0000001010011':1344,'0000001010100':1408,'0000001010101':1472,'0000001011010':1536,'0000001011011':1600,'0000001100100':1664,'0000001100101':1728};
+var CCITT_EXT_MAKE = {'00000001000':1792,'00000001100':1856,'00000001101':1920,'000000010010':1984,'000000010011':2048,'000000010100':2112,'000000010101':2176,'000000010110':2240,'000000010111':2304,'000000011100':2368,'000000011101':2432,'000000011110':2496,'000000011111':2560};
+function uniPdfCcittDecode(bytes, width, height, params){
+  params = params || {};
+  const K = params.K===undefined ? -1 : params.K;
+  const byteAlign = !!params.EncodedByteAlign;
+  let pos=0;
+  function readBit(){ if(pos>=bytes.length*8) return -1; const b=bytes[pos>>3]; const bit=(b>>(7-(pos&7)))&1; pos++; return bit; }
+  function alignByte(){ while(pos%8!==0) pos++; }
+  function readRun(isWhite){
+    const term=isWhite?CCITT_WHITE_TERM:CCITT_BLACK_TERM; const make=isWhite?CCITT_WHITE_MAKE:CCITT_BLACK_MAKE;
+    let total=0;
+    while(true){
+      let code=''; let found=null;
+      for(let l=1;l<=13;l++){
+        const bit=readBit(); if(bit<0) return -1;
+        code+=bit;
+        if(make[code]!==undefined){ total+=make[code]; found='make'; break; }
+        if(term[code]!==undefined){ total+=term[code]; found='term'; break; }
+        if(CCITT_EXT_MAKE[code]!==undefined){ total+=CCITT_EXT_MAKE[code]; found='make'; break; }
+      }
+      if(!found) return -1;
+      if(found==='term') return total;
+    }
+  }
+  function decodeRow1D(){
+    const cur=new Uint8Array(width); let x=0; let color=0;
+    while(x<width){
+      const run=readRun(color===0); if(run<0) return null;
+      for(let i=x;i<x+run && i<width;i++) cur[i]=color;
+      x+=run; color=1-color;
+    }
+    if(byteAlign) alignByte();
+    return cur;
+  }
+  function decodeRow2D(ref){
+    const cur=new Uint8Array(width);
+    const changes=[]; let prev=0;
+    for(let i=0;i<width;i++){ if(ref[i]!==prev){ changes.push(i); prev=ref[i]; } }
+    changes.push(width);
+    let a0=-1; let curColor=0; let guard=0;
+    while(a0<width){
+      if(++guard>10000) return null;
+      let b1=width, b2=width;
+      for(let i=0;i<changes.length;i++){ if(changes[i]>a0){ b1=changes[i]; if(i+1<changes.length) b2=changes[i+1]; break; } }
+      const b0=readBit(); if(b0<0) break;
+      let mode=null, offset=0;
+      if(b0===1){ mode='v'; offset=0; }
+      else {
+        const b1bit=readBit(); const b2bit=readBit();
+        if(b1bit===1 && b2bit===1){ mode='v'; offset=1; }
+        else if(b1bit===1 && b2bit===0){ mode='v'; offset=-1; }
+        else if(b1bit===0 && b2bit===1){ mode='h'; }
+        else if(b1bit===0 && b2bit===0){
+          const b3=readBit();
+          if(b3===1){ mode='pass'; }
+          else {
+            const b4=readBit(); const b5=readBit();
+            if(b4===1 && b5===1){ mode='v'; offset=2; }
+            else if(b4===1 && b5===0){ mode='v'; offset=-2; }
+            else if(b4===0){
+              const b6=readBit();
+              if(b6===1){ mode='v'; offset=3; } else { mode='v'; offset=-3; }
+            } else return null;
+          }
+        }
+      }
+      if(mode==='pass'){
+        const start=Math.max(a0,0);
+        for(let x=start;x<b2 && x<width;x++) cur[x]=curColor;
+        a0=b2; continue;
+      } else if(mode==='v'){
+        const a1=b1+offset; if(a1<0 || a1>width) return null;
+        const start=Math.max(a0,0);
+        for(let x=start;x<a1 && x<width;x++) cur[x]=curColor;
+        a0=a1; if(a1<width) curColor=1-curColor; continue;
+      } else if(mode==='h'){
+        const run1=readRun(curColor===0); if(run1<0) return null;
+        const run2=readRun(curColor!==0); if(run2<0) return null;
+        const start=Math.max(a0,0);
+        for(let x=start;x<start+run1 && x<width;x++) cur[x]=curColor;
+        for(let x=start+run1;x<start+run1+run2 && x<width;x++) cur[x]=1-curColor;
+        a0=start+run1+run2; continue;
+      }
+    }
+    if(byteAlign) alignByte();
+    return cur;
+  }
+  const out=new Uint8Array(width*height);
+  let ref=new Uint8Array(width);
+  for(let y=0;y<height;y++){
+    let cur=null;
+    if(K===0) cur=decodeRow1D();
+    else if(K===-1) cur=decodeRow2D(ref);
+    else { // K>0: every (K+1)th row is 1D
+      if(y % (K+1) === 0) cur=decodeRow1D(); else cur=decodeRow2D(ref);
+    }
+    if(!cur) return null;
+    for(let x=0;x<width;x++) out[y*width+x]=cur[x];
+    ref=cur;
+  }
+  return out;
+}
+
+
   async function uniExtractPdf(file){
+    window.__PA_PDF_UNSUPPORTED__ = [];
     var bytes = new Uint8Array(await file.arrayBuffer());
     if(bytes.length<4 || String.fromCharCode(bytes[0],bytes[1],bytes[2],bytes[3])!=='%PDF') throw new Error('不是 PDF 文件');
     var latin = '';
@@ -4947,43 +5224,107 @@ splitPostBootstrap();
       }
       imgPos = dataStart + (rawBytes ? rawBytes.length : 0);
       try{
-        if(/\/DCTDecode/.test(dict)){
-          var blob = new Blob([rawBytes], {type:'image/jpeg'});
-          if(Uph0 && Uph0.decodePaperImage){
-            var found = await Uph0.decodePaperImage(blob);
-            found.forEach(function(it){ if(it && it.raw) frames.push(String(it.raw).trim()); });
-          }
-          // JPEG 图也可能是单包二维码：decodePaperImage 只认纸质帧/PF2，ARCHIVE 码要另外走 jsQR
-          if(Uph0 && Uph0.detectQRFromCanvas){
-            // JPEG 走 Blob 已在上面试过纸质帧；单包码需画布，见下方 Flate 路的统一处理，这里用 Image 解码复用
-            try{
-              var imgEl = new Image();
-              var url = URL.createObjectURL(blob);
-              await new Promise(function(res, rej){ imgEl.onload=res; imgEl.onerror=rej; imgEl.src=url; });
-              var cvJ = document.createElement('canvas'); cvJ.width = imgEl.naturalWidth; cvJ.height = imgEl.naturalHeight;
-              var ctxJ = cvJ.getContext('2d'); ctxJ.drawImage(imgEl, 0, 0);
-              URL.revokeObjectURL(url);
-              var qrJ = await Uph0.detectQRFromCanvas(cvJ);
-              if(qrJ && qrJ.indexOf('ARCHIVE:')===0) imageTexts.push(qrJ);
-            }catch(e){}
-          }
-        } else if(/\/FlateDecode/.test(dict)){
-          var canvasF = await uniPdfFlateImageToCanvas(dict, rawBytes);
-          if(canvasF){
-            var qrF = await uniPdfCanvasToQrText(canvasF);
-            if(qrF){
-              if(qrF.indexOf('ARCHIVE:')===0) imageTexts.push(qrF);
-              else if(qrF.indexOf('PF2')===0 || qrF.indexOf('PaperFrame|')===0 || qrF.indexOf('PAPERQR1|')===0 || qrF.indexOf('AEGISQR1|')===0) frames.push(qrF.trim());
-              else if(qrF.indexOf('CF1')>=0 || qrF.indexOf('PV')>=0) imageTexts.push(qrF);
-            } else {
-              // jsQR 没认出，可能是备用图码：转 PNG Blob 走 PhotoCode 路
+        var filters31 = uniPdfFilterList(dict);
+        if(filters31.indexOf('JPXDecode')>=0 || filters31.indexOf('JBIG2Decode')>=0){
+          var badF = filters31.indexOf('JPXDecode')>=0 ? 'JPX (JPEG2000)' : 'JBIG2';
+          if(!window.__PA_PDF_UNSUPPORTED__) window.__PA_PDF_UNSUPPORTED__ = [];
+          window.__PA_PDF_UNSUPPORTED__.push(badF);
+          // 不中断：继续找其他图片/文字，可能还有别的图能恢复
+        } else if(filters31.indexOf('DCTDecode')>=0 || filters31.indexOf('DCT')>=0){
+          var decodedJ = await uniPdfDecodeStreamFilters(dict, rawBytes);
+          if(decodedJ){
+            var blob = new Blob([decodedJ], {type:'image/jpeg'});
+            if(Uph0 && Uph0.decodePaperImage){
+              var found = await Uph0.decodePaperImage(blob);
+              found.forEach(function(it){ if(it && it.raw) frames.push(String(it.raw).trim()); });
+            }
+            if(Uph0 && Uph0.detectQRFromCanvas){
               try{
-                var blobF = await new Promise(function(res){ canvasF.toBlob(res, 'image/png'); });
-                if(blobF && Uph0 && Uph0.decodePaperImage){
-                  var foundF = await Uph0.decodePaperImage(blobF);
-                  foundF.forEach(function(it){ if(it && it.raw) frames.push(String(it.raw).trim()); });
-                }
+                var imgEl = new Image();
+                var url = URL.createObjectURL(blob);
+                await new Promise(function(res, rej){ imgEl.onload=res; imgEl.onerror=rej; imgEl.src=url; });
+                var cvJ = document.createElement('canvas'); cvJ.width = imgEl.naturalWidth; cvJ.height = imgEl.naturalHeight;
+                var ctxJ = cvJ.getContext('2d'); ctxJ.drawImage(imgEl, 0, 0);
+                URL.revokeObjectURL(url);
+                var qrJ = await Uph0.detectQRFromCanvas(cvJ);
+                if(qrJ && qrJ.indexOf('ARCHIVE:')===0) imageTexts.push(qrJ);
               }catch(e){}
+            }
+          }
+        } else if(filters31.indexOf('CCITTFaxDecode')>=0 || filters31.indexOf('CCF')>=0){
+          var decodedC = await uniPdfDecodeStreamFilters(dict, rawBytes);
+          if(decodedC){
+            var paramsC = uniPdfImageParams(dict);
+            if(paramsC){
+              var kM = dict.match(/\/K\s+(-?\d+)/); var kV = kM ? parseInt(kM[1],10) : -1;
+              var colM = dict.match(/\/Columns\s+(\d+)/); if(colM) paramsC.w = parseInt(colM[1],10);
+              var rowM = dict.match(/\/Rows\s+(\d+)/); if(rowM) paramsC.h = parseInt(rowM[1],10);
+              var baM = /\/EncodedByteAlign\s+true/.test(dict);
+              var ccittOut = uniPdfCcittDecode(decodedC, paramsC.w, paramsC.h, {K: kV, EncodedByteAlign: baM});
+              if(ccittOut){
+                var canvasC = document.createElement('canvas'); canvasC.width = paramsC.w; canvasC.height = paramsC.h;
+                var ctxC = canvasC.getContext('2d'); var imgC = ctxC.createImageData(paramsC.w, paramsC.h);
+                var invertC = /\/Decode\s*\[\s*1\s+0\s*\]/.test(dict);
+                for(var ci=0; ci<paramsC.w*paramsC.h; ci++){ var isBlack = ccittOut[ci]===1; if(invertC) isBlack = !isBlack; var vC = isBlack ? 0 : 255; imgC.data[ci*4]=vC; imgC.data[ci*4+1]=vC; imgC.data[ci*4+2]=vC; imgC.data[ci*4+3]=255; }
+                ctxC.putImageData(imgC, 0, 0);
+                var qrC = await uniPdfCanvasToQrText(canvasC);
+                if(qrC){
+                  if(qrC.indexOf('ARCHIVE:')===0) imageTexts.push(qrC);
+                  else if(qrC.indexOf('PF2')===0 || qrC.indexOf('PaperFrame|')===0 || qrC.indexOf('PAPERQR1|')===0 || qrC.indexOf('AEGISQR1|')===0) frames.push(qrC.trim());
+                  else if(qrC.indexOf('CF1')>=0 || qrC.indexOf('PV')>=0) imageTexts.push(qrC);
+                } else {
+                  try{
+                    var blobC = await new Promise(function(res){ canvasC.toBlob(res, 'image/png'); });
+                    if(blobC && Uph0 && Uph0.decodePaperImage){
+                      var foundC = await Uph0.decodePaperImage(blobC);
+                      foundC.forEach(function(it){ if(it && it.raw) frames.push(String(it.raw).trim()); });
+                    }
+                  }catch(e){}
+                }
+              }
+            }
+          }
+        } else {
+          // Flate / LZW / RunLength / ASCII / 无滤波：滤波链解到原始像素，再按图像参数转画布（1 位、灰度、RGB、CMYK、掩码反色）
+          var decodedP = await uniPdfDecodeStreamFilters(dict, rawBytes);
+          if(decodedP){
+            var paramsP = uniPdfImageParams(dict);
+            if(paramsP){
+              var canvasP = null;
+              // 如果滤波链已经把 Flate 预测反预测过，decodedP 就是原始像素；如果 dict 里没有 Flate（例如纯 LZW 图像），同样是原始像素。
+              // 但 uniPdfFlateImageToCanvas 会再解一次 Flate，所以这里不能直接用它：用像素转画布。
+              // 注意：uniPdfDecodeStreamFilters 的 Flate 分支已经处理了 Predictor，所以 decodedP 已是反预测后的像素。
+              // 对于没有 Flate 的情况（例如原始像素直接存），decodedP 也是像素。
+              // 唯一例外：dict 里有 Flate 但 uniPdfDecodeStreamFilters 返回了原始像素（因为它处理了 Predictor），同样适用。
+              canvasP = uniPdfPixelsToCanvas(paramsP.w, paramsP.h, paramsP.bpc, paramsP.colors, decodedP);
+              // ImageMask 反色：掩码 1=涂色（黑），像素转画布按 1=白处理会反色
+              if(canvasP && /\/ImageMask\s+true/.test(dict)){
+                var ctxP = canvasP.getContext('2d'); var imgP = ctxP.getImageData(0,0,canvasP.width,canvasP.height);
+                for(var pi=0; pi<imgP.data.length; pi+=4){ imgP.data[pi]=255-imgP.data[pi]; imgP.data[pi+1]=255-imgP.data[pi+1]; imgP.data[pi+2]=255-imgP.data[pi+2]; }
+                ctxP.putImageData(imgP, 0, 0);
+              }
+              // Decode [1 0] 反色（1 位图）
+              if(canvasP && /\/Decode\s*\[\s*1\s+0\s*\]/.test(dict) && !/\/ImageMask\s+true/.test(dict)){
+                var ctxP2 = canvasP.getContext('2d'); var imgP2 = ctxP2.getImageData(0,0,canvasP.width,canvasP.height);
+                for(var pi2=0; pi2<imgP2.data.length; pi2+=4){ imgP2.data[pi2]=255-imgP2.data[pi2]; imgP2.data[pi2+1]=255-imgP2.data[pi2+1]; imgP2.data[pi2+2]=255-imgP2.data[pi2+2]; }
+                ctxP2.putImageData(imgP2, 0, 0);
+              }
+              if(canvasP){
+                var qrP = await uniPdfCanvasToQrText(canvasP);
+                if(qrP){
+                  if(qrP.indexOf('ARCHIVE:')===0) imageTexts.push(qrP);
+                  else if(qrP.indexOf('PF2')===0 || qrP.indexOf('PaperFrame|')===0 || qrP.indexOf('PAPERQR1|')===0 || qrP.indexOf('AEGISQR1|')===0) frames.push(qrP.trim());
+                  else if(qrP.indexOf('CF1')>=0 || qrP.indexOf('PV')>=0) imageTexts.push(qrP);
+                } else {
+                  try{
+                    var blobP = await new Promise(function(res){ canvasP.toBlob(res, 'image/png'); });
+                    if(blobP && Uph0 && Uph0.decodePaperImage){
+                      var foundP = await Uph0.decodePaperImage(blobP);
+                      foundP.forEach(function(it){ if(it && it.raw) frames.push(String(it.raw).trim()); });
+                    }
+                  }catch(e){}
+                }
+              }
             }
           }
         }
@@ -4997,6 +5338,8 @@ splitPostBootstrap();
       while(true){
         var vStreamIdx = latin.indexOf('stream', vPos);
         if(vStreamIdx<0) break;
+        // 'endstream' 里也含 'stream'：上一个流结束处的 endstream 会被误当成下一个流，导致多流 PDF 的第二条流被跳过；跳过它
+        if(vStreamIdx>=3 && latin.slice(vStreamIdx-3, vStreamIdx)==='end'){ vPos = vStreamIdx + 6; continue; }
         var vDictStart = latin.lastIndexOf('<<', vStreamIdx);
         var vDict = vDictStart>=0 ? latin.slice(vDictStart, vStreamIdx) : '';
         if(/\/Subtype\s*\/Image/.test(vDict)){ vPos = vStreamIdx + 6; continue; }
@@ -5008,13 +5351,19 @@ splitPostBootstrap();
         else { var vEnd = latin.indexOf('endstream', vDataStart); if(vEnd<0) break; vRawBytes = uniPdfStringToBytes(latin.slice(vDataStart, vEnd)); }
         vPos = vDataStart + (vRawBytes ? vRawBytes.length : 0);
         try{
-          var vDec = null;
-          if(/\/FlateDecode/.test(vDict)) vDec = await uniDecompressFlate(vRawBytes);
+          var vFilters = uniPdfFilterList(vDict);
+          if(vFilters.indexOf('JPXDecode')>=0 || vFilters.indexOf('JBIG2Decode')>=0) continue;
+          var vDec = await uniPdfDecodeStreamFilters(vDict, vRawBytes);
+          // uniPdfDecodeStreamFilters 对 Flate 已处理 Predictor，但内容流一般无 Predictor；若返回 null（不支持的滤波），回落到 Flate 原法
+          if(!vDec && /\/FlateDecode/.test(vDict)) vDec = await uniDecompressFlate(vRawBytes);
           var vTxt = '';
           if(vDec){ try{ vTxt = new TextDecoder('utf-8').decode(vDec); }catch(e){ vTxt = ''; for(var vi=0;vi<vDec.length;vi++) vTxt += String.fromCharCode(vDec[vi]); } }
           else { for(var vi2=0;vi2<vRawBytes.length;vi2++) vTxt += String.fromCharCode(vRawBytes[vi2]); }
           if(vTxt.indexOf(' re')<0 && vTxt.indexOf('re\n')<0) continue;
           var vRects = uniPdfVectorParseStream(vTxt);
+          // 多流同页 / Form 矢量码：单条流可能只有半个码，先把所有流的矩形攒起来，后面做合并兜底
+          if(typeof window.__PA_VEC_ALL__ === 'undefined') window.__PA_VEC_ALL__ = [];
+          vRects.forEach(function(rr){ window.__PA_VEC_ALL__.push(rr); });
           if(vRects.length < 50) continue;
           var vCanvas = await uniPdfVectorRasterize(vRects);
           if(!vCanvas) continue;
@@ -5034,6 +5383,29 @@ splitPostBootstrap();
           }
         }catch(e){}
       }
+      // 合并兜底 (.31): 一页的码被拆到多条内容流，或码在 Form 里单独成流时，单流都不够 50 个矩形或拼不成码；把所有流的矩形合起来再栅格化一次
+      if(!vectorFrames.length && !vectorTexts.length && window.__PA_VEC_ALL__ && window.__PA_VEC_ALL__.length >= 50){
+        try{
+          var allCanvas = await uniPdfVectorRasterize(window.__PA_VEC_ALL__);
+          if(allCanvas){
+            var allQr = await uniPdfCanvasToQrText(allCanvas);
+            if(allQr){
+              if(allQr.indexOf('ARCHIVE:')===0) vectorTexts.push(allQr);
+              else if(allQr.indexOf('PF2')===0 || allQr.indexOf('PaperFrame|')===0 || allQr.indexOf('PAPERQR1|')===0 || allQr.indexOf('AEGISQR1|')===0) vectorFrames.push(allQr.trim());
+              else if(allQr.indexOf('CF1')>=0 || allQr.indexOf('PV')>=0) vectorTexts.push(allQr);
+            } else {
+              try{
+                var allBlob = await new Promise(function(res){ allCanvas.toBlob(res, 'image/png'); });
+                if(allBlob && Uph0 && Uph0.decodePaperImage){
+                  var allFound = await Uph0.decodePaperImage(allBlob);
+                  allFound.forEach(function(it){ if(it && it.raw) vectorFrames.push(String(it.raw).trim()); });
+                }
+              }catch(e){}
+            }
+          }
+        }catch(e){}
+      }
+      window.__PA_VEC_ALL__ = [];
       if(vectorFrames.length) vectorFrames.forEach(function(fr){ frames.push(fr); });
       if(vectorTexts.length) vectorTexts.forEach(function(t){ imageTexts.push(t); });
     }
@@ -5045,7 +5417,15 @@ splitPostBootstrap();
     while((sm=streamRe.exec(latin))!==null){
       var rawT = sm[1];
       var rawB = uniPdfStringToBytes(rawT);
-      var dec = await uniDecompressFlate(rawB);
+      // 文本流也可能被 LZW/ASCII/RunLength 包裹：先走滤波链，链里 Flate 已处理，失败时回落 Flate 原法
+      var dec = null;
+      try{
+        // 取该流前面的字典（stream 关键字前的 <<...>>）来判断滤波
+        var dictStartT = latin.lastIndexOf('<<', sm.index);
+        var dictT = dictStartT>=0 ? latin.slice(dictStartT, sm.index) : '';
+        if(uniPdfFilterList(dictT).length) dec = await uniPdfDecodeStreamFilters(dictT, rawB);
+      }catch(e){}
+      if(!dec) dec = await uniDecompressFlate(rawB);
       var txt = '';
       if(dec){
         try{ txt = new TextDecoder('utf-8').decode(dec); }catch(e){ txt = ''; for(var ti=0;ti<dec.length;ti++) txt += String.fromCharCode(dec[ti]); }
@@ -5061,12 +5441,12 @@ splitPostBootstrap();
     // 图片数据优先 (.28): 单包二维码 PDF 的文字层只有封面和卡片标题，没有数据，但封面里的拉丁字母会被分块解析当成数据接在真块后面，导致 CRC 失败。
     // 图片已经解出完整分块时，只返回图片数据，不掺文字层；文字层是数据的三包文本 PDF 里没有图片，走下面原来的路。
     if(imageTextAll && /(?:ARCHIVE:|CF1\s*\d+\s*\/\s*\d+\s*CRC)/.test(imageTextAll)){
-      return {frames: frames, text: imageTextAll};
+      return {frames: frames, text: imageTextAll, unsupported: (window.__PA_PDF_UNSUPPORTED__||[]).slice()};
     }
     // 只有当解码文本里没有任何可识别标记时，才把原始字节当作兜底（未压缩 PDF 的明文就藏在原始字节里）；已解出标记时不再附加 20 万字乱码，避免干扰后续解析。
     var direct = latin.replace(/\r/g,'\n');
     var hasMarker = /(CF-TRIPLE|PV[12]\s*\d|CF1\s*\d|PaperFrame|PAPERQR|AEGISQR|PF2|Ciphertext\.|Parliaments\.|Key\.)/.test(extractedAll);
-    return {frames: frames, text: hasMarker ? extractedAll : (extractedAll + '\n' + direct)};
+    return {frames: frames, text: hasMarker ? extractedAll : (extractedAll + '\n' + direct), unsupported: (window.__PA_PDF_UNSUPPORTED__||[]).slice()};
   }
   window.__PA_PDF_EXTRACT__ = uniExtractPdf;
   var recBtn = $('uniRecover');
@@ -5149,7 +5529,11 @@ splitPostBootstrap();
                       _pdf.text.split(/\r?\n/).forEach(function(ln){ var t=ln.trim(); if(t.indexOf('PAPERQR1|')===0 || t.indexOf('AEGISQR1|')===0 || t.indexOf('PaperFrame|')===0 || t.indexOf('PF2')===0) frameLines.push(t); });
                     }
                   } else {
-                    pdfFailNote = '这个 PDF 里没有找到可以直接读取的图片（JPEG 或浏览器打印的 Flate 像素图）或文字层（分块/三包/纸质帧），可能是矢量 PDF 或用了本页不支持的压缩方式（JBIG2/CCITT 等）。请把 PDF 每一页另存为 JPG/PNG 图片后再上传，或把 PDF 里的文字粘贴到恢复区。';
+                    if(_pdf.unsupported && _pdf.unsupported.length){
+                      pdfFailNote = '这个 PDF 用的是 ' + _pdf.unsupported.join('、') + ' 压缩，程序解不了：JBIG2 是黑白扫描的高压缩算术编码，JPEG2000 需要专门的解码器，单文件里放不下又不拖慢程序；请在扫描仪设置里改成彩色/JPEG 或黑白 CCITT，或把 PDF 每一页另存为 JPG/PNG 图片后再上传。';
+                    } else {
+                      pdfFailNote = '这个 PDF 里没有找到可以直接读取的图片（JPEG、Flate 像素图、CCITT 传真黑白图）或文字层（分块/三包/纸质帧），可能是矢量文字轮廓（没有文字层，需 OCR）或用了本页不支持的压缩方式（JBIG2/JPEG2000）。请把 PDF 每一页另存为 JPG/PNG 图片后再上传，或把 PDF 里的文字粘贴到恢复区。';
+                    }
                   }
                 }
               } catch(e){
